@@ -1,13 +1,13 @@
 import type { Route } from "./+types/home";
-import { Welcome } from "../welcome/welcome";
+import { App } from "../components/app";
 
 export function meta({}: Route.MetaArgs) {
   return [
-    { title: "New React Router App" },
-    { name: "description", content: "Welcome to React Router!" },
+    { title: "Bedrock GEF CPT viewer" },
+    { name: "description", content: "Bedrock GEF-CPT viewer" },
   ];
 }
 
 export default function Home() {
-  return <Welcome />;
+  return <App />;
 }
