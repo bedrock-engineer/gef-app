@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { COORDINATE_SYSTEMS, type CoordinateSystemCode } from "../util/gef-schemas";
 import { convertToWGS84 } from "../util/coordinates";
 import type { GefData } from "~/util/gef";
@@ -25,6 +26,7 @@ export function GefMultiMap({
     throw Error("GefMultiMap should only render on the client.");
   }
 
+  const { t } = useTranslation();
   const mapRef = useRef<HTMLDivElement>(null);
   const mapInstanceRef = useRef<any>(null);
   const markersRef = useRef<Map<string, any>>(new Map());
@@ -65,7 +67,7 @@ export function GefMultiMap({
           .filter((loc): loc is NonNullable<typeof loc> => loc !== null);
 
         if (transformedLocations.length === 0) {
-          setError("No valid locations to display");
+          setError(t("noValidLocations"));
           return;
         }
 
@@ -104,13 +106,9 @@ export function GefMultiMap({
 
         // Add markers for each location
         transformedLocations.forEach((loc) => {
-          const isSelected = loc.filename === selectedFileName;
-
           const marker = L.marker([loc.lat, loc.lng], {
             icon: L.icon({
-              iconUrl: isSelected
-                ? "https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-red.png"
-                : "https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-blue.png",
+              iconUrl: "https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-blue.png",
               shadowUrl:
                 "https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png",
               iconSize: [25, 41],
@@ -151,7 +149,7 @@ export function GefMultiMap({
         mapInstanceRef.current = null;
       }
     };
-  }, [locations, locations.length, onMarkerClick, selectedFileName]);
+  }, [locations, locations.length, onMarkerClick]);
 
   // Update marker styles when selection changes
   useEffect(() => {
@@ -187,7 +185,7 @@ export function GefMultiMap({
   if (locations.length === 0) {
     return (
       <div className="w-full h-96 rounded-lg border border-gray-300 shadow-sm bg-gray-50 flex items-center justify-center">
-        <span className="text-gray-500">No GEF files with location data</span>
+        <span className="text-gray-500">{t("noLocationData")}</span>
       </div>
     );
   }

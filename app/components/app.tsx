@@ -212,7 +212,7 @@ export function App() {
           <Suspense
             fallback={
               <div className="w-full h-96 rounded-lg border border-gray-300 shadow-sm bg-gray-100 flex items-center justify-center">
-                <span className="text-gray-500">Loading map...</span>
+                <span className="text-gray-500">{t("loadingMap")}</span>
               </div>
             }
           >
