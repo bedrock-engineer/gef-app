@@ -36,7 +36,7 @@
 #MEASUREMENTTEXT = 7, Rijksdriehoeksmeting, locaal coördinatensysteem
 #MEASUREMENTTEXT = 8, Normaal Amsterdams Peil, locaal referentiesysteem
 #MEASUREMENTVAR = 16, 2.00, m, einddiepte
-#MEASUREMENTTEXT = 23, -, naam boormeester
+#MEASUREMENTTEXT = 23, Barry Boormeastro, naam boormeester
 #MEASUREMENTTEXT = 14, Nee, openbaar
 #MEASUREMENTTEXT = 17, Onbekend, vochtigheidstoestand grond
 #MEASUREMENTTEXT = 18, Nee, peilbuis afwezig
