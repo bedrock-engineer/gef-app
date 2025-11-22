@@ -104,13 +104,9 @@ export function GefMultiMap({
 
         // Add markers for each location
         transformedLocations.forEach((loc) => {
-          const isSelected = loc.filename === selectedFileName;
-
           const marker = L.marker([loc.lat, loc.lng], {
             icon: L.icon({
-              iconUrl: isSelected
-                ? "https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-red.png"
-                : "https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-blue.png",
+              iconUrl: "https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-blue.png",
               shadowUrl:
                 "https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png",
               iconSize: [25, 41],
@@ -151,7 +147,7 @@ export function GefMultiMap({
         mapInstanceRef.current = null;
       }
     };
-  }, [locations, locations.length, onMarkerClick, selectedFileName]);
+  }, [locations, locations.length, onMarkerClick]);
 
   // Update marker styles when selection changes
   useEffect(() => {
