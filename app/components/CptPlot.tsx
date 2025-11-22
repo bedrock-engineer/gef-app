@@ -13,14 +13,13 @@ import {
 } from "react-aria-components";
 import { useTranslation } from "react-i18next";
 import { PlotDownloadButtons } from "./PlotDownload";
+import { DEPTH_KEYWORDS } from "~/util/gef";
 
 interface Column {
   key: string;
   unit: string;
   name: string;
 }
-
-const DEPTH_KEYWORDS = ["penetration", "sondeer", "sondeertrajectlengte", "length", "diepte", "lengte"];
 
 function isDepthColumn(col: Column): boolean {
   const nameLower = col.name.toLowerCase();
