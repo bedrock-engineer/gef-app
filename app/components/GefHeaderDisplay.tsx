@@ -246,7 +246,7 @@ export function CompactGefHeader({
               <dt className="text-gray-500">{t("locationLabel")}</dt>
               <dd>
                 <div className="font-semibold">
-                  {COORDINATE_SYSTEMS[xyid.coordinateSystem]?.name ?? "Unknown"}{" "}
+                  {COORDINATE_SYSTEMS[xyid.coordinateSystem]?.name ?? t("unknownCoordinateSystem")}{" "}
                   ({COORDINATE_SYSTEMS[xyid.coordinateSystem]?.epsg})
                 </div>
 

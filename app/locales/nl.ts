@@ -121,5 +121,11 @@ export default {
     min: "Min",
     max: "Max",
     range: "Bereik",
+
+    // Map
+    loadingMap: "Kaart laden...",
+    noValidLocations: "Geen geldige locaties om weer te geven",
+    noLocationData: "Geen GEF-bestanden met locatiegegevens",
+    unknownCoordinateSystem: "Onbekend",
   }
 } as const;

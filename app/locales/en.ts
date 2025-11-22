@@ -121,5 +121,11 @@ export default {
     min: "Min",
     max: "Max",
     range: "Range",
+
+    // Map
+    loadingMap: "Loading map...",
+    noValidLocations: "No valid locations to display",
+    noLocationData: "No GEF files with location data",
+    unknownCoordinateSystem: "Unknown",
   }
 } as const;
