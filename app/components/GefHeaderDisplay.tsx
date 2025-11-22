@@ -4,7 +4,8 @@ import {
   DisclosurePanel,
   Heading,
 } from "react-aria-components";
-import { useTranslation, type TFunction } from "react-i18next";
+import { useTranslation } from "react-i18next";
+import type { TFunction } from "i18next";
 import {
   decodeMeasurementText,
   detectGefExtension,
@@ -31,6 +32,18 @@ import type { GefFileType } from "../util/gef";
 import type { ReactNode } from "react";
 import { CopyButton } from "./CopyButton";
 import proj4 from "proj4";
+
+// Helper to get description based on locale
+function getLocalizedDescription(
+  varInfo: { description: string; descriptionNl?: string } | undefined,
+  locale: string
+): string {
+  if (!varInfo) return "";
+  if (locale === "nl" && varInfo.descriptionNl) {
+    return varInfo.descriptionNl;
+  }
+  return varInfo.description;
+}
 
 // Unified lookup functions that consider file type
 function findMeasurementTextVariableByFileType(
@@ -144,7 +157,8 @@ function getMeasurementTextItems(
   headers: GefHeaders,
   categories: Array<string>,
   fileType: GefFileType,
-  extension: GefExtension
+  extension: GefExtension,
+  locale: string = "en"
 ): Array<HeaderItem> {
   const items: Array<HeaderItem> = [];
   const measurementTexts = headers.MEASUREMENTTEXT;
@@ -173,7 +187,7 @@ function getMeasurementTextItems(
       extension
     );
 
-    items.push({ label: textInfo.description, value: displayValue });
+    items.push({ label: getLocalizedDescription(textInfo, locale), value: displayValue });
   });
 
   return items;
@@ -343,7 +357,8 @@ interface DetailedHeaderProps {
 }
 
 export function DetailedGefHeaders({ headers, fileType }: DetailedHeaderProps) {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
+  const locale = i18n.language;
   const extension = detectGefExtension(
     headers.MEASUREMENTTEXT?.map((mt) => mt.id),
     headers.MEASUREMENTVAR?.map((v) => v.id)
@@ -368,22 +383,22 @@ export function DetailedGefHeaders({ headers, fileType }: DetailedHeaderProps) {
     {
       id: "equipment",
       title: t("equipmentCapabilities"),
-      items: getEquipmentInfo(headers, fileType, extension),
+      items: getEquipmentInfo(headers, fileType, extension, locale),
     },
     {
       id: "conditions",
       title: t("testConditionsRemarks"),
-      items: getConditionsInfo(headers, fileType, extension),
+      items: getConditionsInfo(headers, fileType, extension, locale),
     },
     {
       id: "processing",
       title: t("dataProcessing"),
-      items: getProcessingInfo(headers, fileType, extension),
+      items: getProcessingInfo(headers, fileType, extension, locale),
     },
     {
       id: "calculations",
       title: t("calculationsFormulas"),
-      items: getCalculationsInfo(headers, fileType, extension),
+      items: getCalculationsInfo(headers, fileType, extension, locale),
     },
     {
       id: "data_structure",
@@ -393,7 +408,7 @@ export function DetailedGefHeaders({ headers, fileType }: DetailedHeaderProps) {
     {
       id: "calibration",
       title: t("calibrationData"),
-      items: getCalibrationData(headers, fileType, extension),
+      items: getCalibrationData(headers, fileType, extension, locale),
     },
     {
       id: "metadata",
@@ -598,12 +613,13 @@ function getCoordinatesInfo(
 function getEquipmentInfo(
   headers: GefHeaders,
   fileType: GefFileType,
-  extension: GefExtension
+  extension: GefExtension,
+  locale: string
 ) {
   const items: Array<HeaderItem> = [];
 
   items.push(
-    ...getMeasurementTextItems(headers, ["equipment"], fileType, extension)
+    ...getMeasurementTextItems(headers, ["equipment"], fileType, extension, locale)
   );
 
   headers.MEASUREMENTVAR?.forEach(({ id, value, unit }) => {
@@ -623,7 +639,7 @@ function getEquipmentInfo(
     }
 
     items.push({
-      label: varInfo.description,
+      label: getLocalizedDescription(varInfo, locale),
       value: unit && unit !== "-" ? `${displayValue} ${unit}` : displayValue,
     });
   });
@@ -679,7 +695,8 @@ function getDataStructure(headers: GefHeaders, t: TFunction) {
 function getCalibrationData(
   headers: GefHeaders,
   fileType: GefFileType,
-  extension: GefExtension
+  extension: GefExtension,
+  locale: string
 ) {
   const items: Array<{ label: string; value: string }> = [];
 
@@ -688,7 +705,7 @@ function getCalibrationData(
     if (varInfo?.category === "calibration" && parseFloat(value) !== 0) {
       const displayValue = formatNumericValue(value);
       items.push({
-        label: varInfo.description,
+        label: getLocalizedDescription(varInfo, locale),
         value: unit ? `${displayValue} ${unit}` : displayValue,
       });
     }
@@ -730,34 +747,39 @@ function getFileMetadata(headers: GefHeaders, t: TFunction) {
 function getConditionsInfo(
   headers: GefHeaders,
   fileType: GefFileType,
-  extension: GefExtension
+  extension: GefExtension,
+  locale: string
 ) {
   return getMeasurementTextItems(
     headers,
     ["conditions", "general", "infrastructure", "measurements"],
     fileType,
-    extension
+    extension,
+    locale
   );
 }
 
 function getProcessingInfo(
   headers: GefHeaders,
   fileType: GefFileType,
-  extension: GefExtension
+  extension: GefExtension,
+  locale: string
 ) {
-  return getMeasurementTextItems(headers, ["processing"], fileType, extension);
+  return getMeasurementTextItems(headers, ["processing"], fileType, extension, locale);
 }
 
 function getCalculationsInfo(
   headers: GefHeaders,
   fileType: GefFileType,
-  extension: GefExtension
+  extension: GefExtension,
+  locale: string
 ) {
   return getMeasurementTextItems(
     headers,
     ["calculations"],
     fileType,
-    extension
+    extension,
+    locale
   );
 }
 

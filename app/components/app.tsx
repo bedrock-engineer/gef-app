@@ -7,6 +7,7 @@ import {
   ToggleButtonGroup,
 } from "react-aria-components";
 import { useTranslation } from "react-i18next";
+import Cookies from "js-cookie";
 import { downloadGefDataAsCsv } from "~/util/csv-download";
 import { parseGefFile, type GefData } from "~/util/gef";
 import { BorePlot } from "./BorePlot";
@@ -17,8 +18,14 @@ import { PreExcavationPlot } from "./PreExcavationPlot";
 import { SpecimenTable } from "./SpecimenTable";
 
 export function App() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const [gefData, setGefData] = useState<Record<string, GefData>>({});
+
+  function toggleLanguage() {
+    const newLang = i18n.language === "nl" ? "en" : "nl";
+    void i18n.changeLanguage(newLang);
+    Cookies.set("lng", newLang, { path: "/", sameSite: "lax" });
+  }
   const [selectedFileName, setSelectedFileName] = useState("");
   const [failedFiles, setFailedFiles] = useState<
     Array<{ name: string; error: string }>
@@ -87,9 +94,18 @@ export function App() {
 
   return (
     <main className="p-8 max-w-6xl mx-auto">
-      <h1 className="text-2xl mx-auto w-fit flex gap-4 mb-6 text-center items-center">
-        <img src="bedrock.svg" width={30} /> {t("appTitle")}
-      </h1>
+      <div className="flex justify-between items-center mb-6">
+        <div className="w-16" /> {/* Spacer for centering */}
+        <h1 className="text-2xl flex gap-4 text-center items-center">
+          <img src="bedrock.svg" width={30} /> {t("appTitle")}
+        </h1>
+        <Button
+          onPress={toggleLanguage}
+          className="px-3 py-1 text-sm border border-gray-300 rounded hover:bg-gray-100 transition-colors"
+        >
+          {i18n.language === "nl" ? "EN" : "NL"}
+        </Button>
+      </div>
 
       <div className="text-center mb-6 max-w-md mx-auto">
         <p className="text-gray-600 text-sm mb-2">
