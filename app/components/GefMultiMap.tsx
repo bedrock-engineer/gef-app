@@ -1,5 +1,8 @@
 import { useEffect, useRef, useState } from "react";
-import { COORDINATE_SYSTEMS, type CoordinateSystemCode } from "../util/gef-schemas";
+import {
+  COORDINATE_SYSTEMS,
+  type CoordinateSystemCode,
+} from "../util/gef-schemas";
 import type { GefData } from "~/util/gef";
 
 interface GefLocation {
@@ -15,7 +18,11 @@ interface GefMultiMapProps {
   onMarkerClick: (filename: string) => void;
 }
 
-export function GefMultiMap({ gefData, selectedFileName, onMarkerClick }: GefMultiMapProps) {
+export function GefMultiMap({
+  gefData,
+  selectedFileName,
+  onMarkerClick,
+}: GefMultiMapProps) {
   const mapRef = useRef<HTMLDivElement>(null);
   const mapInstanceRef = useRef<any>(null);
   const markersRef = useRef<Map<string, any>>(new Map());
@@ -27,7 +34,7 @@ export function GefMultiMap({ gefData, selectedFileName, onMarkerClick }: GefMul
   }, []);
 
   // Extract locations from GEF data
-  const locations: GefLocation[] = Object.entries(gefData)
+  const locations: Array<GefLocation> = Object.entries(gefData)
     .filter(([_, data]) => data.headers.XYID)
     .map(([filename, data]) => ({
       filename,
@@ -61,11 +68,10 @@ export function GefMultiMap({ gefData, selectedFileName, onMarkerClick }: GefMul
             }
 
             try {
-              const [lng, lat] = proj4(
-                coordSysConfig.epsg,
-                "EPSG:4326",
-                [loc.x, loc.y]
-              );
+              const [lng, lat] = proj4(coordSysConfig.epsg, "EPSG:4326", [
+                loc.x,
+                loc.y,
+              ]);
 
               if (
                 !Number.isFinite(lat) ||
@@ -144,7 +150,9 @@ export function GefMultiMap({ gefData, selectedFileName, onMarkerClick }: GefMul
           marker.bindPopup(`
             <div class="text-xs">
               <strong>${loc.filename}</strong><br/>
-              ${loc.coordSysConfig.name}: ${loc.x.toFixed(2)}, ${loc.y.toFixed(2)}<br/>
+              ${loc.coordSysConfig.name}: ${loc.x.toFixed(2)}, ${loc.y.toFixed(
+            2
+          )}<br/>
               Lat/Lng: ${loc.lat.toFixed(6)}, ${loc.lng.toFixed(6)}
             </div>
           `);
@@ -156,10 +164,10 @@ export function GefMultiMap({ gefData, selectedFileName, onMarkerClick }: GefMul
           markersRef.current.set(loc.filename, marker);
         });
       })
-      .catch((err) => {
+      .catch((error: unknown) => {
         setError(
           `Failed to load map: ${
-            err instanceof Error ? err.message : String(err)
+            error instanceof Error ? error.message : String(error)
           }`
         );
       });
@@ -171,32 +179,37 @@ export function GefMultiMap({ gefData, selectedFileName, onMarkerClick }: GefMul
         mapInstanceRef.current = null;
       }
     };
-  }, [isClient, locations.length]);
+  }, [isClient, locations, locations.length, onMarkerClick, selectedFileName]);
 
   // Update marker styles when selection changes
   useEffect(() => {
     if (!isClient || !mapInstanceRef.current) return;
 
-    Promise.all([import("leaflet")]).then(([leafletModule]) => {
-      const L = leafletModule.default;
+    Promise.all([import("leaflet")])
+      .then(([leafletModule]) => {
+        const L = leafletModule.default;
 
-      markersRef.current.forEach((marker, filename) => {
-        const isSelected = filename === selectedFileName;
-        marker.setIcon(
-          L.icon({
-            iconUrl: isSelected
-              ? "https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-red.png"
-              : "https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-blue.png",
-            shadowUrl:
-              "https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png",
-            iconSize: [25, 41],
-            iconAnchor: [12, 41],
-            popupAnchor: [1, -34],
-            shadowSize: [41, 41],
-          })
-        );
+        markersRef.current.forEach((marker, filename) => {
+          const isSelected = filename === selectedFileName;
+          
+          marker.setIcon(
+            L.icon({
+              iconUrl: isSelected
+                ? "https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-red.png"
+                : "https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-blue.png",
+              shadowUrl:
+                "https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png",
+              iconSize: [25, 41],
+              iconAnchor: [12, 41],
+              popupAnchor: [1, -34],
+              shadowSize: [41, 41],
+            })
+          );
+        });
+      })
+      .catch((error: unknown) => {
+        console.log("Failed to update map markers", error);
       });
-    });
   }, [selectedFileName, isClient]);
 
   if (!isClient) {

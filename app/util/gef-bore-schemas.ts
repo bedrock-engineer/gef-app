@@ -172,13 +172,36 @@ export function getSoilColor(code: string): string {
   }
 
   // Try matching main soil type (first character(s))
-  // Order matters: try longer prefixes first
-  const prefixes = ["Kz3g", "Kz2g", "Kz1g", "Kz", "Ks", "Vk", "Vz", "Vh", "Zs", "Zg", "Zk", "Ls", "Lz", "Gf", "Gm", "Gz", "K", "V", "Z", "L", "G"];
+  const prefixes = [
+    "Kz3g",
+    "Kz2g",
+    "Kz1g",
+    "Kz",
+    "Ks",
+    "Vk",
+    "Vz",
+    "Vh",
+    "Zs",
+    "Zg",
+    "Zk",
+    "Ls",
+    "Lz",
+    "Gf",
+    "Gm",
+    "Gz",
+    "K",
+    "V",
+    "Z",
+    "L",
+    "G",
+  ];
 
   for (const prefix of prefixes) {
     if (code.startsWith(prefix)) {
       // Find a matching color
-      const matchingKey = Object.keys(SOIL_COLORS).find(k => k.startsWith(prefix));
+      const matchingKey = Object.keys(SOIL_COLORS).find((k) =>
+        k.startsWith(prefix)
+      );
       if (matchingKey && SOIL_COLORS[matchingKey]) {
         return SOIL_COLORS[matchingKey];
       }
@@ -203,7 +226,7 @@ export interface BoreLayer {
   depthTop: number;
   depthBottom: number;
   soilCode: string;
-  additionalCodes: string[];
+  additionalCodes: Array<string>;
   description?: string;
   // Numeric properties (may be null/void)
   sandMedian?: number | null;
@@ -213,4 +236,81 @@ export interface BoreLayer {
   sandPercent?: number | null;
   gravelPercent?: number | null;
   organicPercent?: number | null;
+}
+
+// Specimen codes based on GEF-BORE specification
+export const SPECIMEN_CODES = {
+  geroerd: [
+    { code: "G", description: "Geroerd (Disturbed)" },
+    { code: "O", description: "Ongeroerd (Undisturbed)" },
+  ],
+  monstersteekapparaat: [
+    { code: "AMS", description: "Ackermann-apparaat" },
+    { code: "BMS", description: "Begemann-continu-monstersteekapparaat" },
+    { code: "DMS", description: "Druksteekapparaat" },
+    { code: "ZMS", description: "Zuiger-monstersteekapparaat" },
+    { code: "OMS", description: "Open monstersteekapparaat" },
+    { code: "SMS", description: "Monstersteekapparaat SPT" },
+  ],
+  dikDunwandig: [
+    { code: "DIK", description: "Dikwandig (Thick-walled)" },
+    { code: "DUN", description: "Dunwandig (Thin-walled)" },
+  ],
+  monstermethode: [
+    { code: "D", description: "Drukken (Pushed/Static)" },
+    { code: "H", description: "Hameren (Hammered/Dynamic)" },
+  ],
+} as const;
+
+// Specimen data structure for bore files
+export interface BoreSpecimen {
+  specimenNumber: number; // k (1-200)
+  depthTop: number;
+  depthBottom: number;
+  // Numerical properties from SPECIMENVAR
+  diameterMonster?: number | null;
+  diameterMonstersteekapparaat?: number | null;
+  // Text properties from SPECIMENTEXT
+  monstercode?: string;
+  monsterdatum?: string;
+  monstertijd?: string;
+  geroerdOngeroerd?: string;
+  monstersteekapparaat?: string;
+  dikDunwandig?: string;
+  monstermethode?: string;
+  // Remarks (SPECIMENTEXT 1-5)
+  remarks?: Array<string>;
+}
+
+const specimenVarOffsets = {
+  depthTop: 4,
+  depthBottom: 5,
+  diameterMonster: 6,
+  diameterMonstersteekapparaat: 7,
+} as const;
+
+// Helper to calculate SPECIMENVAR ID for a given specimen number k
+export function getSpecimenVarId(
+  k: number,
+  property: keyof typeof specimenVarOffsets
+): number {
+  return specimenVarOffsets[property] + 7 * k;
+}
+
+const specimentTextOffsets = {
+  monstercode: 4,
+  monsterdatum: 5,
+  monstertijd: 6,
+  geroerdOngeroerd: 7,
+  monstersteekapparaat: 8,
+  dikDunwandig: 9,
+  monstermethode: 10,
+} as const;
+
+// Helper to calculate SPECIMENTEXT ID for a given specimen number k
+export function getSpecimenTextId(
+  k: number,
+  property: keyof typeof specimentTextOffsets
+): number {
+  return specimentTextOffsets[property] + 7 * k;
 }

@@ -1,6 +1,17 @@
 import * as Plot from "@observablehq/plot";
 import { useEffect, useRef, useState } from "react";
-import { Checkbox, CheckboxGroup, Label } from "react-aria-components";
+import {
+  Checkbox,
+  CheckboxGroup,
+  Label,
+  Select,
+  SelectValue,
+  Button,
+  Popover,
+  ListBox,
+  ListBoxItem,
+} from "react-aria-components";
+import { PlotDownloadButtons } from "./PlotDownload";
 
 interface Column {
   key: string;
@@ -22,21 +33,34 @@ interface CptPlotProps {
   xAxis: Column;
   yAxis: Column;
   availableColumns: Array<Column>;
+  yAxisOptions?: Array<Column>;
   width?: number;
   height?: number;
+  baseFilename: string;
 }
 
 export function CptPlots({
   data,
   xAxis: initialXAxis,
-  yAxis,
+  yAxis: initialYAxis,
   availableColumns,
+  yAxisOptions = [],
   width = 300,
   height = 800,
+  baseFilename,
 }: CptPlotProps) {
   const [selectedAxes, setSelectedAxes] = useState([initialXAxis.key]);
+  const [selectedYAxis, setSelectedYAxis] = useState(initialYAxis.key);
 
   const xAxisOptions = availableColumns.filter((col) => !isDepthColumn(col));
+
+  // Get the current y-axis column
+  const currentYAxis =
+    yAxisOptions.find((opt) => opt.key === selectedYAxis) ?? initialYAxis;
+
+  // Determine if we should reverse the y-axis
+  // Elevation should NOT be reversed (positive up), depth should be reversed (positive down)
+  const isElevation = selectedYAxis === "elevation";
 
   return (
     <div className="bg-white border border-gray-300 rounded-lg shadow-sm p-6">
@@ -50,7 +74,7 @@ export function CptPlots({
           <Label className="block text-sm font-medium text-gray-700 mb-2">
             Columns
           </Label>
-          <div className="flex gap-x-1">
+          <div className="flex flex-wrap gap-x-4 gapy-y-1">
             {xAxisOptions.map((x) => (
               <Checkbox
                 key={x.key}
@@ -60,7 +84,7 @@ export function CptPlots({
                 <div className="w-4 h-4 border-2 border-gray-300 rounded flex items-center justify-center group-data-[selected]:bg-blue-600 group-data-[selected]:border-blue-600 transition-colors">
                   <svg
                     viewBox="0 0 18 18"
-                    className="w-3 h-3 fill-none stroke-white stroke-2 opacity-0 group-data-[selected]:opacity-100"
+                    className="w-3 h-3 fill-none stroke-white stroke-2 opacity-0 group-data-selected:opacity-100"
                   >
                     <polyline points="1 9 7 14 15 4" />
                   </svg>
@@ -75,11 +99,37 @@ export function CptPlots({
 
         <div className="flex-1">
           <span className="block text-sm font-medium text-gray-700 mb-1">
-            Y-Axis (Vertical - Depth)
+            Y-Axis (Vertical)
           </span>
-          <div className="px-3 py-2 bg-gray-50 border border-gray-300 rounded-md text-sm text-gray-700">
-            {yAxis.name} ({yAxis.unit})
-          </div>
+          {yAxisOptions.length > 1 ? (
+            <Select
+              value={selectedYAxis}
+              onChange={(key) => { setSelectedYAxis(key as string); }}
+              className="w-full"
+            >
+              <Button className="w-full px-3 py-2 bg-white border border-gray-300 rounded-md text-sm text-gray-700 text-left flex justify-between items-center hover:bg-gray-50">
+                <SelectValue />
+                <span aria-hidden="true">▼</span>
+              </Button>
+              <Popover className="w-[--trigger-width] bg-white border border-gray-300 rounded-md shadow-lg">
+                <ListBox className="max-h-60 overflow-auto p-1">
+                  {yAxisOptions.map((opt) => (
+                    <ListBoxItem
+                      key={opt.key}
+                      id={opt.key}
+                      className="px-3 py-2 text-sm text-gray-700 cursor-pointer hover:bg-blue-50 rounded data-selected:bg-blue-100"
+                    >
+                      {opt.name} ({opt.unit})
+                    </ListBoxItem>
+                  ))}
+                </ListBox>
+              </Popover>
+            </Select>
+          ) : (
+            <div className="px-3 py-2 bg-gray-50 border border-gray-300 rounded-md text-sm text-gray-700">
+              {currentYAxis.name} ({currentYAxis.unit})
+            </div>
+          )}
         </div>
       </div>
 
@@ -89,20 +139,35 @@ export function CptPlots({
 
           if (!xAxis) return null;
 
+          const plotId = `cpt-plot-${k}`;
           return (
-            <CptPlot
-              key={k}
-              data={data}
-              height={height}
-              width={width}
-              yAxis={yAxis}
-              xAxis={xAxis}
-            />
+            <div key={`${k}-${selectedYAxis}`} className="flex flex-col items-center">
+              <CptPlot
+                plotId={plotId}
+                data={data}
+                height={height}
+                width={width}
+                yAxis={currentYAxis}
+                xAxis={xAxis}
+                reverseY={!isElevation}
+              />
+              <PlotDownloadButtons plotId={plotId} filename={`${baseFilename}-${xAxis.name}`} />
+            </div>
           );
         })}
       </div>
     </div>
   );
+}
+
+interface CptPlotInternalProps {
+  data: Array<Record<string, number>>;
+  xAxis: Column;
+  yAxis: Column;
+  width: number;
+  height: number;
+  reverseY?: boolean;
+  plotId: string;
 }
 
 function CptPlot({
@@ -111,7 +176,9 @@ function CptPlot({
   xAxis,
   yAxis,
   data,
-}: Omit<CptPlotProps, "availableColumns">) {
+  reverseY = true,
+  plotId,
+}: CptPlotInternalProps) {
   const containerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -128,7 +195,7 @@ function CptPlot({
       },
       y: {
         grid: true,
-        reverse: true,
+        reverse: reverseY,
         label: `${yAxis.name} (${yAxis.unit})`,
       },
       marks: [
@@ -149,7 +216,7 @@ function CptPlot({
     return () => {
       plot.remove();
     };
-  }, [data, xAxis, yAxis, width, height]);
+  }, [data, xAxis, yAxis, width, height, reverseY]);
 
-  return <div ref={containerRef}></div>;
+  return <div id={plotId} ref={containerRef}></div>;
 }

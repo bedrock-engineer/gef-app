@@ -1,17 +1,27 @@
 import * as Plot from "@observablehq/plot";
+import { max, min } from "d3-array";
 import { useEffect, useRef } from "react";
-import type { BoreLayer } from "~/util/gef-bore-schemas";
+import type { BoreLayer, BoreSpecimen } from "~/util/gef-bore-schemas";
 import { getSoilColor } from "~/util/gef-bore-schemas";
+import { PlotDownloadButtons } from "./PlotDownload";
 
 interface BorePlotProps {
   layers: Array<BoreLayer>;
+  specimens?: Array<BoreSpecimen>;
   width?: number;
   height?: number;
+  baseFilename: string;
 }
 
 const MIN_LAYER_HEIGHT_PX = 15; // minimum pixel height to show label
 
-export function BorePlot({ layers, width = 150, height = 800 }: BorePlotProps) {
+export function BorePlot({
+  layers,
+  specimens = [],
+  width = 150,
+  height = 800,
+  baseFilename,
+}: BorePlotProps) {
   const containerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -20,8 +30,8 @@ export function BorePlot({ layers, width = 150, height = 800 }: BorePlotProps) {
     }
 
     // Calculate the depth range and pixels per meter
-    const minDepth = Math.min(...layers.map(l => l.depthTop));
-    const maxDepth = Math.max(...layers.map(l => l.depthBottom));
+    const minDepth = min(layers.map((l) => l.depthTop));
+    const maxDepth = max(layers.map((l) => l.depthBottom));
     const depthRange = maxDepth - minDepth;
     const plotHeight = height - 30 - 40; // subtract margins
     const pixelsPerMeter = plotHeight / depthRange;
@@ -35,7 +45,7 @@ export function BorePlot({ layers, width = 150, height = 800 }: BorePlotProps) {
 
     const plot = Plot.plot({
       style: {
-        overflow: "visible"
+        overflow: "visible",
       },
       width,
       height,
@@ -64,7 +74,9 @@ export function BorePlot({ layers, width = 150, height = 800 }: BorePlotProps) {
           strokeWidth: 0.5,
           title: (d: BoreLayer) => {
             const codes = [d.soilCode, ...d.additionalCodes].join(" ");
-            let tooltip = `${d.depthTop.toFixed(2)} – ${d.depthBottom.toFixed(2)} m\n${codes}`;
+            let tooltip = `${d.depthTop.toFixed(2)} – ${d.depthBottom.toFixed(
+              2
+            )} m\n${codes}`;
             if (d.description) {
               tooltip += `\n${d.description}`;
             }
@@ -73,17 +85,36 @@ export function BorePlot({ layers, width = 150, height = 800 }: BorePlotProps) {
           tip: true,
         }),
         // Soil code labels for layers tall enough in pixels
-        Plot.text(
-          layersWithLabels,
-          {
-            x: 0.5,
-            y: (d: BoreLayer) => d.depthTop + (d.depthBottom - d.depthTop) / 2,
-            text: (d: BoreLayer) => d.soilCode,
-            fill: "black",
-            fontSize: 10,
-            textAnchor: "middle",
-          }
-        ),
+        Plot.text(layersWithLabels, {
+          x: 0.5,
+          y: (d: BoreLayer) => d.depthTop + (d.depthBottom - d.depthTop) / 2,
+          text: (d: BoreLayer) => d.soilCode,
+          fill: "black",
+          fontSize: 10,
+          textAnchor: "middle",
+        }),
+        // Specimen markers (triangles on the right edge)
+        ...(specimens.length > 0
+          ? [
+              Plot.dot(specimens, {
+                x: 0.9,
+                y: (d: BoreSpecimen) =>
+                  d.depthTop + (d.depthBottom - d.depthTop) / 2,
+                fill: "#e11d48",
+                r: 4,
+                symbol: "triangle",
+                title: (d: BoreSpecimen) =>
+                  `Monster ${d.specimenNumber}${
+                    d.monstercode ? ` (${d.monstercode})` : ""
+                  }\n` +
+                  `${d.depthTop.toFixed(2)} – ${d.depthBottom.toFixed(2)} m\n` +
+                  `${d.geroerdOngeroerd ?? ""} ${
+                    d.monstersteekapparaat ?? ""
+                  } ${d.monstermethode ?? ""}`.trim(),
+                tip: true,
+              }),
+            ]
+          : []),
         Plot.frame(),
       ],
     });
@@ -94,14 +125,15 @@ export function BorePlot({ layers, width = 150, height = 800 }: BorePlotProps) {
     return () => {
       plot.remove();
     };
-  }, [layers, width, height]);
+  }, [layers, specimens, width, height]);
 
   return (
     <div className="bg-white border border-gray-300 rounded-lg shadow-sm p-6">
       <h3 className="text-lg font-semibold mb-4">Boorstaat</h3>
       <div className="flex justify-center">
-        <div ref={containerRef}></div>
+        <div id="bore-plot" ref={containerRef}></div>
       </div>
+      <PlotDownloadButtons plotId="bore-plot" filename={`${baseFilename}-boorstaat`} />
       <div className="mt-4">
         <h4 className="text-sm font-medium text-gray-700 mb-2">Legend</h4>
         <div className="flex flex-wrap gap-2 text-xs">

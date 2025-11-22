@@ -1,56 +1,56 @@
+/* eslint-disable @typescript-eslint/no-non-null-assertion */
 import { z } from "zod";
 import type { GEFHeadersMap } from "./gef";
 
 const stringArray = z.array(z.string());
 
-export const COORDINATE_SYSTEMS = {
-  "31000": {
-    epsg: "EPSG:28992",
-    proj4def:
-      "+proj=sterea +lat_0=52.15616055555555 +lon_0=5.38763888888889 +k=0.9999079 +x_0=155000 +y_0=463000 +ellps=bessel +towgs84=565.417,50.3319,465.552,-0.398957,0.343988,-1.8774,4.0725 +units=m +no_defs",
-    name: "RD (Rijksdriehoekscoördinaten)",
-  },
-  "31001": {
-    epsg: "EPSG:32631", // WGS84 / UTM zone 31N
-    name: "UTM-31N",
-  },
-  "31002": {
-    epsg: "EPSG:32609", // WGS84 / UTM zone 9N
-    name: "UTM-9N",
-  },
-  "32000": {
-    epsg: "EPSG:31370", // Belgian Lambert 72
-    name: "Belgian Lambert 72",
-  },
-  "49000": {
-    epsg: "EPSG:31467", // DHDN / 3-degree Gauss-Krüger zone 3
-    name: "Gauss-Krüger",
-  },
-} as const;
-
-const coordinateSystemCodeSchema = z.enum([
+const coordinateSystemCodes = [
   "31000",
   "31001",
   "31002",
   "32000",
   "49000",
-] as const);
+] as const;
+
+export const COORDINATE_SYSTEMS = {
+  [coordinateSystemCodes[0]]: {
+    epsg: "EPSG:28992",
+    proj4def:
+      "+proj=sterea +lat_0=52.15616055555555 +lon_0=5.38763888888889 +k=0.9999079 +x_0=155000 +y_0=463000 +ellps=bessel +towgs84=565.417,50.3319,465.552,-0.398957,0.343988,-1.8774,4.0725 +units=m +no_defs",
+    name: "RD (Rijksdriehoekscoördinaten)",
+  },
+  [coordinateSystemCodes[1]]: {
+    epsg: "EPSG:32631", // WGS84 / UTM zone 31N
+    name: "UTM-31N",
+  },
+  [coordinateSystemCodes[2]]: {
+    epsg: "EPSG:32609", // WGS84 / UTM zone 9N
+    name: "UTM-9N",
+  },
+  [coordinateSystemCodes[3]]: {
+    epsg: "EPSG:31370", // Belgian Lambert 72
+    name: "Belgian Lambert 72",
+  },
+  [coordinateSystemCodes[4]]: {
+    epsg: "EPSG:31467", // DHDN / 3-degree Gauss-Krüger zone 3
+    name: "Gauss-Krüger",
+  },
+} as const;
+
+const coordinateSystemCodeSchema = z.enum(coordinateSystemCodes);
 
 export type CoordinateSystemCode = z.infer<typeof coordinateSystemCodeSchema>;
 
+const heightSystemCodes = ["31000", "32000", "32001", "49000"] as const;
+
 export const HEIGHT_SYSTEM_MAP = {
-  "31000": "NAP",
-  "32000": "Ostend",
-  "32001": "TAW",
-  "49000": "NN",
+  [heightSystemCodes[0]]: "NAP",
+  [heightSystemCodes[1]]: "Ostend",
+  [heightSystemCodes[2]]: "TAW",
+  [heightSystemCodes[3]]: "NN",
 } as const;
 
-const heightSystemCodeSchema = z.enum([
-  "31000",
-  "32000",
-  "32001",
-  "49000",
-] as const);
+const heightSystemCodeSchema = z.enum(heightSystemCodes);
 
 export type HeightSystemCode = z.infer<typeof heightSystemCodeSchema>;
 
@@ -76,10 +76,18 @@ export const xyidSchema = z
     z
       .object({
         coordinateSystem: coordinateSystemCodeSchema.catch("31000"),
-        x: z.number(),
-        y: z.number(),
-        deltaX: z.number().nonnegative(),
-        deltaY: z.number().nonnegative(),
+        x: z.number({
+          message: "X coordinate must be a valid number",
+        }),
+        y: z.number({
+          message: "Y coordinate must be a valid number",
+        }),
+        deltaX: z.number().nonnegative({
+          message: "X uncertainty (deltaX) must be a non-negative number",
+        }),
+        deltaY: z.number().nonnegative({
+          message: "Y uncertainty (deltaY) must be a non-negative number",
+        }),
       })
       .nullable()
   );
@@ -89,17 +97,24 @@ export type XYID = z.infer<typeof xyidSchema>;
 // ZID - Height Reference System
 export const zidSchema = z
   .array(z.string())
-  .min(2)
+  .min(1, {
+    message:
+      "#ZID must have at least 1 value: height system code (e.g., 31000, -3.75)",
+  })
   .transform((arr) => ({
     code: arr[0]!,
-    height: parseFloat(arr[1]!),
+    height: arr[1] ? parseFloat(arr[1]) : 0,
     deltaZ: arr[2] ? parseFloat(arr[2]) : 0.01,
   }))
   .pipe(
     z.object({
-      code: heightSystemCodeSchema,
-      height: z.number(),
-      deltaZ: z.number().nonnegative(),
+      code: heightSystemCodeSchema.catch("31000"),
+      height: z.number({
+        message: "Surface elevation must be a valid number",
+      }),
+      deltaZ: z.number().nonnegative({
+        message: "Height uncertainty (deltaZ) must be a non-negative number",
+      }),
     })
   );
 
@@ -110,7 +125,9 @@ export type ZID = z.infer<typeof zidSchema>;
 // ============================================================================
 
 export const gefIdSchema = z
-  .tuple([z.string(), z.string(), z.string()])
+  .tuple([z.string(), z.string(), z.string()], {
+    message: "#GEFID must have 3 values: major, minor, patch (e.g., 1, 1, 0)",
+  })
   .transform(([major, minor, patch]) => ({
     major: parseInt(major),
     minor: parseInt(minor),
@@ -154,7 +171,9 @@ export type ReportCode = z.infer<typeof reportCodeSchema>;
 // ============================================================================
 
 export const dateSchema = z
-  .tuple([z.string(), z.string(), z.string()])
+  .tuple([z.string(), z.string(), z.string()], {
+    message: "Date must have 3 values: year, month, day (e.g., 2024, 1, 15)",
+  })
   .transform(([year, month, day]) => ({
     year: parseInt(year),
     month: parseInt(month),
@@ -162,16 +181,26 @@ export const dateSchema = z
   }))
   .pipe(
     z.object({
-      year: z.number().int(),
-      month: z.number().int().min(1).max(12),
-      day: z.number().int().min(1).max(31),
+      year: z.number().int({ message: "Year must be a whole number" }),
+      month: z
+        .number()
+        .int()
+        .min(1, { message: "Month must be between 1 and 12" })
+        .max(12, { message: "Month must be between 1 and 12" }),
+      day: z
+        .number()
+        .int()
+        .min(1, { message: "Day must be between 1 and 31" })
+        .max(31, { message: "Day must be between 1 and 31" }),
     })
   );
 
 export type GefDate = z.infer<typeof dateSchema>;
 
 export const timeSchema = z
-  .tuple([z.string(), z.string(), z.string()])
+  .tuple([z.string(), z.string(), z.string()], {
+    message: "Time must have 3 values: hour, minute, second (e.g., 14, 30, 0)",
+  })
   .transform(([hour, minute, second]) => {
     // Handle placeholder values like "-" which are used when time is unknown
     if (hour === "-" || minute === "-" || second === "-") {
@@ -186,9 +215,21 @@ export const timeSchema = z
   .pipe(
     z
       .object({
-        hour: z.number().int().min(0).max(23),
-        minute: z.number().int().min(0).max(59),
-        second: z.number().int().min(0).max(59),
+        hour: z
+          .number()
+          .int()
+          .min(0, { message: "Hour must be between 0 and 23" })
+          .max(23, { message: "Hour must be between 0 and 23" }),
+        minute: z
+          .number()
+          .int()
+          .min(0, { message: "Minute must be between 0 and 59" })
+          .max(59, { message: "Minute must be between 0 and 59" }),
+        second: z
+          .number()
+          .int()
+          .min(0, { message: "Second must be between 0 and 59" })
+          .max(59, { message: "Second must be between 0 and 59" }),
       })
       .nullable()
   );
@@ -206,24 +247,26 @@ export const companyIdSchema = z
 export type CompanyId = z.infer<typeof companyIdSchema>;
 
 export const columnInfoSchema = z
-  .tuple([
-    z.string(), // column number
-    z.string(), // unit
-    z.string(), // name/description
-    z.string(), // quantity number
-  ])
-  .transform(([colNum, unit, name, quantityNumber]) => ({
-    colNum: parseInt(colNum),
-    unit,
-    name,
-    quantityNumber: parseInt(quantityNumber),
+  .array(z.string())
+  .min(3, {
+    message:
+      "#COLUMNINFO must have at least 3 values: column number, unit, name (e.g., 1, m, depth)",
+  })
+  .transform((arr) => ({
+    colNum: parseInt(arr[0]!), // column number
+    unit: arr[1]!, // unit
+    name: arr[2]!, // name/description
+    quantityNumber: parseInt(arr[3] ?? "0"), // quantity number (optional, default 0)
   }))
   .pipe(
     z.object({
-      colNum: z.number().int().positive(),
+      colNum: z
+        .number()
+        .int()
+        .positive({ message: "Column number must be a positive integer" }),
       unit: z.string(),
       name: z.string(),
-      quantityNumber: z.number().int().min(1),
+      quantityNumber: z.number().int().min(0),
     })
   );
 
@@ -265,6 +308,46 @@ export const measurementTextSchema = z
   );
 
 export type MeasurementText = z.infer<typeof measurementTextSchema>;
+
+// SPECIMENVAR schema - same structure as MEASUREMENTVAR
+export const specimenVarSchema = z
+  .array(z.string())
+  .min(2)
+  .transform((arr) => ({
+    id: parseInt(arr[0] ?? "0"),
+    value: parseFloat(arr[1] ?? "—"),
+    unit: arr[2] ?? "-",
+    description: arr[3] ?? "",
+  }))
+  .pipe(
+    z.object({
+      id: z.number().int().min(1).max(1410),
+      value: z.number(),
+      unit: z.string(),
+      description: z.string(),
+    })
+  );
+
+export type SpecimenVar = z.infer<typeof specimenVarSchema>;
+
+// SPECIMENTEXT schema - same structure as MEASUREMENTTEXT
+export const specimenTextSchema = z
+  .array(z.string())
+  .min(2)
+  .transform((arr) => ({
+    id: arr[0] ? parseInt(arr[0]) : -1,
+    text: arr[1] ?? "",
+    extra: arr.slice(2),
+  }))
+  .pipe(
+    z.object({
+      id: z.number().int().min(1).max(1410),
+      text: z.string(),
+      extra: z.array(z.string()),
+    })
+  );
+
+export type SpecimenText = z.infer<typeof specimenTextSchema>;
 
 export const gefHeadersSchema = z.object({
   // Project Information
@@ -310,7 +393,7 @@ export const gefHeadersSchema = z.object({
       return parsed ?? undefined;
     }),
   ZID: z
-    .array(z.array(z.string()).min(2))
+    .array(z.array(z.string()).min(1))
     .optional()
     .transform((arr) => (arr?.[0] ? zidSchema.parse(arr[0]) : undefined)),
 
@@ -332,7 +415,7 @@ export const gefHeadersSchema = z.object({
     .optional()
     .transform((arr) => arr?.[0]?.[0]),
   COLUMNINFO: z
-    .array(z.tuple([z.string(), z.string(), z.string(), z.string()]))
+    .array(z.array(z.string()).min(3))
     .optional()
     .transform((arr) => arr?.map((col) => columnInfoSchema.parse(col))),
   COLUMNVOID: z
@@ -340,6 +423,12 @@ export const gefHeadersSchema = z.object({
     .optional()
     .transform((arr) =>
       arr?.map(([columnNumber, voidValue]) => ({ columnNumber, voidValue }))
+    ),
+  COLUMNMINMAX: z
+    .array(z.tuple([z.coerce.number(), z.coerce.number(), z.coerce.number()]))
+    .optional()
+    .transform((arr) =>
+      arr?.map(([columnNumber, min, max]) => ({ columnNumber, min, max }))
     ),
 
   // Measurement Data
@@ -358,6 +447,16 @@ export const gefHeadersSchema = z.object({
     .array(z.array(z.string()).min(2))
     .optional()
     .transform((arr) => arr?.map((mt) => measurementTextSchema.parse(mt))),
+
+  // Specimen Data (for GEF-BORE files)
+  SPECIMENVAR: z
+    .array(z.array(z.string()).min(2))
+    .optional()
+    .transform((arr) => arr?.map((sv) => specimenVarSchema.parse(sv))),
+  SPECIMENTEXT: z
+    .array(z.array(z.string()).min(2))
+    .optional()
+    .transform((arr) => arr?.map((st) => specimenTextSchema.parse(st))),
 
   // File Metadata
   GEFID: z
@@ -378,6 +477,14 @@ export const gefHeadersSchema = z.object({
     .array(stringArray)
     .optional()
     .transform((arr) => arr?.[0]?.[0]),
+
+  // Unofficial but common - free-form comments
+  COMMENT: z
+    .array(stringArray)
+    .optional()
+    .transform((arr) =>
+      arr?.map((c) => c.join(", ")).filter((c) => c.length > 0)
+    ),
 });
 
 export type GefHeaders = z.infer<typeof gefHeadersSchema>;

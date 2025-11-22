@@ -1,0 +1,213 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<!--
+
+
+    Copyright 2012-2017 TNO Geologische Dienst Nederland
+
+    Licensed under the EUPL, Version 1.2 or - as soon they will be approved by
+    the European Commission - subsequent versions of the EUPL (the "Licence");
+    You may not use this work except in compliance with the Licence.
+    You may obtain a copy of the Licence at:
+
+    https://joinup.ec.europa.eu/software/page/eupl
+
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the Licence is distributed on an "AS IS" basis,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    See the Licence for the specific language governing permissions and
+    limitations under the Licence.
+
+    This work was sponsored by the Dutch Rijksoverheid, Basisregistratie
+    Ondergrond (BRO) Programme (https://bro.pleio.nl/)
+
+-->
+<ns3:ConePenetrationTestSurvey ns1:id="cptsurvey-id-627a8745-baa1-436d-bca3-ba78366d9f13" xmlns:ns2="http://www.w3.org/1999/xlink" xmlns:ns1="http://www.opengis.net/gml/3.2" xmlns:ns4="http://www.broservices.nl/xsd/imbro/common/1.3.3" xmlns:ns3="http://www.broservices.nl/xsd/imbro-cpt/1.4.0" xmlns:ns9="http://www.isotc211.org/2005/gts" xmlns:ns5="http://www.opengis.net/sampling/2.0" xmlns:ns6="http://www.opengis.net/om/2.0" xmlns:ns10="http://www.opengis.net/swe/2.0" xmlns:ns7="http://www.isotc211.org/2005/gco" xmlns:ns8="http://www.isotc211.org/2005/gmd">
+    <ns1:boundedBy xsi:nil="true" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"/>
+    <ns3:responsibleParty>
+        <ns4:OIN>1234 9999</ns4:OIN>
+    </ns3:responsibleParty>
+    <ns3:qualityRegime codeSpace="urn:bro:Kwaliteitsregime">IMBRO/A</ns3:qualityRegime>
+    <ns3:reasonProvided codeSpace="urn:bro:KaderAanlevering">OVE</ns3:reasonProvided>
+    <ns3:reportDate>2014-04-28+02:00</ns3:reportDate>
+    <ns3:operator>onbekend</ns3:operator>
+    <ns3:norm codeSpace="urn:bro-cpt:Sondeernorm">NEN5140</ns3:norm>
+    <ns3:visualSurveyPerformed ns2:type="simple">
+        <ns1:Boolean>false</ns1:Boolean>
+    </ns3:visualSurveyPerformed>
+    <ns3:reasonSurveyed codeSpace="urn:bro-cpt:KaderInwinning">bwAlgemeen</ns3:reasonSurveyed>
+    <ns3:objectIDResponsibleParty>VIX-00VIX-00VIX-00VIX-00VIX-00VIX-001</ns3:objectIDResponsibleParty>
+    <ns3:reportedPosition>
+        <ns3:location>
+            <ns3:x_coordinate>10.0</ns3:x_coordinate>
+            <ns3:y_coordinate>701.0</ns3:y_coordinate>
+        </ns3:location>
+        <ns3:verticalOffset uom="m">6</ns3:verticalOffset>
+        <ns3:horizontalReference codeSpace="urn:bro-cpt:HorizontaalReferentiestelsel">RD</ns3:horizontalReference>
+        <ns3:localVerticalReference codeSpace="urn:bro:LokaalVerticaalReferentiepunt">maaiveld</ns3:localVerticalReference>
+        <ns3:verticalReference codeSpace="urn:bro:VerticaalReferentievlak">NAP</ns3:verticalReference>
+        <ns3:horizontalPositioningMethod codeSpace="urn:bro-cpt:MethodeHorizontalePlaatsbepaling">LMETN</ns3:horizontalPositioningMethod>
+        <ns3:verticalPositioningMethod codeSpace="urn:bro-cpt:MethodeVerticalePlaatsbepaling">METN</ns3:verticalPositioningMethod>
+        <ns3:horizontalPositioningAccuracy uom="m">0.123</ns3:horizontalPositioningAccuracy>
+        <ns3:verticalPositioningAccuracy uom="m">0.2</ns3:verticalPositioningAccuracy>
+        <ns3:horizontalPositioningDate>2014-02-01+01:00</ns3:horizontalPositioningDate>
+        <ns3:verticalPositioningDate>2014-04-01+02:00</ns3:verticalPositioningDate>
+        <ns3:horizontalPositioningResponsibleParty>onbekend</ns3:horizontalPositioningResponsibleParty>
+        <ns3:verticalPositioningResponsibleParty>onbekend</ns3:verticalPositioningResponsibleParty>
+    </ns3:reportedPosition>
+    <ns3:visualSurvey>
+        <ns3:surveyDate>2014-04-07T00:00:00.000+02:00</ns3:surveyDate>
+        <ns3:conditions>LEKKER WEER</ns3:conditions>
+        <ns3:surfaceDescription>AAP NOOTAAP NOOTAAP NOOT</ns3:surfaceDescription>
+        <ns3:groundWaterLevel uom="m">13.1</ns3:groundWaterLevel>
+        <ns3:removedlayer>
+            <ns3:sequenceNumber>2</ns3:sequenceNumber>
+            <ns3:topDepth uom="m">12</ns3:topDepth>
+            <ns3:bottomDepth uom="m">20</ns3:bottomDepth>
+            <ns3:description>MIESMIESMIES</ns3:description>
+        </ns3:removedlayer>
+        <ns3:removedlayer>
+            <ns3:sequenceNumber>1</ns3:sequenceNumber>
+            <ns3:topDepth uom="m">0</ns3:topDepth>
+            <ns3:bottomDepth uom="m">12</ns3:bottomDepth>
+            <ns3:description>WEG</ns3:description>
+        </ns3:removedlayer>
+    </ns3:visualSurvey>
+    <ns3:coneSurvey ns1:id="cone-id-502505c7-7447-4b35-9aec-06c2a0cd5ce1">
+        <ns1:boundedBy xsi:nil="true" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"/>
+        <ns5:sampledFeature xsi:nil="true" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"/>
+        <ns3:lastModificationDate>2014-04-07+02:00</ns3:lastModificationDate>
+        <ns3:class codeSpace="urn:bro-cpt:Sondeerklasse">klasse1</ns3:class>
+        <ns3:method codeSpace="urn:bro-cpt:Sondeermethode">elektrischContinu</ns3:method>
+        <ns3:stopCriterion codeSpace="urn:bro-cpt:Stopcriterium">conusweerstand</ns3:stopCriterion>
+        <ns3:surveyType codeSpace="urn:bro-cpt:TypeSondeonderzoek">cpTestKleefDis</ns3:surveyType>
+        <ns3:sensorAzimuth uom="deg">359</ns3:sensorAzimuth>
+        <ns3:coneTrajectory>
+            <ns3:preDrilledDepth uom="m">0</ns3:preDrilledDepth>
+            <ns3:endDepth uom="m">10</ns3:endDepth>
+        </ns3:coneTrajectory>
+        <ns3:cptCone>
+            <ns3:description>dit is een conedit is een conedit is een conedit is een cone</ns3:description>
+            <ns3:coneType>Vix cone type&gt;Vix cone type</ns3:coneType>
+            <ns3:coneSurfaceArea uom="mm2">25</ns3:coneSurfaceArea>
+            <ns3:coneDiameter uom="mm">8</ns3:coneDiameter>
+            <ns3:coneSurfaceQuotient uom="1">0.2</ns3:coneSurfaceQuotient>
+            <ns3:coneToFrictionJacketDistance uom="mm">1</ns3:coneToFrictionJacketDistance>
+            <ns3:frictionJacketSurfaceArea uom="mm2">230</ns3:frictionJacketSurfaceArea>
+            <ns3:frictionJacketSurfaceQuotient uom="1">1</ns3:frictionJacketSurfaceQuotient>
+            <ns3:baselineMeasure>
+                <ns3:coneResistanceBefore uom="MPa">1</ns3:coneResistanceBefore>
+                <ns3:coneResistanceAfter uom="MPa">1</ns3:coneResistanceAfter>
+                <ns3:electricalConductivityBefore uom="S/m">1</ns3:electricalConductivityBefore>
+                <ns3:electricalConductivityAfter uom="S/m">1</ns3:electricalConductivityAfter>
+                <ns3:inclinationEWBefore uom="deg">1</ns3:inclinationEWBefore>
+                <ns3:inclinationEWAfter uom="deg">1</ns3:inclinationEWAfter>
+                <ns3:inclinationNSBefore uom="deg">1</ns3:inclinationNSBefore>
+                <ns3:inclinationNSAfter uom="deg">1</ns3:inclinationNSAfter>
+                <ns3:frictionBefore uom="MPa">1</ns3:frictionBefore>
+                <ns3:frictionAfter uom="MPa">1</ns3:frictionAfter>
+                <ns3:porePressureU1Before uom="MPa">1</ns3:porePressureU1Before>
+                <ns3:porePressureU1After uom="MPa">1</ns3:porePressureU1After>
+                <ns3:porePressureU2Before uom="MPa">1</ns3:porePressureU2Before>
+                <ns3:porePressureU2After uom="MPa">1</ns3:porePressureU2After>
+                <ns3:porePressureU3Before uom="MPa">1</ns3:porePressureU3Before>
+                <ns3:porePressureU3After uom="MPa">1</ns3:porePressureU3After>
+            </ns3:baselineMeasure>
+        </ns3:cptCone>
+        <ns3:conePenetrationTest ns1:id="cptest-id-f320c7f5-a334-466c-90bd-a31246fdd598">
+            <ns1:boundedBy xsi:nil="true" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"/>
+            <ns6:phenomenonTime ns2:type="simple">
+                <ns1:TimeInstant ns1:id="timeobjectid338dd56f-69a2-4b4e-9db8-b08640a75db8">
+                    <ns1:timePosition>2014-04-23T13:36:09.000+02:00</ns1:timePosition>
+                </ns1:TimeInstant>
+            </ns6:phenomenonTime>
+            <ns6:resultTime ns2:type="simple">
+                <ns1:TimeInstant ns1:id="timeinstantida80e15e8-b9d8-4e41-b256-e2a1d267650d">
+                    <ns1:timePosition>2014-04-23T13:36:09.000+02:00</ns1:timePosition>
+                </ns1:TimeInstant>
+            </ns6:resultTime>
+            <ns6:procedure xsi:nil="true" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"/>
+            <ns6:observedProperty xsi:nil="true" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"/>
+            <ns6:featureOfInterest xsi:nil="true" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"/>
+            <ns6:result xsi:type="ns3:ConePenetrationTestResultType" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+                <ns10:elementCount ns2:type="simple"/>
+                <ns10:elementType name="CPTTestResultRecord" ns2:type="simple" ns2:href="http://www.broservices.nl/imbro-cpt/1.4.0/cpttestresult_record.xml"/>
+                <ns10:encoding>
+                    <ns10:TextEncoding decimalSeparator="." tokenSeparator="," blockSeparator="
+"/>
+                </ns10:encoding>
+                <ns3:values>1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1
+1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1
+1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1
+</ns3:values>
+            </ns6:result>
+        </ns3:conePenetrationTest>
+        <ns3:dissipationTest ns1:id="distest-id-c7babd78-fcd8-42a3-bf90-72919e3d5479">
+            <ns1:boundedBy xsi:nil="true" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"/>
+            <ns6:phenomenonTime ns2:type="simple">
+                <ns1:TimeInstant ns1:id="timeobjectidccb2ec4c-1f4e-4825-a253-4c4012fbc63a">
+                    <ns1:timePosition>2014-04-23T13:36:09.000+02:00</ns1:timePosition>
+                </ns1:TimeInstant>
+            </ns6:phenomenonTime>
+            <ns6:resultTime ns2:type="simple">
+                <ns1:TimeInstant ns1:id="timeinstantidda8b0655-e2e7-429a-87d6-e8d38da3e60a">
+                    <ns1:timePosition>2014-04-23T13:36:09.000+02:00</ns1:timePosition>
+                </ns1:TimeInstant>
+            </ns6:resultTime>
+            <ns6:procedure xsi:nil="true" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"/>
+            <ns6:observedProperty xsi:nil="true" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"/>
+            <ns6:featureOfInterest xsi:nil="true" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"/>
+            <ns6:result xsi:type="ns3:DissipationTestResultType" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+                <ns10:elementCount ns2:type="simple"/>
+                <ns10:elementType name="CPTTestResultRecord" ns2:type="simple" ns2:href="http://www.broservices.nl/imbro-cpt/1.4.0/cpttestresult_record.xml"/>
+                <ns10:encoding>
+                    <ns10:TextEncoding decimalSeparator="." tokenSeparator="," blockSeparator="
+"/>
+                </ns10:encoding>
+                <ns3:values>0,1,1,1,1
+0,1,1,1,1
+0,1,1,1,1
+</ns3:values>
+            </ns6:result>
+            <ns3:penetrationLength uom="m">0.123</ns3:penetrationLength>
+        </ns3:dissipationTest>
+        <ns3:procedure ns1:id="procedure-id-7d2abc2f-b614-429c-8d84-16fd1fa79eea">
+            <ns1:boundedBy xsi:nil="true" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"/>
+            <ns3:interruptionCorrectionPerformed ns2:type="simple">
+                <ns1:Boolean>false</ns1:Boolean>
+            </ns3:interruptionCorrectionPerformed>
+            <ns3:expertJudgementPerformed ns2:type="simple">
+                <ns1:Boolean>false</ns1:Boolean>
+            </ns3:expertJudgementPerformed>
+            <ns3:signalProcessingPerformed ns2:type="simple">
+                <ns1:Boolean>false</ns1:Boolean>
+            </ns3:signalProcessingPerformed>
+        </ns3:procedure>
+        <ns3:parameterAccuracies>
+            <ns3:penetrationLength uom="m">1</ns3:penetrationLength>
+            <ns3:depth uom="m">1</ns3:depth>
+            <ns3:timeElapsed uom="s">1</ns3:timeElapsed>
+            <ns3:coneResistance uom="MPa">1</ns3:coneResistance>
+            <ns3:correctedConeResistance uom="MPa">1</ns3:correctedConeResistance>
+            <ns3:netConeResistance uom="MPa">1</ns3:netConeResistance>
+            <ns3:magneticFieldStrengthX uom="nT">1</ns3:magneticFieldStrengthX>
+            <ns3:magneticFieldStrengthY uom="nT">1</ns3:magneticFieldStrengthY>
+            <ns3:magneticFieldStrengthZ uom="nT">1</ns3:magneticFieldStrengthZ>
+            <ns3:magneticFieldStrengthTotal uom="nT">1</ns3:magneticFieldStrengthTotal>
+            <ns3:electricalConductivity uom="S/m">1</ns3:electricalConductivity>
+            <ns3:inclinationEW uom="deg">1</ns3:inclinationEW>
+            <ns3:inclinationNS uom="deg">1</ns3:inclinationNS>
+            <ns3:inclinationX uom="deg">1</ns3:inclinationX>
+            <ns3:inclinationY uom="deg">1</ns3:inclinationY>
+            <ns3:inclinationResultant uom="deg">1</ns3:inclinationResultant>
+            <ns3:magneticInclination uom="deg">1</ns3:magneticInclination>
+            <ns3:magneticDeclination uom="deg">1</ns3:magneticDeclination>
+            <ns3:friction uom="MPa">1</ns3:friction>
+            <ns3:poreRatio uom="1">1</ns3:poreRatio>
+            <ns3:temperature uom="degC">1</ns3:temperature>
+            <ns3:porePressureU1 uom="MPa">1</ns3:porePressureU1>
+            <ns3:porePressureU2 uom="MPa">1</ns3:porePressureU2>
+            <ns3:porePressureU3 uom="MPa">1</ns3:porePressureU3>
+            <ns3:frictionFactor uom="%">1</ns3:frictionFactor>
+        </ns3:parameterAccuracies>
+    </ns3:coneSurvey>
+</ns3:ConePenetrationTestSurvey>

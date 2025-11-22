@@ -1,0 +1,70 @@
+#GEFID= 1, 1, 0
+#FILEOWNER= BOSCHG  
+#FILEDATE= 2011,09,07
+#PROJECTID= CPT, 2110-0176-001, -
+#TESTID= DKMP-ZH31
+#PARENT= cpt2.gef, 1.50, Sondeerlengte, 1
+#COLUMN= 6
+#COLUMNINFO= 1, s, Tijd, 12
+#COLUMNINFO= 2, MPa, Conusweerstand qc, 2
+#COLUMNINFO= 3, MPa, Waterspanning u1, 5
+#COLUMNINFO= 4, MPa, Waterspanning u2, 6
+#COLUMNINFO= 5, MPa, Waterspanning u3, 7
+#COLUMNINFO= 6 , s ,time since beginning of test
+#ANALYSISTEXT= 130, F:\sonderingentest\GEF\GEF-MAX.00, oorspronkelijke UNICAS datafile
+#ANALYSISTEXT= 131, UNIPLOT    05.16.nl  , conversie programma
+#COMPANYID= Fugro Ingenieursbureau B.V., NL005621409B08, 31
+#DATAFORMAT= ASCII
+#DATATYPE= REAL8
+#COLUMNVOID= 1, -99999.000
+#COLUMNVOID= 2, -99999.000
+#COLUMNVOID= 3, -99999.00000
+#COLUMNVOID= 4, -99999.00000
+#COLUMNVOID= 5, -99999.00000
+#COLUMNVOID= 6, -99999.00000
+#LASTSCAN= 9
+#XYID= 31000,  85189.41, 464075.70,  0.03,  0.03
+#MEASUREMENTTEXT= 43, LMETZ
+#ZID= 31000,   11.71,  0.03
+#MEASUREMENTTEXT= 9, Maaiveld, vast horizontaal vlak
+#MEASUREMENTTEXT= 42, MMET
+#MEASUREMENTTEXT= 1, -, opdrachtgever
+#MEASUREMENTTEXT= 2, TUSSENCAMPAGNE 2010 DIVERSE LOCATIES NEDERLAND, projectnaam
+#MEASUREMENTTEXT= 3, WASSENAAR, plaatsnaam
+#MEASUREMENTTEXT= 4, F7.5CKEH2W1-2/B P10-1701-1713, conus type en serienummer
+#MEASUREMENTTEXT= 5, REO73/JSL/MW, sondeerapparaat/operator
+#MEASUREMENTTEXT= 6, NEN5140 Klasse 2, gevolgde norm
+#MEASUREMENTTEXT= 21, EinddiepteBereikt 
+#MEASUREMENTVAR= 1, 1500, mm2, Nom. opp. conuspunt
+#MEASUREMENTVAR= 2, 19956, mm2, Nom. opp. wrijvingsmantel
+#MEASUREMENTVAR= 3, 0.58, -, Netto oppervlaktequotient van de conuspunt
+#MEASUREMENTVAR= 4, 1.00, -, Netto oppervlaktequotient van de kleefmantel
+#MEASUREMENTVAR= 5, 138, mm, Afstand conus tot midden kleefmantel
+#MEASUREMENTVAR= 12, 0, -, electrische sondering
+#MEASUREMENTVAR= 13, 0.00, m, voorgegraven diepte
+#MEASUREMENTVAR= 14, 0.50, m, GHG
+#MEASUREMENTVAR= 20,   0.377, MPa, nulmeting conus voor sondering
+#MEASUREMENTVAR= 21,   0.361, MPa, nulmeting conus na sondering
+#MEASUREMENTVAR= 22,   0.009, MPa, nulmeting wrijving voor sondering
+#MEASUREMENTVAR= 23,   0.010, MPa, nulmeting wrijving na sondering
+#MEASUREMENTVAR= 24,   0.003, MPa, nulmeting WSM u1 voor sondering
+#MEASUREMENTVAR= 25,   0.002, MPa, nulmeting WSM u1 na sondering
+#MEASUREMENTVAR= 26,  -0.015, MPa, nulmeting WSM u2 voor sondering
+#MEASUREMENTVAR= 27,  -0.002, MPa, nulmeting WSM u2 na sondering
+#MEASUREMENTVAR= 30,   2.1, graden, nulmeting helling voor sondering
+#MEASUREMENTVAR= 31,   2.1, graden, nulmeting helling na sondering
+#TESTID= RIVZ03                                                                                              
+#REPORTCODE= GEF-DISS-Report,1,1,0
+#STARTDATE= 2011,09,01
+#STARTTIME= 11,02,50
+#OS= DOS
+#EOH=
+0.00 39.370 23894 0.23027 0.23027 0.00
+0.13 37.102 0.23637 0.23211 0.23211 0.13
+1.00 36.101 0.23496 0.23405 0.23405 1.00
+1.50 35.671 0.23392 0.23588 0.23588 1.50
+2.00 35.375 0.23295 0.23772 0.23772 2.00
+2.50 35.163 0.23215 0.23957 0.23957 2.50
+3.00 34.995 0.23130 0.24135 0.24135 3.00
+3.50 34.848 0.23052 0.24310 0.24310 3.50
+4.00 34.726 0.22977 0.24480 0.24480 4.00

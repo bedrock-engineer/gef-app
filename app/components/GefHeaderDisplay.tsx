@@ -4,18 +4,104 @@ import {
   DisclosurePanel,
   Heading,
 } from "react-aria-components";
-import { measurementTextIds, measurementVariables } from "../util/gef-metadata";
+import {
+  decodeMeasurementText,
+  detectGefExtension,
+  findMeasurementTextVariable,
+  findMeasurementVariable,
+  dutchMeasurementTextVariables,
+  dutchMeasurementVariables,
+  belgianMeasurementTextVariables,
+  belgianMeasurementVariables,
+  type GefExtension,
+} from "../util/gef-metadata";
+import {
+  findBoreMeasurementTextVariable,
+  findBoreMeasurementVariable,
+  decodeBoreMeasurementText,
+} from "../util/gef-bore-metadata";
 import {
   COORDINATE_SYSTEMS,
   HEIGHT_SYSTEM_MAP,
   type GefHeaders,
   type XYID,
 } from "../util/gef-schemas";
+import type { GefFileType } from "../util/gef";
 import type { ReactNode } from "react";
+import { CopyButton } from "./CopyButton";
+import proj4 from "proj4";
+
+// Unified lookup functions that consider file type
+function findMeasurementTextVariableByFileType(
+  id: number,
+  fileType: GefFileType,
+  extension: GefExtension
+) {
+  if (fileType === "BORE") {
+    return findBoreMeasurementTextVariable(id);
+  }
+  return findMeasurementTextVariable(id, extension);
+}
+
+function findMeasurementVariableByFileType(
+  id: number,
+  fileType: GefFileType,
+  extension: GefExtension
+) {
+  if (fileType === "BORE") {
+    return findBoreMeasurementVariable(id);
+  }
+  return findMeasurementVariable(id, extension);
+}
+
+function decodeMeasurementTextByFileType(
+  id: number,
+  text: string,
+  fileType: GefFileType,
+  extension: GefExtension
+): string {
+  if (fileType === "BORE") {
+    return decodeBoreMeasurementText(id, text);
+  }
+  return decodeMeasurementText(id, text, extension);
+}
 
 interface HeaderItem {
   label: string;
   value: React.ReactNode;
+}
+
+function convertToWGS84(
+  xyid: NonNullable<XYID>
+): { lat: number; lon: number } | null {
+  const coordSysConfig = COORDINATE_SYSTEMS[xyid.coordinateSystem];
+
+  try {
+    // Define custom projection if needed
+    if ("proj4def" in coordSysConfig) {
+      proj4.defs(coordSysConfig.epsg, coordSysConfig.proj4def);
+    }
+
+    const [lon, lat] = proj4(coordSysConfig.epsg, "EPSG:4326", [
+      xyid.x,
+      xyid.y,
+    ]);
+
+    if (
+      !Number.isFinite(lat) ||
+      !Number.isFinite(lon) ||
+      lat < -90 ||
+      lat > 90 ||
+      lon < -180 ||
+      lon > 180
+    ) {
+      return null;
+    }
+
+    return { lat, lon };
+  } catch {
+    return null;
+  }
 }
 
 function formatDate(
@@ -40,10 +126,24 @@ function formatDate(
   return dateObj.toISOString().slice(0, 10);
 }
 
+// TODO replace with d3-format formatter
+/**
+ * Format a numeric value string, removing unnecessary trailing zeros
+ * "0.000000" -> "0", "1.500000" -> "1.5", "1.234567" -> "1.235"
+ */
+function formatNumericValue(value: string): string {
+  const num = parseFloat(value);
+  if (isNaN(num)) return value;
+  // Use up to 3 decimal places, but strip trailing zeros
+  return parseFloat(num.toFixed(3)).toString();
+}
+
 // Helper function to extract MEASUREMENTTEXT items by category
 function getMeasurementTextItems(
   headers: GefHeaders,
-  categories: Array<string>
+  categories: Array<string>,
+  fileType: GefFileType,
+  extension: GefExtension
 ): Array<HeaderItem> {
   const items: Array<HeaderItem> = [];
   const measurementTexts = headers.MEASUREMENTTEXT;
@@ -51,9 +151,12 @@ function getMeasurementTextItems(
   if (!measurementTexts) return items;
 
   measurementTexts.forEach(({ id, text }) => {
-    if (!(id in measurementTextIds)) return;
-
-    const textInfo = measurementTextIds[id as keyof typeof measurementTextIds];
+    const textInfo = findMeasurementTextVariableByFileType(
+      id,
+      fileType,
+      extension
+    );
+    if (!textInfo) return;
 
     if (!text || text === "-" || text === "0") return;
 
@@ -61,17 +164,13 @@ function getMeasurementTextItems(
 
     if (!categories.includes(textInfo.category)) return;
 
-    // Decode standardized codes for coordinate methods (IDs 42 & 43)
-    let displayValue = text;
-
-    if ("standardizedCodes" in textInfo && textInfo.standardizedCodes) {
-      const decoded =
-        textInfo.standardizedCodes[
-          text as keyof typeof textInfo.standardizedCodes
-        ];
-
-      if (decoded) displayValue = `${text} (${decoded})`;
-    }
+    // Decode standardized codes
+    const displayValue = decodeMeasurementTextByFileType(
+      id,
+      text,
+      fileType,
+      extension
+    );
 
     items.push({ label: textInfo.description, value: displayValue });
   });
@@ -81,10 +180,15 @@ function getMeasurementTextItems(
 
 interface CompactHeaderProps {
   headers: GefHeaders;
+  // fileType: GefFileType;
   onDownload: () => void;
 }
 
-export function CompactGefHeader({ headers, onDownload }: CompactHeaderProps) {
+export function CompactGefHeader({
+  headers,
+  // fileType,
+  onDownload,
+}: CompactHeaderProps) {
   const testId = headers.TESTID;
   const projectId = headers.PROJECTID;
   const company = headers.COMPANYID;
@@ -94,10 +198,20 @@ export function CompactGefHeader({ headers, onDownload }: CompactHeaderProps) {
     : null;
 
   const xyid = headers.XYID;
+  const wgs84 = xyid ? convertToWGS84(xyid) : null;
 
   const zid = headers.ZID;
-  const heightSystem = zid ? HEIGHT_SYSTEM_MAP[zid.code] || zid.code : null;
-  const elevation = zid ? `${zid.height}m ${heightSystem}` : null;
+  const heightSystem = zid ? HEIGHT_SYSTEM_MAP[zid.code] : null;
+  const elevationValue = zid ? zid.height.toFixed(2) : null;
+  const elevationDisplay = zid
+    ? `${zid.height.toFixed(2)}m ${heightSystem}`
+    : null;
+
+  // Water level (MEASUREMENTVAR 42)
+  const waterLevelVar = headers.MEASUREMENTVAR?.find(({ id }) => id === 42);
+  const waterLevelValue = waterLevelVar
+    ? Number(waterLevelVar.value).toFixed(2)
+    : null;
 
   const endDepthMeasurementVar = headers.MEASUREMENTVAR?.find(
     ({ id }) => id === 16
@@ -108,10 +222,16 @@ export function CompactGefHeader({ headers, onDownload }: CompactHeaderProps) {
     <div className="bg-white border border-gray-300 rounded-lg shadow-sm p-4 mb-6">
       <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm">
         <div>
-          <div className="font-bold text-lg text-gray-900">
+          <div className="font-bold text-lg text-gray-900 flex items-center gap-1">
             {testId ?? "Unknown Test"}
+            {testId && <CopyButton value={testId} label="Copy Test ID" />}
           </div>
-          {projectId && <div className="text-gray-600">{projectId}</div>}
+          {projectId && (
+            <div className="text-gray-600 flex items-center gap-1">
+              {projectId}
+              <CopyButton value={projectId} label="Copy Project ID" />
+            </div>
+          )}
           {company && <div className="text-gray-600">{company.name}</div>}
 
           <Button
@@ -131,16 +251,65 @@ export function CompactGefHeader({ headers, onDownload }: CompactHeaderProps) {
           {dateTimeStr && (
             <>
               <dt className="text-gray-500">Date:</dt>
-              <dd>{dateTimeStr}</dd>
+              <dd className="flex items-center gap-1">
+                {dateTimeStr}
+                <CopyButton value={dateTimeStr} label="Copy Date" />
+              </dd>
             </>
           )}
 
-          {xyid && <CoordSystemDescription xyid={xyid} />}
-
-          {elevation && (
+          {xyid && (
             <>
-              <dt className="text-gray-500">Elevation:</dt>
-              <dd>{elevation}</dd>
+              <dt className="text-gray-500">Location:</dt>
+              <dd>
+                <div className="font-semibold">
+                  {COORDINATE_SYSTEMS[xyid.coordinateSystem]?.name ?? "Unknown"}{" "}
+                  ({COORDINATE_SYSTEMS[xyid.coordinateSystem]?.epsg})
+                </div>
+
+                <div className="flex items-center gap-1">
+                  {xyid.x.toFixed(2)}, {xyid.y.toFixed(2)}
+                  <CopyButton
+                    value={`${xyid.x.toFixed(2)}, ${xyid.y.toFixed(2)}`}
+                    label="Copy coordinates"
+                  />
+                </div>
+
+                {wgs84 && (
+                  <>
+                    <div className="font-semibold">WGS84</div>
+                    <div className="flex items-center gap-1">
+                      {wgs84.lat.toFixed(6)}, {wgs84.lon.toFixed(6)}
+                      <CopyButton
+                        value={`${wgs84.lat.toFixed(6)}, ${wgs84.lon.toFixed(6)}`}
+                        label="Copy WGS84 coordinates"
+                      />
+                    </div>
+                  </>
+                )}
+              </dd>
+            </>
+          )}
+
+          {elevationDisplay && (
+            <>
+              <dt className="text-gray-500">Ground level:</dt>
+              <dd className="flex items-center gap-1">
+                {elevationDisplay}
+                {elevationValue && (
+                  <CopyButton value={elevationValue} label="Copy elevation" />
+                )}
+              </dd>
+            </>
+          )}
+
+          {waterLevelValue && (
+            <>
+              <dt className="text-gray-500">Water level:</dt>
+              <dd className="flex items-center gap-1">
+                {waterLevelValue}m
+                <CopyButton value={waterLevelValue} label="Copy water level" />
+              </dd>
             </>
           )}
 
@@ -148,7 +317,8 @@ export function CompactGefHeader({ headers, onDownload }: CompactHeaderProps) {
             <>
               <dt className="text-gray-500">Depth:</dt>
               <dd>
-                {endDepthMeasurementVar.value} ({endDepthMeasurementVar.unit})
+                {Number(endDepthMeasurementVar.value).toFixed(3)} (
+                {endDepthMeasurementVar.unit})
               </dd>
             </>
           )}
@@ -167,64 +337,50 @@ export function CompactGefHeader({ headers, onDownload }: CompactHeaderProps) {
 
 interface DetailedHeaderProps {
   headers: GefHeaders;
+  fileType: GefFileType;
 }
 
-function CoordSystemDescription({ xyid }: { xyid: NonNullable<XYID> }) {
-  const coordSystemCode = xyid.coordinateSystem;
-
-  const coordSystem = COORDINATE_SYSTEMS[coordSystemCode];
-
-  return (
-    <>
-      <dt className="text-gray-500">Location:</dt>
-      <div>
-        <dd className="font-mono">
-          {coordSystem.name} ({coordSystem.epsg})
-        </dd>
-        <dd className="font-mono">
-          {xyid.x}, {xyid.y}
-        </dd>
-      </div>
-    </>
+export function DetailedGefHeaders({ headers, fileType }: DetailedHeaderProps) {
+  const extension = detectGefExtension(
+    headers.MEASUREMENTTEXT?.map((t) => t.id),
+    headers.MEASUREMENTVAR?.map((v) => v.id)
   );
-}
 
-export function DetailedGefHeaders({ headers }: DetailedHeaderProps) {
   const sections = [
     {
       id: "project",
       title: "Project Information",
-      items: getProjectInfo(headers),
+      items: getProjectInfo(headers, fileType, extension),
     },
     {
       id: "test_info",
       title: "Test Information",
-      items: getTestInfo(headers),
+      items: getTestInfo(headers, fileType, extension),
     },
     {
       id: "coordinates",
       title: "Coordinates & Location",
-      items: getCoordinatesInfo(headers),
+      items: getCoordinatesInfo(headers, fileType, extension),
     },
     {
       id: "equipment",
       title: "Equipment & Capabilities",
-      items: getEquipmentInfo(headers),
+      items: getEquipmentInfo(headers, fileType, extension),
     },
     {
       id: "conditions",
       title: "Test Conditions & Remarks",
-      items: getConditionsInfo(headers),
+      items: getConditionsInfo(headers, fileType, extension),
     },
     {
       id: "processing",
       title: "Data Processing",
-      items: getProcessingInfo(headers),
+      items: getProcessingInfo(headers, fileType, extension),
     },
     {
       id: "calculations",
       title: "Calculations & Formulas",
-      items: getCalculationsInfo(headers),
+      items: getCalculationsInfo(headers, fileType, extension),
     },
     {
       id: "data_structure",
@@ -234,12 +390,22 @@ export function DetailedGefHeaders({ headers }: DetailedHeaderProps) {
     {
       id: "calibration",
       title: "Calibration Data",
-      items: getCalibrationData(headers),
+      items: getCalibrationData(headers, fileType, extension),
     },
     {
       id: "metadata",
       title: "File Metadata",
       items: getFileMetadata(headers),
+    },
+    {
+      id: "comments",
+      title: "Comments",
+      items: getComments(headers),
+    },
+    {
+      id: "extension",
+      title: "Extension",
+      items: getExtensionInfo(headers, extension),
     },
   ].filter((section) => section.items.length > 0);
 
@@ -288,7 +454,11 @@ export function DetailedGefHeaders({ headers }: DetailedHeaderProps) {
   );
 }
 
-function getProjectInfo(headers: GefHeaders) {
+function getProjectInfo(
+  headers: GefHeaders,
+  fileType: GefFileType,
+  extension: GefExtension
+) {
   const items: Array<HeaderItem> = [];
 
   if (headers.PROJECTID)
@@ -305,13 +475,22 @@ function getProjectInfo(headers: GefHeaders) {
   }
 
   const a = items.concat(
-    getMeasurementTextItems(headers, ["project_info", "standards"])
+    getMeasurementTextItems(
+      headers,
+      ["project_info", "standards"],
+      fileType,
+      extension
+    )
   );
 
   return a;
 }
 
-function getTestInfo(headers: GefHeaders) {
+function getTestInfo(
+  headers: GefHeaders,
+  fileType: GefFileType,
+  extension: GefExtension
+) {
   const items: Array<{ label: string; value: string }> = [];
 
   if (headers.STARTDATE) {
@@ -333,7 +512,7 @@ function getTestInfo(headers: GefHeaders) {
   }
 
   headers.MEASUREMENTVAR?.forEach(({ id, value, unit }) => {
-    const varInfo = measurementVariables.find((v) => v.id === id);
+    const varInfo = findMeasurementVariableByFileType(id, fileType, extension);
 
     if (
       varInfo &&
@@ -341,13 +520,20 @@ function getTestInfo(headers: GefHeaders) {
         varInfo.category
       )
     ) {
-      let displayValue = value;
-      if ("options" in varInfo && varInfo.options) {
-        const option = varInfo.options.find(
-          (o) => o.value.toString() === value
-        );
-        if (option) displayValue = option.meaning;
+      let displayValue: string;
+
+      if ("options" in varInfo) {
+        const numValue = parseFloat(value);
+
+        const option = (
+          varInfo.options as ReadonlyArray<{ value: number; meaning: string }>
+        ).find((o) => o.value === numValue);
+
+        displayValue = option ? option.meaning : formatNumericValue(value);
+      } else {
+        displayValue = formatNumericValue(value);
       }
+
       items.push({
         label: varInfo.description,
         value: unit && unit !== "-" ? `${displayValue} ${unit}` : displayValue,
@@ -358,10 +544,16 @@ function getTestInfo(headers: GefHeaders) {
   return items;
 }
 
-function getCoordinatesInfo(headers: GefHeaders) {
+function getCoordinatesInfo(
+  headers: GefHeaders,
+  fileType: GefFileType,
+  extension: GefExtension
+) {
   const items: Array<HeaderItem> = [];
 
-  items.push(...getMeasurementTextItems(headers, ["coordinates"]));
+  items.push(
+    ...getMeasurementTextItems(headers, ["coordinates"], fileType, extension)
+  );
 
   const xyid = headers.XYID;
   if (xyid) {
@@ -374,12 +566,12 @@ function getCoordinatesInfo(headers: GefHeaders) {
 
     items.push({
       label: "X Coordinate",
-      value: `${xyid.x} ± ${xyid.deltaX} m`,
+      value: `${xyid.x.toFixed()} ± ${xyid.deltaX.toFixed()} m`,
     });
 
     items.push({
       label: "Y Coordinate",
-      value: `${xyid.y} ± ${xyid.deltaY} m`,
+      value: `${xyid.y.toFixed()} ± ${xyid.deltaY.toFixed()} m`,
     });
   }
 
@@ -390,31 +582,38 @@ function getCoordinatesInfo(headers: GefHeaders) {
     items.push({ label: "Height System", value: heightSystem });
     items.push({
       label: "Surface Level",
-      value: `${zid.height} ± ${zid.deltaZ} m`,
+      value: `${zid.height.toFixed()} ± ${zid.deltaZ.toFixed()} m`,
     });
   }
 
   return items;
 }
 
-function getEquipmentInfo(headers: GefHeaders) {
+function getEquipmentInfo(
+  headers: GefHeaders,
+  fileType: GefFileType,
+  extension: GefExtension
+) {
   const items: Array<HeaderItem> = [];
 
-  items.push(...getMeasurementTextItems(headers, ["equipment"]));
+  items.push(
+    ...getMeasurementTextItems(headers, ["equipment"], fileType, extension)
+  );
 
   headers.MEASUREMENTVAR?.forEach(({ id, value, unit }) => {
-    const varInfo = measurementVariables.find((v) => v.id === id);
+    const varInfo = findMeasurementVariableByFileType(id, fileType, extension);
     if (!varInfo || !["equipment", "capabilities"].includes(varInfo.category))
       return;
 
-    let displayValue = value;
-    if ("options" in varInfo && varInfo.options) {
-      const option = varInfo.options.find(
-        (o: any) => o.value.toString() === value
-      );
-      if (option) {
-        displayValue = option.meaning;
-      }
+    let displayValue: string;
+    if ("options" in varInfo) {
+      const numValue = parseFloat(value);
+      const option = (
+        varInfo.options as ReadonlyArray<{ value: number; meaning: string }>
+      ).find((o) => o.value === numValue);
+      displayValue = option ? option.meaning : formatNumericValue(value);
+    } else {
+      displayValue = formatNumericValue(value);
     }
 
     items.push({
@@ -456,15 +655,20 @@ function getDataStructure(headers: GefHeaders) {
   return items;
 }
 
-function getCalibrationData(headers: GefHeaders) {
+function getCalibrationData(
+  headers: GefHeaders,
+  fileType: GefFileType,
+  extension: GefExtension
+) {
   const items: Array<{ label: string; value: string }> = [];
 
   headers.MEASUREMENTVAR?.forEach(({ id, value, unit }) => {
-    const varInfo = measurementVariables.find((v) => v.id === id);
-    if (varInfo?.category === "calibration" && value !== "0.000000") {
+    const varInfo = findMeasurementVariableByFileType(id, fileType, extension);
+    if (varInfo?.category === "calibration" && parseFloat(value) !== 0) {
+      const displayValue = formatNumericValue(value);
       items.push({
         label: varInfo.description,
-        value: unit ? `${value} ${unit}` : value,
+        value: unit ? `${displayValue} ${unit}` : displayValue,
       });
     }
   });
@@ -502,19 +706,125 @@ function getFileMetadata(headers: GefHeaders) {
   return items;
 }
 
-function getConditionsInfo(headers: GefHeaders) {
-  return getMeasurementTextItems(headers, [
-    "conditions",
-    "general",
-    "infrastructure",
-    "measurements",
-  ]);
+function getConditionsInfo(
+  headers: GefHeaders,
+  fileType: GefFileType,
+  extension: GefExtension
+) {
+  return getMeasurementTextItems(
+    headers,
+    ["conditions", "general", "infrastructure", "measurements"],
+    fileType,
+    extension
+  );
 }
 
-function getProcessingInfo(headers: GefHeaders) {
-  return getMeasurementTextItems(headers, ["processing"]);
+function getProcessingInfo(
+  headers: GefHeaders,
+  fileType: GefFileType,
+  extension: GefExtension
+) {
+  return getMeasurementTextItems(headers, ["processing"], fileType, extension);
 }
 
-function getCalculationsInfo(headers: GefHeaders) {
-  return getMeasurementTextItems(headers, ["calculations"]);
+function getCalculationsInfo(
+  headers: GefHeaders,
+  fileType: GefFileType,
+  extension: GefExtension
+) {
+  return getMeasurementTextItems(
+    headers,
+    ["calculations"],
+    fileType,
+    extension
+  );
+}
+
+function getComments(headers: GefHeaders) {
+  const items: Array<HeaderItem> = [];
+
+  if (headers.COMMENT && headers.COMMENT.length > 0) {
+    headers.COMMENT.forEach((comment, index) => {
+      items.push({
+        label: `Comment ${index + 1}`,
+        value: comment,
+      });
+    });
+  }
+
+  return items;
+}
+
+function getExtensionInfo(
+  headers: GefHeaders,
+  extension: GefExtension
+): Array<HeaderItem> {
+  if (extension === "standard") {
+    return [];
+  }
+
+  const items: Array<HeaderItem> = [];
+
+  if (extension === "dutch") {
+    items.push({
+      label: "Extension Type",
+      value: "Dutch BRO/VOTB (GEF-CPT v1.1.3)",
+    });
+
+    // Add Dutch MEASUREMENTTEXT fields with values
+    headers.MEASUREMENTTEXT?.forEach(({ id, text }) => {
+      const varInfo = dutchMeasurementTextVariables.find((v) => v.id === id);
+      if (varInfo) {
+        items.push({
+          label: varInfo.description,
+          value: text,
+        });
+      }
+    });
+
+    // Add Dutch MEASUREMENTVAR fields with values
+    headers.MEASUREMENTVAR?.forEach(({ id, value, unit }) => {
+      const varInfo = dutchMeasurementVariables.find((v) => v.id === id);
+      if (varInfo) {
+        const displayValue = formatNumericValue(value);
+        items.push({
+          label: varInfo.description,
+          value:
+            unit && unit !== "-" ? `${displayValue} ${unit}` : displayValue,
+        });
+      }
+    });
+    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+  } else if (extension === "belgian") {
+    items.push({
+      label: "Extension Type",
+      value: "Belgian DOV",
+    });
+
+    // Add Belgian MEASUREMENTTEXT fields with values
+    headers.MEASUREMENTTEXT?.forEach(({ id, text }) => {
+      const varInfo = belgianMeasurementTextVariables.find((v) => v.id === id);
+      if (varInfo) {
+        items.push({
+          label: varInfo.description,
+          value: text,
+        });
+      }
+    });
+
+    // Add Belgian MEASUREMENTVAR fields with values
+    headers.MEASUREMENTVAR?.forEach(({ id, value, unit }) => {
+      const varInfo = belgianMeasurementVariables.find((v) => v.id === id);
+      if (varInfo) {
+        const displayValue = formatNumericValue(value);
+        items.push({
+          label: varInfo.description,
+          value:
+            unit && unit !== "-" ? `${displayValue} ${unit}` : displayValue,
+        });
+      }
+    });
+  }
+
+  return items;
 }
