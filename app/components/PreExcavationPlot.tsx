@@ -3,7 +3,23 @@ import { max } from "d3-array";
 import { useEffect, useRef } from "react";
 import { useTranslation } from "react-i18next";
 import type { PreExcavationLayer } from "~/util/gef";
+import { getSoilColor } from "~/util/gef-bore-schemas";
 import { PlotDownloadButtons } from "./PlotDownload";
+
+// Map common Dutch soil descriptions to soil codes
+function getSoilCodeFromDescription(description: string): string {
+  const lower = description.toLowerCase();
+
+  // Check for main soil types in order of specificity
+  if (lower.includes("grind")) return "G";
+  if (lower.includes("veen")) return "V";
+  if (lower.includes("klei")) return "K";
+  if (lower.includes("leem")) return "L";
+  if (lower.includes("zand")) return "Z";
+
+  // Default fallback
+  return "NBE";
+}
 
 interface PreExcavationPlotProps {
   layers: Array<PreExcavationLayer>;
@@ -62,13 +78,16 @@ export function PreExcavationPlot({
           domain: [0, maxDepth],
         },
         marks: [
-          // Layer rectangles - use a neutral color since we don't have soil codes
+          // Layer rectangles with soil-type-specific colors
           Plot.rect(layers, {
             x1: 0,
             x2: 1,
             y1: "depthTop",
             y2: "depthBottom",
-            fill: "#d4a574", // tan/brown for excavated soil
+            fill: (d: PreExcavationLayer) => {
+              const soilCode = getSoilCodeFromDescription(d.description);
+              return getSoilColor(soilCode);
+            },
             stroke: "white",
             strokeWidth: 0.5,
             title: (d: PreExcavationLayer) =>

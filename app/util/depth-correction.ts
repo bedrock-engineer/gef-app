@@ -1,5 +1,6 @@
 import type { ColumnInfo, ZID, MeasurementVar } from "./gef-schemas";
 import { getMeasurementVarValue } from "./gef-metadata";
+import { findColumnByQuantity } from "./gef";
 
 /**
  * GEF Quantity Numbers for depth-related columns
@@ -13,16 +14,6 @@ export const QUANTITY_NUMBERS = {
 } as const;
 
 const PRE_EXCAVATED_DEPTH_MEASUREMNTVAR_ID = 13;
-
-/**
- * Find a column by its GEF quantity number
- */
-function findColumnByQuantity(
-  columnInfo: Array<ColumnInfo>,
-  quantityNumber: number
-): ColumnInfo | undefined {
-  return columnInfo.find((col) => col.quantityNumber === quantityNumber);
-}
 
 /**
  * Calculate true depth (corrected for inclination) from penetration length
@@ -160,11 +151,12 @@ export function addComputedDepthColumns(
   measurementVars: Array<MeasurementVar> | undefined
 ): Array<Record<string, number>> {
   // Get pre-excavated depth if present
-  const preExcavatedDepth =
-    getMeasurementVarValue(
-      measurementVars,
-      PRE_EXCAVATED_DEPTH_MEASUREMNTVAR_ID
-    ) ?? 0;
+  const preExcavatedDepth = measurementVars
+    ? (getMeasurementVarValue(
+        measurementVars,
+        PRE_EXCAVATED_DEPTH_MEASUREMNTVAR_ID
+      ) ?? 0)
+    : 0;
 
   // First calculate true depth
   let result = calculateTrueDepth(data, columnInfo);

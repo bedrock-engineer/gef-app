@@ -1,3 +1,6 @@
+import { format } from "d3-format";
+import type { TFunction } from "i18next";
+import type { ReactNode } from "react";
 import {
   Button,
   Disclosure,
@@ -5,34 +8,30 @@ import {
   Heading,
 } from "react-aria-components";
 import { useTranslation } from "react-i18next";
-import type { TFunction } from "i18next";
+import { convertToWGS84 } from "../util/coordinates";
+import type { GefFileType } from "../util/gef";
 import {
+  decodeBoreMeasurementText,
+  findBoreMeasurementTextVariable,
+  findBoreMeasurementVariable,
+} from "../util/gef-bore-metadata";
+import {
+  belgianMeasurementTextVariables,
+  belgianMeasurementVariables,
   decodeMeasurementText,
   detectGefExtension,
+  dutchMeasurementTextVariables,
+  dutchMeasurementVariables,
   findMeasurementTextVariable,
   findMeasurementVariable,
   getMeasurementVarValue,
-  getMeasurementVar,
-  dutchMeasurementTextVariables,
-  dutchMeasurementVariables,
-  belgianMeasurementTextVariables,
-  belgianMeasurementVariables,
-  type GefExtension,
+  type GefExtension
 } from "../util/gef-metadata";
-import {
-  findBoreMeasurementTextVariable,
-  findBoreMeasurementVariable,
-  decodeBoreMeasurementText,
-} from "../util/gef-bore-metadata";
 import {
   COORDINATE_SYSTEMS,
   HEIGHT_SYSTEM_MAP,
-  type GefHeaders,
-  type XYID,
+  type GefHeaders
 } from "../util/gef-schemas";
-import { convertToWGS84 } from "../util/coordinates";
-import type { GefFileType } from "../util/gef";
-import type { ReactNode } from "react";
 import { CopyButton } from "./CopyButton";
 
 // Helper to get description based on locale
@@ -119,7 +118,8 @@ function formatDate(
   return dateObj.toISOString().slice(0, 10);
 }
 
-// TODO replace with d3-format formatter
+const formatNumber = format(".3~f");
+
 /**
  * Format a numeric value string, removing unnecessary trailing zeros
  * "0.000000" -> "0", "1.500000" -> "1.5", "1.234567" -> "1.235"
@@ -127,8 +127,7 @@ function formatDate(
 function formatNumericValue(value: string): string {
   const num = parseFloat(value);
   if (isNaN(num)) return value;
-  // Use up to 3 decimal places, but strip trailing zeros
-  return parseFloat(num.toFixed(3)).toString();
+  return formatNumber(num);
 }
 
 // Helper function to extract MEASUREMENTTEXT items by category
@@ -137,7 +136,7 @@ function getMeasurementTextItems(
   categories: Array<string>,
   fileType: GefFileType,
   extension: GefExtension,
-  locale: string = "en"
+  locale = "en"
 ): Array<HeaderItem> {
   const items: Array<HeaderItem> = [];
   const measurementTexts = headers.MEASUREMENTTEXT;
@@ -172,15 +171,65 @@ function getMeasurementTextItems(
   return items;
 }
 
+// CPT-specific compact info
+function CptCompactInfo({
+  measurementVars,
+  lastScan,
+}: {
+  measurementVars: Array<{ id: number; value: string; unit: string }>;
+  lastScan: number | undefined;
+}) {
+  const { t } = useTranslation();
+
+  const waterLevelValue = getMeasurementVarValue(measurementVars, 42);
+  const waterLevelDisplay = waterLevelValue?.toFixed(2) ?? null;
+
+  const endDepthValue = getMeasurementVarValue(measurementVars, 16);
+
+  return (
+    <>
+      {waterLevelDisplay && (
+        <>
+          <dt className="text-gray-500">{t("waterLevel")}</dt>
+          <dd className="flex items-center gap-1">
+            {waterLevelDisplay}m
+            <CopyButton value={waterLevelDisplay} label={t("copyWaterLevel")} />
+          </dd>
+        </>
+      )}
+
+      {endDepthValue && (
+        <>
+          <dt className="text-gray-500">{t("depth")}</dt>
+          <dd>{endDepthValue.toFixed(3)}m</dd>
+        </>
+      )}
+
+      {lastScan && (
+        <>
+          <dt className="text-gray-500">{t("scanNumber")}</dt>
+          <dd>{lastScan}</dd>
+        </>
+      )}
+    </>
+  );
+}
+
+// BORE-specific compact info (placeholder for future bore-specific fields)
+function BoreCompactInfo() {
+  // Add bore-specific fields here as needed
+  return null;
+}
+
 interface CompactHeaderProps {
   headers: GefHeaders;
-  // fileType: GefFileType;
+  fileType: GefFileType;
   onDownload: () => void;
 }
 
 export function CompactGefHeader({
   headers,
-  // fileType,
+  fileType,
   onDownload,
 }: CompactHeaderProps) {
   const { t } = useTranslation();
@@ -201,13 +250,6 @@ export function CompactGefHeader({
   const elevationDisplay = zid
     ? `${zid.height.toFixed(2)}m ${heightSystem}`
     : null;
-
-  // Water level (MEASUREMENTVAR 42)
-  const waterLevelValue = getMeasurementVarValue(headers.MEASUREMENTVAR, 42);
-  const waterLevelDisplay = waterLevelValue?.toFixed(2) ?? null;
-
-  const endDepthValue = getMeasurementVarValue(headers.MEASUREMENTVAR, 16);
-  const lastScan = headers.LASTSCAN;
 
   return (
     <div className="bg-white border border-gray-300 rounded-lg shadow-sm p-4 mb-6">
@@ -294,31 +336,13 @@ export function CompactGefHeader({
             </>
           )}
 
-          {waterLevelDisplay && (
-            <>
-              <dt className="text-gray-500">{t("waterLevel")}</dt>
-              <dd className="flex items-center gap-1">
-                {waterLevelDisplay}m
-                <CopyButton value={waterLevelDisplay} label={t("copyWaterLevel")} />
-              </dd>
-            </>
+          {fileType === "CPT" && headers.MEASUREMENTVAR && (
+            <CptCompactInfo
+              measurementVars={headers.MEASUREMENTVAR}
+              lastScan={headers.LASTSCAN}
+            />
           )}
-
-          {endDepthValue && (
-            <>
-              <dt className="text-gray-500">{t("depth")}</dt>
-              <dd>
-                {endDepthValue.toFixed(3)}m
-              </dd>
-            </>
-          )}
-
-          {lastScan && (
-            <>
-              <dt className="text-gray-500">{t("scanNumber")}</dt>
-              <dd>{lastScan}</dd>
-            </>
-          )}
+          {fileType === "BORE" && <BoreCompactInfo />}
         </dl>
       </div>
     </div>
@@ -803,7 +827,7 @@ function getExtensionInfo(
   if (extension === "dutch") {
     items.push({
       label: t("extensionType"),
-      value: "Dutch BRO/VOTB (GEF-CPT v1.1.3)",
+      value: "Basis Registratie Ondergrond / VOTB (GEF-CPT v1.1.3)",
     });
 
     // Add Dutch MEASUREMENTTEXT fields with values

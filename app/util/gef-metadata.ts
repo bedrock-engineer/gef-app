@@ -1859,9 +1859,7 @@ export function findMeasurementVariable(id: number, extension: GefExtension) {
  * Get a measurement variable numeric value by ID from parsed headers
  */
 export function getMeasurementVarValue(
-  measurementVars:
-    | Array<{ id: number; value: string; unit: string }>
-    | undefined,
+  measurementVars: Array<{ id: number; value: string; unit: string }>,
   id: number
 ): number | undefined {
   const mv = getMeasurementVar(measurementVars, id);
@@ -1874,12 +1872,10 @@ export function getMeasurementVarValue(
  * Get a measurement variable object by ID from parsed headers
  */
 export function getMeasurementVar(
-  measurementVars:
-    | Array<{ id: number; value: string; unit: string }>
-    | undefined,
+  measurementVars: Array<{ id: number; value: string; unit: string }>,
   id: number
 ) {
-  return measurementVars?.find((v) => v.id === id);
+  return measurementVars.find((v) => v.id === id);
 }
 
 // Drilling method codes for GEF-BORE files (NEN 5104)

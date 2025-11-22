@@ -242,6 +242,7 @@ export function App() {
 
           <CompactGefHeader
             headers={selectedFile.headers}
+            fileType={selectedFile.fileType}
             onDownload={() => {
               if (selectedFile.fileType === "CPT") {
                 downloadGefDataAsCsv(selectedFile, selectedFileName);

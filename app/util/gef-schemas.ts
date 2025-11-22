@@ -2,7 +2,7 @@
 import { z } from "zod";
 import type { GEFHeadersMap } from "./gef";
 
-const stringArray = z.array(z.string());
+const stringArray = z.array(z.string().trim());
 
 const coordinateSystemCodes = [
   "00000",
@@ -131,7 +131,7 @@ export type HeightSystemCode = z.infer<typeof heightSystemCodeSchema>;
 
 // XYID - Coordinate System (parses from string tuple, validates as numbers)
 // Default to RD (31000) if coordinate system is invalid or unrecognized
-// Handle empty arrays or missing values gracefully - some GEF files have empty XYID
+// Handle empty arrays or missing values gracefully some GEF files have empty XYID
 export const xyidSchema = z
   .array(z.string())
   .transform((arr) => {
@@ -312,7 +312,7 @@ export const timeSchema = z
 export type GefTime = z.infer<typeof timeSchema>;
 
 export const companyIdSchema = z
-  .tuple([z.string(), z.string().optional(), z.string().optional()])
+  .tuple([z.string().trim(), z.string().trim().optional(), z.string().trim().optional()])
   .transform(([name, address, companyId]) => ({
     name,
     address,
@@ -322,7 +322,7 @@ export const companyIdSchema = z
 export type CompanyId = z.infer<typeof companyIdSchema>;
 
 export const columnInfoSchema = z
-  .array(z.string())
+  .array(z.string().trim())
   .min(3, {
     message:
       "#COLUMNINFO must have at least 3 values: column number, unit, name (e.g., 1, m, depth)",
@@ -348,7 +348,7 @@ export const columnInfoSchema = z
 export type ColumnInfo = z.infer<typeof columnInfoSchema>;
 
 export const measurementVarSchema = z
-  .tuple([z.string(), z.string(), z.string().optional(), z.string().optional()])
+  .tuple([z.string(), z.string().trim(), z.string().trim().optional(), z.string().trim().optional()])
   .transform(([id, value, unit, description]) => ({
     id: parseInt(id),
     value,
@@ -367,11 +367,11 @@ export const measurementVarSchema = z
 export type MeasurementVar = z.infer<typeof measurementVarSchema>;
 
 export const measurementTextSchema = z
-  .array(z.string())
+  .array(z.string().trim())
   .min(2)
   .transform((arr) => ({
     id: arr[0] ? parseInt(arr[0]) : -1,
-    text: arr[1],
+    text: arr[1] ?? "",
     extra: arr.slice(2),
   }))
   .pipe(
@@ -386,7 +386,7 @@ export type MeasurementText = z.infer<typeof measurementTextSchema>;
 
 // SPECIMENVAR schema - same structure as MEASUREMENTVAR
 export const specimenVarSchema = z
-  .array(z.string())
+  .array(z.string().trim())
   .min(2)
   .transform((arr) => ({
     id: parseInt(arr[0] ?? "0"),
@@ -407,7 +407,7 @@ export type SpecimenVar = z.infer<typeof specimenVarSchema>;
 
 // SPECIMENTEXT schema - same structure as MEASUREMENTTEXT
 export const specimenTextSchema = z
-  .array(z.string())
+  .array(z.string().trim())
   .min(2)
   .transform((arr) => ({
     id: arr[0] ? parseInt(arr[0]) : -1,

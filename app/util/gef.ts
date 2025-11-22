@@ -57,7 +57,7 @@ function getUnitCode(unit: string): string {
 /**
  * Find column by quantity number
  */
-function findColumnByQuantity(
+export function findColumnByQuantity(
   columns: Array<ColumnInfo>,
   quantityNumber: number
 ): ColumnInfo | undefined {
