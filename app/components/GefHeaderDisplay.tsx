@@ -45,6 +45,16 @@ function getLocalizedDescription(
   return varInfo.description;
 }
 
+// Map phone country codes to translation keys
+function getCountryTranslationKey(phoneCode: string): string | undefined {
+  const codeMap: Record<string, string> = {
+    "31": "countryNetherlands",
+    "32": "countryBelgium",
+    "49": "countryGermany",
+  };
+  return codeMap[phoneCode];
+}
+
 // Unified lookup functions that consider file type
 function findMeasurementTextVariableByFileType(
   id: number,
@@ -456,8 +466,14 @@ function getProjectInfo(
     items.push({ label: t("company"), value: company.name });
     if (company.address)
       items.push({ label: t("address"), value: company.address });
-    if (company.companyId)
-      items.push({ label: t("companyId"), value: company.companyId });
+
+    // The companyId field contains a phone country code (e.g., 31 for Netherlands)
+    if (company.companyId) {
+      const countryKey = getCountryTranslationKey(company.companyId);
+      if (countryKey) {
+        items.push({ label: t("country"), value: t(countryKey as "countryNetherlands" | "countryBelgium" | "countryGermany") });
+      }
+    }
   }
 
   const a = items.concat(
@@ -820,7 +836,7 @@ function getExtensionInfo(
   } else if (extension === "belgian") {
     items.push({
       label: t("extensionType"),
-      value: "Belgian DOV",
+      value: "Databank Ondergrond Vlaanderen",
     });
 
     // Add Belgian MEASUREMENTTEXT fields with values

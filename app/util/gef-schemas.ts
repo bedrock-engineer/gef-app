@@ -5,6 +5,9 @@ import type { GEFHeadersMap } from "./gef";
 const stringArray = z.array(z.string());
 
 const coordinateSystemCodes = [
+  "00000",
+  "00001",
+  "01000",
   "31000",
   "31001",
   "31002",
@@ -13,27 +16,57 @@ const coordinateSystemCodes = [
 ] as const;
 
 export const COORDINATE_SYSTEMS = {
-  [coordinateSystemCodes[0]]: {
+  "00000": {
+    epsg: null,
+    name: "Lokaal coördinatensysteem",
+    nameEn: "Local coordinate system (self-defined)",
+    country: "N/A",
+  },
+  "00001": {
+    epsg: "EPSG:4326",
+    name: "Geografisch coördinatensysteem",
+    nameEn: "Geographic coordinate system (WGS 84)",
+    country: "International",
+  },
+  "01000": {
+    epsg: null, // SPCS has many zones, would need specific zone
+    name: "State Plane Coordinate System",
+    nameEn: "State Plane Coordinate System",
+    country: "USA",
+  },
+  "31000": {
     epsg: "EPSG:28992",
     proj4def:
       "+proj=sterea +lat_0=52.15616055555555 +lon_0=5.38763888888889 +k=0.9999079 +x_0=155000 +y_0=463000 +ellps=bessel +towgs84=565.417,50.3319,465.552,-0.398957,0.343988,-1.8774,4.0725 +units=m +no_defs",
-    name: "RD (Rijksdriehoekscoördinaten)",
+    name: "Rijksdriehoekscoördinaten",
+    nameEn: "Dutch National Grid",
+    country: "Netherlands",
   },
-  [coordinateSystemCodes[1]]: {
-    epsg: "EPSG:32631", // WGS84 / UTM zone 31N
-    name: "UTM-31N",
+  "31001": {
+    epsg: "EPSG:32631",
+    name: "UTM zone 31N",
+    nameEn: "WGS 84 / UTM zone 31N",
+    country: "International",
   },
-  [coordinateSystemCodes[2]]: {
-    epsg: "EPSG:32609", // WGS84 / UTM zone 9N
-    name: "UTM-9N",
+  "31002": {
+    epsg: "EPSG:32609",
+    name: "UTM zone 9N",
+    nameEn: "WGS 84 / UTM zone 9N",
+    country: "International",
   },
-  [coordinateSystemCodes[3]]: {
-    epsg: "EPSG:31370", // Belgian Lambert 72
-    name: "Belgian Lambert 72",
+  "32000": {
+    epsg: "EPSG:31370",
+    proj4def:
+      "+proj=lcc +lat_0=90 +lon_0=4.36748666666667 +lat_1=51.1666672333333 +lat_2=49.8333339 +x_0=150000.013 +y_0=5400088.438 +ellps=intl +towgs84=-106.8686,52.2978,-103.7239,0.3366,-0.457,1.8422,-1.2747 +units=m +no_defs",
+    name: "Belge 1972 / Belgian Lambert 72",
+    nameEn: "Belgian Lambert 72",
+    country: "Belgium",
   },
-  [coordinateSystemCodes[4]]: {
-    epsg: "EPSG:31467", // DHDN / 3-degree Gauss-Krüger zone 3
-    name: "Gauss-Krüger",
+  "49000": {
+    epsg: "EPSG:31467",
+    name: "DHDN / Gauss-Krüger zone 3",
+    nameEn: "German Gauss-Krüger zone 3",
+    country: "Germany",
   },
 } as const;
 
@@ -41,13 +74,55 @@ const coordinateSystemCodeSchema = z.enum(coordinateSystemCodes);
 
 export type CoordinateSystemCode = z.infer<typeof coordinateSystemCodeSchema>;
 
-const heightSystemCodes = ["31000", "32000", "32001", "49000"] as const;
+const heightSystemCodes = ["00000", "00001", "31000", "32000", "32001", "49000"] as const;
 
+export const HEIGHT_SYSTEMS = {
+  "00000": {
+    name: "Lokaal referentiesysteem",
+    nameEn: "Local reference system (self-defined)",
+    epsg: null,
+    country: "N/A",
+  },
+  "00001": {
+    name: "Low Low Water Spring",
+    nameEn: "Low Low Water Spring",
+    epsg: null,
+    country: "International",
+  },
+  "31000": {
+    name: "Normaal Amsterdams Peil",
+    nameEn: "Amsterdam Ordnance Datum",
+    epsg: "EPSG:7415", // ETRS89 + NAP height
+    country: "Netherlands",
+  },
+  "32000": {
+    name: "Ostend Level",
+    nameEn: "Ostend Level",
+    epsg: null,
+    country: "Belgium",
+  },
+  "32001": {
+    name: "Tweede Algemene Waterpassing",
+    nameEn: "Second General Levelling",
+    epsg: "EPSG:5710", // TAW
+    country: "Belgium",
+  },
+  "49000": {
+    name: "Normalnull",
+    nameEn: "Normal Null (German standard height)",
+    epsg: "EPSG:5783", // DHHN92 height
+    country: "Germany",
+  },
+} as const;
+
+// Short name mapping for backwards compatibility
 export const HEIGHT_SYSTEM_MAP = {
-  [heightSystemCodes[0]]: "NAP",
-  [heightSystemCodes[1]]: "Ostend",
-  [heightSystemCodes[2]]: "TAW",
-  [heightSystemCodes[3]]: "NN",
+  "00000": "Local",
+  "00001": "LLWS",
+  "31000": "NAP",
+  "32000": "Ostend",
+  "32001": "TAW",
+  "49000": "NN",
 } as const;
 
 const heightSystemCodeSchema = z.enum(heightSystemCodes);
@@ -102,7 +177,7 @@ export const zidSchema = z
       "#ZID must have at least 1 value: height system code (e.g., 31000, -3.75)",
   })
   .transform((arr) => ({
-    code: arr[0]!,
+    code: arr[0]!.trim(),
     height: arr[1] ? parseFloat(arr[1]) : 0,
     deltaZ: arr[2] ? parseFloat(arr[2]) : 0.01,
   }))

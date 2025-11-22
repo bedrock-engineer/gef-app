@@ -20,7 +20,7 @@ export function convertToWGS84(
   input: CoordinateInput
 ): WGS84Coords | null {
   const coordSysConfig = COORDINATE_SYSTEMS[input.coordinateSystem];
-  if (!coordSysConfig) return null;
+  if (!coordSysConfig || !coordSysConfig.epsg) return null;
 
   try {
     // Define custom projection if needed

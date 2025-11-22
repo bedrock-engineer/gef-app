@@ -75,6 +75,7 @@ function parseGefData(dataString: string, headersMap: GEFHeadersMap) {
     line
       .trim()
       .split(columnSeparator)
+      .filter((val) => val.trim() !== "")
       .map((val) => parseFloat(val.trim()))
   );
 
@@ -280,9 +281,10 @@ function generateWarnings(
   if (!rawZid || rawZid.length === 0) {
     warnings.push("Missing ZID (height reference system) - defaulting to NAP");
   } else {
-    if (rawZid[0] && !(rawZid[0] in HEIGHT_SYSTEM_MAP)) {
+    const heightCode = rawZid[0]?.trim();
+    if (heightCode && !(heightCode in HEIGHT_SYSTEM_MAP)) {
       warnings.push(
-        `Unknown height system code "${rawZid[0]}" - defaulting to NAP`
+        `Unknown height system code "${heightCode}" - defaulting to NAP`
       );
     }
     if (rawZid.length < 2) {
@@ -423,7 +425,10 @@ function parseGefBoreData(
 
   const layers: Array<BoreLayer> = records.map((record) => {
     // Split by column separator, handling both numeric and text columns
-    const parts = record.split(columnSeparator).map((p) => p.trim());
+    const parts = record
+      .split(columnSeparator)
+      .map((p) => p.trim())
+      .filter((p) => p !== "");
 
     // Parse numeric columns (first N columns based on COLUMNINFO)
     const numericValues = parts

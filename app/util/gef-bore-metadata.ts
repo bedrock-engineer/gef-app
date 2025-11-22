@@ -231,14 +231,14 @@ export const boreMeasurementTextVariables = [
   },
   {
     id: 7,
-    description: "Locaal coördinatensysteem",
+    description: "Lokaal coördinatensysteem",
     category: "coordinates",
     required: false,
     standardizedCodes: null,
   },
   {
     id: 8,
-    description: "Locaal referentiesysteem",
+    description: "Lokaal referentiesysteem",
     category: "reference_system",
     required: false,
     standardizedCodes: null,
