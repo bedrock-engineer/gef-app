@@ -281,6 +281,10 @@ export function App() {
           />
         </div>
       )}
+
+      <footer className="mt-8 pt-4 border-t border-gray-200 text-center text-sm text-gray-500">
+        Feedback? <a href="mailto:jules@bedrock.engineer" className="text-blue-600 hover:underline">jules@bedrock.engineer</a>
+      </footer>
     </main>
   );
 }
