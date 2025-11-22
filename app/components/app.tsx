@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { Suspense, useState } from "react";
 import {
   Button,
   DropZone,
@@ -207,11 +207,19 @@ export function App() {
             {Object.keys(gefData).length > 1 ? t("allLocations") : t("location")}
           </h2>
 
-          <GefMultiMap
-            gefData={gefData}
-            selectedFileName={selectedFileName}
-            onMarkerClick={setSelectedFileName}
-          />
+          <Suspense
+            fallback={
+              <div className="w-full h-96 rounded-lg border border-gray-300 shadow-sm bg-gray-100 flex items-center justify-center">
+                <span className="text-gray-500">Loading map...</span>
+              </div>
+            }
+          >
+            <GefMultiMap
+              gefData={gefData}
+              selectedFileName={selectedFileName}
+              onMarkerClick={setSelectedFileName}
+            />
+          </Suspense>
         </div>
       )}
 

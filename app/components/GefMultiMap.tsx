@@ -21,15 +21,14 @@ export function GefMultiMap({
   selectedFileName,
   onMarkerClick,
 }: GefMultiMapProps) {
+  if (typeof window === "undefined") {
+    throw Error("GefMultiMap should only render on the client.");
+  }
+
   const mapRef = useRef<HTMLDivElement>(null);
   const mapInstanceRef = useRef<any>(null);
   const markersRef = useRef<Map<string, any>>(new Map());
-  const [isClient, setIsClient] = useState(false);
   const [error, setError] = useState<string | null>(null);
-
-  useEffect(() => {
-    setIsClient(true);
-  }, []);
 
   // Extract locations from GEF data
   const locations: Array<GefLocation> = Object.entries(gefData)
@@ -42,7 +41,7 @@ export function GefMultiMap({
     }));
 
   useEffect(() => {
-    if (!isClient || !mapRef.current || locations.length === 0) return;
+    if (!mapRef.current || locations.length === 0) return;
 
     // Dynamic imports to avoid SSR issues
     Promise.all([
@@ -152,11 +151,11 @@ export function GefMultiMap({
         mapInstanceRef.current = null;
       }
     };
-  }, [isClient, locations, locations.length, onMarkerClick, selectedFileName]);
+  }, [locations, locations.length, onMarkerClick, selectedFileName]);
 
   // Update marker styles when selection changes
   useEffect(() => {
-    if (!isClient || !mapInstanceRef.current) return;
+    if (!mapInstanceRef.current) return;
 
     Promise.all([import("leaflet")])
       .then(([leafletModule]) => {
@@ -183,15 +182,7 @@ export function GefMultiMap({
       .catch((error: unknown) => {
         console.log("Failed to update map markers", error);
       });
-  }, [selectedFileName, isClient]);
-
-  if (!isClient) {
-    return (
-      <div className="w-full h-96 rounded-lg border border-gray-300 shadow-sm bg-gray-100 flex items-center justify-center">
-        <span className="text-gray-500">Loading map...</span>
-      </div>
-    );
-  }
+  }, [selectedFileName]);
 
   if (locations.length === 0) {
     return (
