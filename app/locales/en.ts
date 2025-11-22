@@ -116,5 +116,10 @@ export default {
 
     // Copy
     copy: "Copy",
+
+    // Column min/max
+    min: "Min",
+    max: "Max",
+    range: "Range",
   }
 } as const;

@@ -116,5 +116,10 @@ export default {
 
     // Copy
     copy: "Kopiëren",
+
+    // Column min/max
+    min: "Min",
+    max: "Max",
+    range: "Bereik",
   }
 } as const;

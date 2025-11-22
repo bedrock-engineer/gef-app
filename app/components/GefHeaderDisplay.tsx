@@ -644,15 +644,30 @@ function getDataStructure(headers: GefHeaders, t: TFunction) {
     items.push({ label: t("dataFormat"), value: headers.DATAFORMAT });
 
   if (headers.COLUMNINFO) {
+    // Create a map of column number to min/max values
+    const minMaxMap = new Map<number, { min: number; max: number }>();
+    headers.COLUMNMINMAX?.forEach(({ columnNumber, min, max }) => {
+      minMaxMap.set(columnNumber, { min, max });
+    });
+
     items.push({
       label: t("dataColumns"),
       value: (
         <ul className="list list-disc list-inside">
-          {headers.COLUMNINFO.map((col) => (
-            <li key={col.name}>
-              {col.name} ({col.unit})
-            </li>
-          ))}
+          {headers.COLUMNINFO.map((col, index) => {
+            const colNum = index + 1;
+            const minMax = minMaxMap.get(colNum);
+            return (
+              <li key={col.name}>
+                {col.name} ({col.unit})
+                {minMax && (
+                  <span className="text-gray-500 ml-1">
+                    [{minMax.min} – {minMax.max}]
+                  </span>
+                )}
+              </li>
+            );
+          })}
         </ul>
       ),
     });
