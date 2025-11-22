@@ -1,6 +1,8 @@
 // GEF-BORE specific metadata definitions
 // Based on GEF-BORE-Report specification
 
+import { heightDeterminationCodes, placeDeterminationCodes } from "./gef-metadata";
+
 export const boreMeasurementVariables = [
   // Borehole depth and geometry
   {
@@ -260,42 +262,14 @@ export const boreMeasurementTextVariables = [
     description: "Maaiveldhoogtebepaling",
     category: "elevation_determination",
     required: false,
-    standardizedCodes: [
-      { code: "MMET", description: "Gemeten, landmeting" },
-      { code: "MDGP", description: "Gemeten, differentieel GPS" },
-      { code: "MGOV", description: "Gemeten, overige methoden" },
-      { code: "MH10", description: "Geschat, Hoogtekaart 1:10.000" },
-      { code: "MT25", description: "Geschat, Topografische Kaart 1:25.000" },
-      { code: "MT50", description: "Geschat, Topografische Kaart 1:50.000" },
-      { code: "MAHN", description: "Geschat, Actueel Hoogtebestand Nederland" },
-      { code: "MSOV", description: "Geschat, overige bepalingsmethoden" },
-      { code: "MONB", description: "Geschat, methode onbekend" },
-      { code: "MFIC", description: "Fictieve waarde" },
-    ],
+    standardizedCodes:  heightDeterminationCodes
   },
   {
     id: 12,
     description: "Plaatsbepalingmethode",
     category: "position_determination",
     required: false,
-    standardizedCodes: [
-      { code: "LMET", description: "Gemeten, landmeting" },
-      { code: "LGPS", description: "Gemeten, GPS" },
-      { code: "LDGM", description: "Gemeten, diff. GPS, > 5 m" },
-      { code: "LDGN", description: "Gemeten, diff. GPS, 1 - < 5 m" },
-      { code: "LDGZ", description: "Gemeten, diff. GPS, < 1m" },
-      { code: "LGOV", description: "Gemeten, overige methoden" },
-      { code: "LT10", description: "Geschat, Topografische Kaart 1:10.000" },
-      { code: "LT25", description: "Geschat, Topografische Kaart 1:25.000" },
-      { code: "LT50", description: "Geschat, Topografische Kaart 1:50.000" },
-      { code: "LD01", description: "Geschat, detailkaart 1:100" },
-      { code: "LD02", description: "Geschat, detailkaart 1:200" },
-      { code: "LD05", description: "Geschat, detailkaart 1:500" },
-      { code: "LD10", description: "Geschat, detailkaart 1:1000" },
-      { code: "LD25", description: "Geschat, detailkaart 1:2500" },
-      { code: "LSOV", description: "Geschat, overige methoden" },
-      { code: "LONB", description: "Geschat, methode onbekend" },
-    ],
+    standardizedCodes: placeDeterminationCodes,
   },
   {
     id: 13,

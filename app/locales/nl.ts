@@ -8,7 +8,7 @@ export default {
     // File actions
     chooseFiles: "Kies GEF Bestanden",
     dropFilesHere: "Of sleep ze hierheen",
-    loadSampleFiles: "voorbeeldbestanden laden",
+    loadSampleFiles: "laad voorbeeldbestanden",
     clearAllFiles: "Alle bestanden wissen",
     or: "of",
 

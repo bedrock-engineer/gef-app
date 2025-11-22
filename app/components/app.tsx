@@ -189,7 +189,7 @@ export function App() {
       )}
 
       {Object.keys(gefData).length > 0 && (
-        <div className="mb-6">
+        <div className="mb-6 mt-2">
           <h2 className="text-xl font-semibold mb-3">
             {Object.keys(gefData).length > 1 ? t("allLocations") : t("location")}
           </h2>

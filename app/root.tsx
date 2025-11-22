@@ -1,4 +1,8 @@
+import { useEffect } from "react";
+import { I18nProvider } from "react-aria-components";
+import { useTranslation } from "react-i18next";
 import {
+  data,
   isRouteErrorResponse,
   Links,
   Meta,
@@ -6,18 +10,22 @@ import {
   Scripts,
   ScrollRestoration,
 } from "react-router";
-import { useTranslation } from "react-i18next";
-
+import {
+  getLocale,
+  i18nextMiddleware,
+  localeCookie,
+} from "~/middleware/i18next";
 import type { Route } from "./+types/root";
-import { i18nextMiddleware, getLocale } from "~/middleware/i18next";
 import "./app.css";
 
 export const middleware = [i18nextMiddleware];
 
 export async function loader({ context }: Route.LoaderArgs) {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const locale = getLocale(context as any);
-  return { locale };
+  const locale = getLocale(context);
+  return data(
+    { locale },
+    { headers: { "Set-Cookie": await localeCookie.serialize(locale) } }
+  );
 }
 
 export const links: Route.LinksFunction = () => [
@@ -31,6 +39,26 @@ export const links: Route.LinksFunction = () => [
     rel: "stylesheet",
     href: "https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap",
   },
+  // TODO favicons
+  {
+    rel: "icon",
+    type: "image/png",
+    sizes: "32x32",
+    href: `${import.meta.env.BASE_URL}favicons/favicon-32.png`,
+  },
+  {
+    rel: "apple-touch-icon",
+    type: "image/png",
+    sizes: "180x180",
+    href: `${import.meta.env.BASE_URL}favicons/favicon-180.png`,
+  },
+  {
+    rel: "icon",
+    type: "image/png",
+    sizes: "192x192",
+    href: `${import.meta.env.BASE_URL}favicons/favicon-192.png`,
+  },
+  { rel: "canonical", href: "https://gef.bedrock.engineer/" },
 ];
 
 export function Layout({
@@ -60,19 +88,27 @@ export function Layout({
   );
 }
 
-export default function App({ loaderData }: Route.ComponentProps) {
+export default function App({ loaderData: { locale } }: Route.ComponentProps) {
   const { i18n } = useTranslation();
 
-  // Sync client-side language with server-detected locale
-  if (loaderData?.locale && i18n.language !== loaderData.locale) {
-    i18n.changeLanguage(loaderData.locale);
-  }
+  useEffect(
+    function syncLanguage() {
+      if (i18n.language !== locale) {
+        void i18n.changeLanguage(locale);
+      }
+    },
+    [locale, i18n]
+  );
 
-  return <Outlet />;
+  return (
+    <I18nProvider locale={i18n.language}>
+      <Outlet />
+    </I18nProvider>
+  );
 }
 
 export function ErrorBoundary({ error }: Route.ErrorBoundaryProps) {
-  let message = "Oops!";
+  let message = "Error";
   let details = "An unexpected error occurred.";
   let stack: string | undefined;
 
