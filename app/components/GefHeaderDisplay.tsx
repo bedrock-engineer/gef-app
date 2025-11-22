@@ -11,6 +11,8 @@ import {
   detectGefExtension,
   findMeasurementTextVariable,
   findMeasurementVariable,
+  getMeasurementVarValue,
+  getMeasurementVar,
   dutchMeasurementTextVariables,
   dutchMeasurementVariables,
   belgianMeasurementTextVariables,
@@ -201,14 +203,10 @@ export function CompactGefHeader({
     : null;
 
   // Water level (MEASUREMENTVAR 42)
-  const waterLevelVar = headers.MEASUREMENTVAR?.find(({ id }) => id === 42);
-  const waterLevelValue = waterLevelVar
-    ? Number(waterLevelVar.value).toFixed(2)
-    : null;
+  const waterLevelValue = getMeasurementVarValue(headers.MEASUREMENTVAR, 42);
+  const waterLevelDisplay = waterLevelValue?.toFixed(2) ?? null;
 
-  const endDepthMeasurementVar = headers.MEASUREMENTVAR?.find(
-    ({ id }) => id === 16
-  );
+  const endDepthValue = getMeasurementVarValue(headers.MEASUREMENTVAR, 16);
   const lastScan = headers.LASTSCAN;
 
   return (
@@ -296,22 +294,21 @@ export function CompactGefHeader({
             </>
           )}
 
-          {waterLevelValue && (
+          {waterLevelDisplay && (
             <>
               <dt className="text-gray-500">{t("waterLevel")}</dt>
               <dd className="flex items-center gap-1">
-                {waterLevelValue}m
-                <CopyButton value={waterLevelValue} label={t("copyWaterLevel")} />
+                {waterLevelDisplay}m
+                <CopyButton value={waterLevelDisplay} label={t("copyWaterLevel")} />
               </dd>
             </>
           )}
 
-          {endDepthMeasurementVar && (
+          {endDepthValue && (
             <>
               <dt className="text-gray-500">{t("depth")}</dt>
               <dd>
-                {Number(endDepthMeasurementVar.value).toFixed(3)} (
-                {endDepthMeasurementVar.unit})
+                {endDepthValue.toFixed(3)}m
               </dd>
             </>
           )}

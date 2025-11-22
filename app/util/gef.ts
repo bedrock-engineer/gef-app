@@ -21,8 +21,9 @@ export const DEPTH_KEYWORDS = [
   "lengte",
 ];
 
-// CPT Column Quantity IDs (from GEF spec)
-const CPT_QUANTITY = {
+// CPT Column Quantity IDs - derived from columnQuantities in gef-metadata
+// These are the standard GEF quantity numbers for CPT data
+export const CPT_QUANTITY = {
   LENGTH: 1,
   CONE_RESISTANCE: 2,
   FRICTION_RESISTANCE: 3,
@@ -184,7 +185,10 @@ function detectChartAxes(
   }
 
   // Add corrected depth from file (quantity 11) if available and different from yColumn
-  const correctedDepthCol = findColumnByQuantity(columnInfo, CPT_QUANTITY.CORRECTED_DEPTH);
+  const correctedDepthCol = findColumnByQuantity(
+    columnInfo,
+    CPT_QUANTITY.CORRECTED_DEPTH
+  );
   if (correctedDepthCol && correctedDepthCol.colNum !== yColumn?.colNum) {
     yAxisOptions.push({
       key: correctedDepthCol.name,
@@ -238,7 +242,7 @@ export type GefFileType = "CPT" | "BORE";
 // Pre-excavation layer for CPT files
 // Describes soil that was removed before cone penetration testing
 export interface PreExcavationLayer {
-  depthTop: number;    // Top of layer (m)
+  depthTop: number; // Top of layer (m)
   depthBottom: number; // Bottom of layer (m) - from SPECIMENVAR value
   description: string; // Soil description
 }
@@ -274,7 +278,6 @@ function generateWarnings(
   data?: Array<Record<string, number | null>>
 ): Array<string> {
   const warnings: Array<string> = [];
-
 
   // Check for missing or invalid ZID
   const rawZid = headersMap.get("ZID")?.[0];
@@ -348,9 +351,7 @@ function generateWarnings(
       );
     }
     if (!hasConeResistance) {
-      warnings.push(
-        "Missing required parameter: Cone resistance (quantity 2)"
-      );
+      warnings.push("Missing required parameter: Cone resistance (quantity 2)");
     }
 
     // Validate COLUMNMINMAX bounds if present
@@ -480,13 +481,12 @@ function parseGefBoreData(
       soilCode,
       additionalCodes,
       description,
-      // Map other numeric columns if present
+
       sandMedian: numericValues[2] ?? null,
       gravelMedian: numericValues[3] ?? null,
-      clayPercent: numericValues[4] ?? null,
-      siltPercent: numericValues[5] ?? null,
+
       sandPercent: numericValues[6] ?? null,
-      gravelPercent: numericValues[7] ?? null,
+
       organicPercent: numericValues[8] ?? null,
     };
   });
@@ -569,7 +569,9 @@ function parseGefBoreSpecimens(headers: GefHeaders): Array<BoreSpecimen> {
 // Parse pre-excavation layers from SPECIMENVAR in CPT files
 // Per spec: value is bottom depth, description is soil type
 // Layers are ordered by ID (1, 2, 3...) with each value being the cumulative depth
-function parsePreExcavationLayers(headers: GefHeaders): Array<PreExcavationLayer> {
+function parsePreExcavationLayers(
+  headers: GefHeaders
+): Array<PreExcavationLayer> {
   const specimenVars = headers.SPECIMENVAR ?? [];
 
   if (specimenVars.length === 0) {

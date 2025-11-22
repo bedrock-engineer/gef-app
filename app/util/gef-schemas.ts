@@ -488,7 +488,7 @@ export const gefHeadersSchema = z.object({
   COLUMNSEPARATOR: z
     .array(stringArray)
     .optional()
-    .transform((arr) => arr?.[0]?.[0]),
+    .transform((arr) => arr?.[0]?.[0]?.trim()),
   COLUMNINFO: z
     .array(z.array(z.string()).min(3))
     .optional()

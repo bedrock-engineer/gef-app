@@ -1,6 +1,6 @@
 import type { ColumnInfo, ZID, MeasurementVar } from "./gef-schemas";
+import { getMeasurementVarValue } from "./gef-metadata";
 
-// TODO replace this  QUANTITY_NUMBERS with column quantities in gef-metadata.ts
 /**
  * GEF Quantity Numbers for depth-related columns
  */
@@ -13,19 +13,6 @@ export const QUANTITY_NUMBERS = {
 } as const;
 
 const PRE_EXCAVATED_DEPTH_MEASUREMNTVAR_ID = 13;
-
-/**
- * Get a measurement variable value by ID
- */
-function getMeasurementVarValue(
-  measurementVars: Array<MeasurementVar> | undefined,
-  id: number
-): number | undefined {
-  const mv = measurementVars?.find((v) => v.id === id);
-  if (!mv) return undefined;
-  const value = parseFloat(mv.value);
-  return isNaN(value) ? undefined : value;
-}
 
 /**
  * Find a column by its GEF quantity number
@@ -186,6 +173,8 @@ export function addComputedDepthColumns(
   // Pre-excavated depth doesn't affect elevation calculation since
   // the penetration length is still measured from the reference level
   result = calculateElevation(result, zid);
+
+  console.log({ result });
 
   // If there's pre-excavated depth, we might want to indicate it
   // The GEF spec says penetration length starts at 0 even with pre-excavation,

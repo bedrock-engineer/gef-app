@@ -47,8 +47,6 @@ export function App() {
   async function handleFiles(fileList: FileList | Array<File> | null) {
     const files = Array.from(fileList ?? []);
 
-    console.log({ files });
-
     if (files.length > 0) {
       const results = await Promise.allSettled(
         files.map((file) => parseGefFile(file))
