@@ -95,6 +95,16 @@ export function BorePlot({
           fontSize: 10,
           textAnchor: "middle",
         }),
+        // Opmerkingen (descriptions) displayed to the right of rectangles
+        Plot.text(layers, {
+          x: 1,
+          y: (d: BoreLayer) => d.depthTop + (d.depthBottom - d.depthTop) / 2,
+          text: (d: BoreLayer) => d.description ?? "",
+          fill: "black",
+          fontSize: 9,
+          textAnchor: "start",
+          dx: 5,
+        }),
         // Specimen markers (triangles on the right edge)
         ...(specimens.length > 0
           ? [

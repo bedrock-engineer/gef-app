@@ -491,5 +491,16 @@ export type GefHeaders = z.infer<typeof gefHeadersSchema>;
 
 export function parseGefHeaders(headersMap: GEFHeadersMap): GefHeaders {
   const headersObj = Object.fromEntries(headersMap);
-  return gefHeadersSchema.parse(headersObj);
+  const result = gefHeadersSchema.safeParse(headersObj);
+
+  if (!result.success) {
+    // Format Zod errors into user-friendly messages
+    const errors = result.error.issues.map((issue) => {
+      const path = issue.path.length > 0 ? `#${issue.path.join(".")}: ` : "";
+      return `${path}${issue.message}`;
+    });
+    throw new Error(errors.join("\n"));
+  }
+
+  return result.data;
 }

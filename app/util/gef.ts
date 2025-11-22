@@ -129,8 +129,6 @@ function parseGefData(dataString: string, headersMap: GEFHeadersMap) {
     headers.MEASUREMENTVAR
   );
 
-  console.log({ dataWithComputedColumns });
-
   return {
     data: dataWithComputedColumns,
     headers,

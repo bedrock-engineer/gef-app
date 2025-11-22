@@ -463,7 +463,7 @@ function getProjectInfo(
   const a = items.concat(
     getMeasurementTextItems(
       headers,
-      ["project_info", "standards"],
+      ["project_info", "standards", "location", "personnel", "data_management", "related_investigations"],
       fileType,
       extension
     )
@@ -540,7 +540,12 @@ function getCoordinatesInfo(
   const items: Array<HeaderItem> = [];
 
   items.push(
-    ...getMeasurementTextItems(headers, ["coordinates"], fileType, extension)
+    ...getMeasurementTextItems(
+      headers,
+      ["coordinates", "reference_system", "elevation_determination", "position_determination"],
+      fileType,
+      extension
+    )
   );
 
   const xyid = headers.XYID;
@@ -586,12 +591,18 @@ function getEquipmentInfo(
   const items: Array<HeaderItem> = [];
 
   items.push(
-    ...getMeasurementTextItems(headers, ["equipment"], fileType, extension, locale)
+    ...getMeasurementTextItems(
+      headers,
+      ["equipment", "drilling_methods", "drilling_equipment", "drilling_segments"],
+      fileType,
+      extension,
+      locale
+    )
   );
 
   headers.MEASUREMENTVAR?.forEach(({ id, value, unit }) => {
     const varInfo = findMeasurementVariableByFileType(id, fileType, extension);
-    if (!varInfo || !["equipment", "capabilities"].includes(varInfo.category))
+    if (!varInfo || !["equipment", "capabilities", "drilling_equipment", "drilling_segments", "borehole_geometry", "groundwater", "monitoring_wells"].includes(varInfo.category))
       return;
 
     let displayValue: string;
@@ -719,7 +730,7 @@ function getConditionsInfo(
 ) {
   return getMeasurementTextItems(
     headers,
-    ["conditions", "general", "infrastructure", "measurements"],
+    ["conditions", "general", "infrastructure", "measurements", "sample_condition", "monitoring_wells"],
     fileType,
     extension,
     locale

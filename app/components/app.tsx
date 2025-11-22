@@ -73,7 +73,7 @@ export function App() {
               : String(result.reason),
         }));
 
-        const gef = Object.fromEntries(parsedGefFiles) as Record<string, GefData>
+      const gef = Object.fromEntries(parsedGefFiles) as Record<string, GefData>;
 
       setGefData(gef);
       setFailedFiles(failed);
@@ -94,7 +94,11 @@ export function App() {
           <img src="bedrock.svg" width={30} /> {t("appTitle")}
         </h1>
         <Form method="post">
-          <input type="hidden" name="lang" value={i18n.language === "nl" ? "en" : "nl"} />
+          <input
+            type="hidden"
+            name="lang"
+            value={i18n.language === "nl" ? "en" : "nl"}
+          />
           <button
             type="submit"
             className="px-3 py-1 text-sm border border-gray-300 rounded hover:bg-gray-100 transition-colors"
@@ -105,12 +109,8 @@ export function App() {
       </div>
 
       <div className="text-center mb-6 max-w-md mx-auto">
-        <p className="text-gray-600 text-sm mb-2">
-          {t("appDescription")}
-        </p>
-        <p className="text-green-700 text-xs font-medium">
-          {t("privacyNote")}
-        </p>
+        <p className="text-gray-600 text-sm mb-2">{t("appDescription")}</p>
+        <p className="text-green-700 text-xs font-medium">{t("privacyNote")}</p>
       </div>
 
       <div className="max-w-[300px] mx-auto mb-8">
@@ -204,7 +204,9 @@ export function App() {
       {Object.keys(gefData).length > 0 && (
         <div className="mb-6 mt-2">
           <h2 className="text-xl font-semibold mb-3">
-            {Object.keys(gefData).length > 1 ? t("allLocations") : t("location")}
+            {Object.keys(gefData).length > 1
+              ? t("allLocations")
+              : t("location")}
           </h2>
 
           <Suspense
@@ -291,7 +293,18 @@ export function App() {
       )}
 
       <footer className="mt-8 pt-4 border-t border-gray-200 text-center text-sm text-gray-500">
-        Feedback? <a href="mailto:jules@bedrock.engineer" className="text-blue-600 hover:underline">jules@bedrock.engineer</a>
+        <p>
+          
+        </p>
+        <p>
+          Feedback or requests?{" "}
+          <a
+            href="mailto:jules@bedrock.engineer"
+            className="text-blue-600 hover:underline"
+          >
+            jules@bedrock.engineer
+          </a>
+        </p>
       </footer>
     </main>
   );
