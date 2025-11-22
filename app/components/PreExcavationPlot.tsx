@@ -1,6 +1,7 @@
 import * as Plot from "@observablehq/plot";
 import { max } from "d3-array";
 import { useEffect, useRef } from "react";
+import { useTranslation } from "react-i18next";
 import type { PreExcavationLayer } from "~/util/gef";
 import { PlotDownloadButtons } from "./PlotDownload";
 
@@ -19,6 +20,7 @@ export function PreExcavationPlot({
   height = 300,
   baseFilename,
 }: PreExcavationPlotProps) {
+  const { t } = useTranslation();
   const containerRef = useRef<HTMLDivElement>(null);
 
   useEffect(
@@ -109,9 +111,9 @@ export function PreExcavationPlot({
 
   return (
     <div className="bg-white border border-gray-300 rounded-lg shadow-sm p-6">
-      <h3 className="text-lg font-semibold mb-2">Pre-excavation</h3>
+      <h3 className="text-lg font-semibold mb-2">{t("preExcavation")}</h3>
       <p className="text-sm text-gray-600 mb-4">
-        Soil removed before cone penetration testing
+        {t("preExcavationDescription")}
       </p>
       <div className="flex justify-center">
         <div id="pre-excavation-plot" ref={containerRef}></div>

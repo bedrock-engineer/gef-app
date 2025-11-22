@@ -11,6 +11,7 @@ import {
   ListBox,
   ListBoxItem,
 } from "react-aria-components";
+import { useTranslation } from "react-i18next";
 import { PlotDownloadButtons } from "./PlotDownload";
 
 interface Column {
@@ -49,6 +50,7 @@ export function CptPlots({
   height = 800,
   baseFilename,
 }: CptPlotProps) {
+  const { t } = useTranslation();
   const [selectedAxes, setSelectedAxes] = useState([initialXAxis.key]);
   const [selectedYAxis, setSelectedYAxis] = useState(initialYAxis.key);
 
@@ -72,7 +74,7 @@ export function CptPlots({
           }}
         >
           <Label className="block text-sm font-medium text-gray-700 mb-2">
-            Columns
+            {t("columns")}
           </Label>
           <div className="flex flex-wrap gap-x-4 gapy-y-1">
             {xAxisOptions.map((x) => (
@@ -99,7 +101,7 @@ export function CptPlots({
 
         <div className="flex-1">
           <span className="block text-sm font-medium text-gray-700 mb-1">
-            Y-Axis (Vertical)
+            {t("yAxisVertical")}
           </span>
           {yAxisOptions.length > 1 ? (
             <Select

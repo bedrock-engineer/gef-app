@@ -61,6 +61,9 @@ export default {
     yAxisVertical: "Y-Axis (Vertical)",
     boreLog: "Borehole Log",
     legend: "Legend",
+    depthM: "Depth (m)",
+    downloadSvg: "Download SVG",
+    downloadPng: "Download PNG",
 
     // Soil types
     sand: "Sand",
@@ -71,16 +74,22 @@ export default {
     notDescribed: "Not described",
 
     // Specimen table
-    specimenSamples: "Specimen Samples",
+    specimens: "Specimens",
+    specimensCount: "Specimens ({{count}})",
+    remarks: "Remarks:",
     number: "#",
-    depthRange: "Depth Range",
     code: "Code",
+    depthM_table: "Depth (m)",
+    diameterMm: "Diameter (mm)",
+    dateTime: "Date/Time",
     type: "Type",
-    apparatus: "Apparatus",
     method: "Method",
 
     // Pre-excavation
-    preExcavationLayers: "Pre-excavation Layers",
-    material: "Material",
+    preExcavation: "Pre-excavation",
+    preExcavationDescription: "Soil removed before cone penetration testing",
+
+    // Copy
+    copy: "Copy",
   }
 } as const;

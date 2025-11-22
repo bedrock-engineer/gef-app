@@ -1,5 +1,6 @@
 import { downloadPng, downloadSvg } from "svg-crowbar";
 import { Button } from "react-aria-components";
+import { useTranslation } from "react-i18next";
 
 interface PlotDownloadButtonsProps {
   plotId: string;
@@ -10,6 +11,8 @@ export function PlotDownloadButtons({
   plotId,
   filename,
 }: PlotDownloadButtonsProps) {
+  const { t } = useTranslation();
+
   function download(format: "svg" | "png") {
     const plotElement = document.getElementById(plotId)?.querySelector("svg");
 
@@ -39,13 +42,13 @@ export function PlotDownloadButtons({
         className="px-2 py-1 text-xs border border-gray-300 rounded hover:bg-gray-100"
         onPress={() => download("svg")}
       >
-        Download SVG
+        {t("downloadSvg")}
       </Button>
       <Button
         className="px-2 py-1 text-xs border border-gray-300 rounded hover:bg-gray-100"
         onPress={() => download("png")}
       >
-        Download PNG
+        {t("downloadPng")}
       </Button>
     </div>
   );

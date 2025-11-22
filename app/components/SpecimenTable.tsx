@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 import type { BoreSpecimen } from "~/util/gef-bore-schemas";
 import { SPECIMEN_CODES } from "~/util/gef-bore-schemas";
 
@@ -15,6 +16,8 @@ interface SpecimenTableProps {
 }
 
 export function SpecimenTable({ specimens }: SpecimenTableProps) {
+  const { t } = useTranslation();
+
   if (specimens.length === 0) {
     return null;
   }
@@ -22,12 +25,12 @@ export function SpecimenTable({ specimens }: SpecimenTableProps) {
   return (
     <div className="overflow-x-auto">
       <h3 className="text-lg font-semibold mb-2">
-        Monsters ({specimens.length})
+        {t("specimensCount", { count: specimens.length })}
       </h3>
 
       {specimens[0]?.remarks && specimens[0].remarks.length > 0 && (
         <div className="mb-4 p-2 bg-yellow-50 border border-yellow-200 rounded text-sm">
-          <strong>Opmerkingen:</strong>
+          <strong>{t("remarks")}</strong>
           <ul className="list-disc list-inside">
             {specimens[0].remarks.map((remark, i) => (
               <li key={i}>{remark}</li>
@@ -39,20 +42,20 @@ export function SpecimenTable({ specimens }: SpecimenTableProps) {
       <table className="w-full border-collapse text-sm">
         <thead>
           <tr className="bg-gray-100">
-            <th className="border border-gray-300 px-2 py-1 text-left">Nr</th>
-            <th className="border border-gray-300 px-2 py-1 text-left">Code</th>
+            <th className="border border-gray-300 px-2 py-1 text-left">{t("number")}</th>
+            <th className="border border-gray-300 px-2 py-1 text-left">{t("code")}</th>
             <th className="border border-gray-300 px-2 py-1 text-left">
-              Diepte (m)
+              {t("depthM_table")}
             </th>
             <th className="border border-gray-300 px-2 py-1 text-left">
-              Diameter (mm)
+              {t("diameterMm")}
             </th>
             <th className="border border-gray-300 px-2 py-1 text-left">
-              Datum/Tijd
+              {t("dateTime")}
             </th>
-            <th className="border border-gray-300 px-2 py-1 text-left">Type</th>
+            <th className="border border-gray-300 px-2 py-1 text-left">{t("type")}</th>
             <th className="border border-gray-300 px-2 py-1 text-left">
-              Methode
+              {t("method")}
             </th>
           </tr>
         </thead>

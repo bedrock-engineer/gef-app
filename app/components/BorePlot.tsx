@@ -1,6 +1,7 @@
 import * as Plot from "@observablehq/plot";
 import { max, min } from "d3-array";
 import { useEffect, useRef } from "react";
+import { useTranslation } from "react-i18next";
 import type { BoreLayer, BoreSpecimen } from "~/util/gef-bore-schemas";
 import { getSoilColor } from "~/util/gef-bore-schemas";
 import { PlotDownloadButtons } from "./PlotDownload";
@@ -22,6 +23,7 @@ export function BorePlot({
   height = 800,
   baseFilename,
 }: BorePlotProps) {
+  const { t } = useTranslation();
   const containerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -129,20 +131,20 @@ export function BorePlot({
 
   return (
     <div className="bg-white border border-gray-300 rounded-lg shadow-sm p-6">
-      <h3 className="text-lg font-semibold mb-4">Boorstaat</h3>
+      <h3 className="text-lg font-semibold mb-4">{t("boreLog")}</h3>
       <div className="flex justify-center">
         <div id="bore-plot" ref={containerRef}></div>
       </div>
       <PlotDownloadButtons plotId="bore-plot" filename={`${baseFilename}-boorstaat`} />
       <div className="mt-4">
-        <h4 className="text-sm font-medium text-gray-700 mb-2">Legend</h4>
+        <h4 className="text-sm font-medium text-gray-700 mb-2">{t("legend")}</h4>
         <div className="flex flex-wrap gap-2 text-xs">
-          <LegendItem color={getSoilColor("Z")} label="Zand (Sand)" />
-          <LegendItem color={getSoilColor("K")} label="Klei (Clay)" />
-          <LegendItem color={getSoilColor("V")} label="Veen (Peat)" />
-          <LegendItem color={getSoilColor("L")} label="Leem (Silt)" />
-          <LegendItem color={getSoilColor("G")} label="Grind (Gravel)" />
-          <LegendItem color={getSoilColor("NBE")} label="Niet beschreven" />
+          <LegendItem color={getSoilColor("Z")} label={`Z - ${t("sand")}`} />
+          <LegendItem color={getSoilColor("K")} label={`K - ${t("clay")}`} />
+          <LegendItem color={getSoilColor("V")} label={`V - ${t("peat")}`} />
+          <LegendItem color={getSoilColor("L")} label={`L - ${t("silt")}`} />
+          <LegendItem color={getSoilColor("G")} label={`G - ${t("gravel")}`} />
+          <LegendItem color={getSoilColor("NBE")} label={`NBE - ${t("notDescribed")}`} />
         </div>
       </div>
     </div>

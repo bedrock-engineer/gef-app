@@ -61,6 +61,9 @@ export default {
     yAxisVertical: "Y-as (Verticaal)",
     boreLog: "Boorstaat",
     legend: "Legenda",
+    depthM: "Diepte (m)",
+    downloadSvg: "Download SVG",
+    downloadPng: "Download PNG",
 
     // Soil types
     sand: "Zand",
@@ -71,16 +74,22 @@ export default {
     notDescribed: "Niet beschreven",
 
     // Specimen table
-    specimenSamples: "Monstersamples",
-    number: "#",
-    depthRange: "Dieptebereik",
+    specimens: "Monsters",
+    specimensCount: "Monsters ({{count}})",
+    remarks: "Opmerkingen:",
+    number: "Nr",
     code: "Code",
+    depthM_table: "Diepte (m)",
+    diameterMm: "Diameter (mm)",
+    dateTime: "Datum/Tijd",
     type: "Type",
-    apparatus: "Apparaat",
     method: "Methode",
 
     // Pre-excavation
-    preExcavationLayers: "Voorontgraven lagen",
-    material: "Materiaal",
+    preExcavation: "Voorontgraving",
+    preExcavationDescription: "Grond verwijderd vóór sonderen",
+
+    // Copy
+    copy: "Kopiëren",
   }
 } as const;
