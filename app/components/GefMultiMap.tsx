@@ -1,8 +1,6 @@
 import { useEffect, useRef, useState } from "react";
-import {
-  COORDINATE_SYSTEMS,
-  type CoordinateSystemCode,
-} from "../util/gef-schemas";
+import { COORDINATE_SYSTEMS, type CoordinateSystemCode } from "../util/gef-schemas";
+import { convertToWGS84 } from "../util/coordinates";
 import type { GefData } from "~/util/gef";
 
 interface GefLocation {
@@ -50,44 +48,20 @@ export function GefMultiMap({
     Promise.all([
       import("leaflet"),
       import("leaflet/dist/leaflet.css"),
-      import("proj4"),
     ])
-      .then(([leafletModule, _, proj4Module]) => {
+      .then(([leafletModule]) => {
         const L = leafletModule.default;
-        const proj4 = proj4Module.default;
 
-        // Transform all coordinates
+        // Transform all coordinates using shared utility
         const transformedLocations = locations
           .map((loc) => {
-            const coordSysConfig = COORDINATE_SYSTEMS[loc.coordinateSystem];
-            if (!coordSysConfig) return null;
-
-            // Define custom projection if needed
-            if ("proj4def" in coordSysConfig) {
-              proj4.defs(coordSysConfig.epsg, coordSysConfig.proj4def);
-            }
-
-            try {
-              const [lng, lat] = proj4(coordSysConfig.epsg, "EPSG:4326", [
-                loc.x,
-                loc.y,
-              ]);
-
-              if (
-                !Number.isFinite(lat) ||
-                !Number.isFinite(lng) ||
-                lat < -90 ||
-                lat > 90 ||
-                lng < -180 ||
-                lng > 180
-              ) {
-                return null;
-              }
-
-              return { ...loc, lat, lng, coordSysConfig };
-            } catch {
-              return null;
-            }
+            const coords = convertToWGS84({
+              coordinateSystem: loc.coordinateSystem,
+              x: loc.x,
+              y: loc.y,
+            });
+            if (!coords) return null;
+            return { ...loc, lat: coords.lat, lng: coords.lon };
           })
           .filter((loc): loc is NonNullable<typeof loc> => loc !== null);
 
@@ -147,12 +121,11 @@ export function GefMultiMap({
             }),
           }).addTo(map);
 
+          const coordSysName = COORDINATE_SYSTEMS[loc.coordinateSystem]?.name ?? loc.coordinateSystem;
           marker.bindPopup(`
             <div class="text-xs">
               <strong>${loc.filename}</strong><br/>
-              ${loc.coordSysConfig.name}: ${loc.x.toFixed(2)}, ${loc.y.toFixed(
-            2
-          )}<br/>
+              ${coordSysName}: ${loc.x.toFixed(2)}, ${loc.y.toFixed(2)}<br/>
               Lat/Lng: ${loc.lat.toFixed(6)}, ${loc.lng.toFixed(6)}
             </div>
           `);

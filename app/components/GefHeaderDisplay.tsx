@@ -28,10 +28,10 @@ import {
   type GefHeaders,
   type XYID,
 } from "../util/gef-schemas";
+import { convertToWGS84 } from "../util/coordinates";
 import type { GefFileType } from "../util/gef";
 import type { ReactNode } from "react";
 import { CopyButton } from "./CopyButton";
-import proj4 from "proj4";
 
 // Helper to get description based on locale
 function getLocalizedDescription(
@@ -83,39 +83,6 @@ function decodeMeasurementTextByFileType(
 interface HeaderItem {
   label: string;
   value: React.ReactNode;
-}
-
-function convertToWGS84(
-  xyid: NonNullable<XYID>
-): { lat: number; lon: number } | null {
-  const coordSysConfig = COORDINATE_SYSTEMS[xyid.coordinateSystem];
-
-  try {
-    // Define custom projection if needed
-    if ("proj4def" in coordSysConfig) {
-      proj4.defs(coordSysConfig.epsg, coordSysConfig.proj4def);
-    }
-
-    const [lon, lat] = proj4(coordSysConfig.epsg, "EPSG:4326", [
-      xyid.x,
-      xyid.y,
-    ]);
-
-    if (
-      !Number.isFinite(lat) ||
-      !Number.isFinite(lon) ||
-      lat < -90 ||
-      lat > 90 ||
-      lon < -180 ||
-      lon > 180
-    ) {
-      return null;
-    }
-
-    return { lat, lon };
-  } catch {
-    return null;
-  }
 }
 
 function formatDate(
