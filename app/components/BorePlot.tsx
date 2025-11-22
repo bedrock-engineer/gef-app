@@ -4,6 +4,7 @@ import { useEffect, useRef } from "react";
 import { useTranslation } from "react-i18next";
 import type { BoreLayer, BoreSpecimen } from "~/util/gef-bore-schemas";
 import { getSoilColor } from "~/util/gef-bore-schemas";
+import { decodeBoreCode } from "~/util/gef-bore-codes";
 import { getMunsellColor } from "~/util/munsell-colors";
 import { PlotDownloadButtons } from "./PlotDownload";
 
@@ -81,9 +82,23 @@ export function BorePlot({
           strokeWidth: 0.5,
           title: (d: BoreLayer) => {
             const codes = [d.soilCode, ...d.additionalCodes].join(" ");
-            let tooltip = `${d.depthTop.toFixed(2)} – ${d.depthBottom.toFixed(
-              2
-            )} m\n${codes}`;
+            // Decode main soil code
+            const decodedSoil = decodeBoreCode(d.soilCode);
+            let tooltip = `${d.depthTop.toFixed(2)} – ${d.depthBottom.toFixed(2)} m\n${codes}`;
+            // Add decoded description if different from code
+            if (decodedSoil !== d.soilCode) {
+              tooltip += `\n${decodedSoil}`;
+            }
+            // Decode additional codes
+            const decodedExtras = d.additionalCodes
+              .map((c) => {
+                const decoded = decodeBoreCode(c);
+                return decoded !== c ? decoded : null;
+              })
+              .filter(Boolean);
+            if (decodedExtras.length > 0) {
+              tooltip += `\n${decodedExtras.join(", ")}`;
+            }
             if (d.description) {
               tooltip += `\n${d.description}`;
             }
