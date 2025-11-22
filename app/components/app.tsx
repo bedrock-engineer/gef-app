@@ -6,6 +6,7 @@ import {
   ToggleButton,
   ToggleButtonGroup,
 } from "react-aria-components";
+import { useTranslation } from "react-i18next";
 import { downloadGefDataAsCsv } from "~/util/csv-download";
 import { parseGefFile, type GefData } from "~/util/gef";
 import { BorePlot } from "./BorePlot";
@@ -16,6 +17,7 @@ import { PreExcavationPlot } from "./PreExcavationPlot";
 import { SpecimenTable } from "./SpecimenTable";
 
 export function App() {
+  const { t } = useTranslation();
   const [gefData, setGefData] = useState<Record<string, GefData>>({});
   const [selectedFileName, setSelectedFileName] = useState("");
   const [failedFiles, setFailedFiles] = useState<
@@ -86,16 +88,15 @@ export function App() {
   return (
     <main className="p-8 max-w-6xl mx-auto">
       <h1 className="text-2xl mx-auto w-fit flex gap-4 mb-6 text-center items-center">
-        <img src="bedrock.svg" width={30} /> Bedrock GEF Viewer
+        <img src="bedrock.svg" width={30} /> {t("appTitle")}
       </h1>
 
       <div className="text-center mb-6 max-w-md mx-auto">
         <p className="text-gray-600 text-sm mb-2">
-          View and analyze GEF (Geotechnical Exchange Format) files for CPT and
-          borehole data.
+          {t("appDescription")}
         </p>
         <p className="text-green-700 text-xs font-medium">
-          Data never leaves your browser, it is not sent to any server
+          {t("privacyNote")}
         </p>
       </div>
 
@@ -121,14 +122,14 @@ export function App() {
             }}
           >
             <Button className="w-full p-3 border-2 border-blue-400 aria-selected:bg-blue-200 rounded-lg bg-blue-50 hover:bg-blue-100 text-blue-700 transition-colors">
-              Choose GEF Files
+              {t("chooseFiles")}
             </Button>
           </FileTrigger>
-          Or drop them here
+          {t("dropFilesHere")}
           {/* TODO Nice icon */}
         </DropZone>
         <div className="mt-3 text-center">
-          <span className="text-sm text-gray-500">or </span>
+          <span className="text-sm text-gray-500">{t("or")} </span>
           <Button
             className="text-sm text-blue-600 hover:text-blue-800 underline"
             onPress={() => {
@@ -137,7 +138,7 @@ export function App() {
               });
             }}
           >
-            load sample files
+            {t("loadSampleFiles")}
           </Button>
         </div>
       </div>
@@ -145,8 +146,7 @@ export function App() {
       {failedFiles.length > 0 && (
         <div className="mb-4 p-4 bg-red-50 border border-red-200 rounded-lg">
           <h2 className="text-red-800 font-semibold mb-2">
-            Failed to parse {failedFiles.length} file
-            {failedFiles.length > 1 ? "s" : ""}:
+            {t("failedToParse", { count: failedFiles.length })}
           </h2>
           <ul className="space-y-1">
             {failedFiles.map(({ name, error }) => (
@@ -184,14 +184,14 @@ export function App() {
             setFailedFiles([]);
           }}
         >
-          Clear all files
+          {t("clearAllFiles")}
         </Button>
       )}
 
       {Object.keys(gefData).length > 0 && (
         <div className="mb-6">
           <h2 className="text-xl font-semibold mb-3">
-            {Object.keys(gefData).length > 1 ? "All Locations" : "Location"}
+            {Object.keys(gefData).length > 1 ? t("allLocations") : t("location")}
           </h2>
 
           <GefMultiMap
@@ -207,8 +207,7 @@ export function App() {
           {selectedFile.warnings.length > 0 && (
             <div className="p-4 bg-amber-50 border border-amber-200 rounded-lg">
               <h2 className="text-amber-800 font-semibold mb-2">
-                {selectedFile.warnings.length} warning
-                {selectedFile.warnings.length > 1 ? "s" : ""}:
+                {t("warning", { count: selectedFile.warnings.length })}
               </h2>
               <ul className="space-y-1">
                 {selectedFile.warnings.map((warning, i) => (

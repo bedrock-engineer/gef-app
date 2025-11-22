@@ -6,9 +6,19 @@ import {
   Scripts,
   ScrollRestoration,
 } from "react-router";
+import { useTranslation } from "react-i18next";
 
 import type { Route } from "./+types/root";
+import { i18nextMiddleware, getLocale } from "~/middleware/i18next";
 import "./app.css";
+
+export const middleware = [i18nextMiddleware];
+
+export async function loader({ context }: Route.LoaderArgs) {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const locale = getLocale(context as any);
+  return { locale };
+}
 
 export const links: Route.LinksFunction = () => [
   { rel: "preconnect", href: "https://fonts.googleapis.com" },
@@ -23,9 +33,18 @@ export const links: Route.LinksFunction = () => [
   },
 ];
 
-export function Layout({ children }: { children: React.ReactNode }) {
+export function Layout({
+  children,
+  loaderData,
+}: {
+  children: React.ReactNode;
+  loaderData?: Route.ComponentProps["loaderData"];
+}) {
+  const { i18n } = useTranslation();
+  const locale = loaderData?.locale ?? i18n.language ?? "en";
+
   return (
-    <html lang="en">
+    <html lang={locale}>
       <head>
         <meta charSet="utf-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -41,7 +60,14 @@ export function Layout({ children }: { children: React.ReactNode }) {
   );
 }
 
-export default function App() {
+export default function App({ loaderData }: Route.ComponentProps) {
+  const { i18n } = useTranslation();
+
+  // Sync client-side language with server-detected locale
+  if (loaderData?.locale && i18n.language !== loaderData.locale) {
+    i18n.changeLanguage(loaderData.locale);
+  }
+
   return <Outlet />;
 }
 

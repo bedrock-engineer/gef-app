@@ -4,6 +4,7 @@ import {
   DisclosurePanel,
   Heading,
 } from "react-aria-components";
+import { useTranslation } from "react-i18next";
 import {
   decodeMeasurementText,
   detectGefExtension,
@@ -189,6 +190,7 @@ export function CompactGefHeader({
   // fileType,
   onDownload,
 }: CompactHeaderProps) {
+  const { t } = useTranslation();
   const testId = headers.TESTID;
   const projectId = headers.PROJECTID;
   const company = headers.COMPANYID;
@@ -223,8 +225,8 @@ export function CompactGefHeader({
       <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm">
         <div>
           <div className="font-bold text-lg text-gray-900 flex items-center gap-1">
-            {testId ?? "Unknown Test"}
-            {testId && <CopyButton value={testId} label="Copy Test ID" />}
+            {testId ?? t("unknownTest")}
+            {testId && <CopyButton value={testId} label={t("copyTestId")} />}
           </div>
           {projectId && (
             <div className="text-gray-600 flex items-center gap-1">
@@ -240,7 +242,7 @@ export function CompactGefHeader({
             }}
             className="px-3 py-2 mt-2 border hover:bg-blue-100 rounded-sm transition-colors"
           >
-            Download CSV
+            {t("downloadCsv")}
           </Button>
         </div>
 
@@ -250,17 +252,17 @@ export function CompactGefHeader({
         >
           {dateTimeStr && (
             <>
-              <dt className="text-gray-500">Date:</dt>
+              <dt className="text-gray-500">{t("date")}</dt>
               <dd className="flex items-center gap-1">
                 {dateTimeStr}
-                <CopyButton value={dateTimeStr} label="Copy Date" />
+                <CopyButton value={dateTimeStr} label={t("copyDate")} />
               </dd>
             </>
           )}
 
           {xyid && (
             <>
-              <dt className="text-gray-500">Location:</dt>
+              <dt className="text-gray-500">{t("locationLabel")}</dt>
               <dd>
                 <div className="font-semibold">
                   {COORDINATE_SYSTEMS[xyid.coordinateSystem]?.name ?? "Unknown"}{" "}
@@ -293,11 +295,11 @@ export function CompactGefHeader({
 
           {elevationDisplay && (
             <>
-              <dt className="text-gray-500">Ground level:</dt>
+              <dt className="text-gray-500">{t("groundLevel")}</dt>
               <dd className="flex items-center gap-1">
                 {elevationDisplay}
                 {elevationValue && (
-                  <CopyButton value={elevationValue} label="Copy elevation" />
+                  <CopyButton value={elevationValue} label={t("copyElevation")} />
                 )}
               </dd>
             </>
@@ -305,17 +307,17 @@ export function CompactGefHeader({
 
           {waterLevelValue && (
             <>
-              <dt className="text-gray-500">Water level:</dt>
+              <dt className="text-gray-500">{t("waterLevel")}</dt>
               <dd className="flex items-center gap-1">
                 {waterLevelValue}m
-                <CopyButton value={waterLevelValue} label="Copy water level" />
+                <CopyButton value={waterLevelValue} label={t("copyWaterLevel")} />
               </dd>
             </>
           )}
 
           {endDepthMeasurementVar && (
             <>
-              <dt className="text-gray-500">Depth:</dt>
+              <dt className="text-gray-500">{t("depth")}</dt>
               <dd>
                 {Number(endDepthMeasurementVar.value).toFixed(3)} (
                 {endDepthMeasurementVar.unit})
@@ -325,7 +327,7 @@ export function CompactGefHeader({
 
           {lastScan && (
             <>
-              <dt className="text-gray-500">Scan #:</dt>
+              <dt className="text-gray-500">{t("scanNumber")}</dt>
               <dd>{lastScan}</dd>
             </>
           )}
@@ -341,70 +343,71 @@ interface DetailedHeaderProps {
 }
 
 export function DetailedGefHeaders({ headers, fileType }: DetailedHeaderProps) {
+  const { t } = useTranslation();
   const extension = detectGefExtension(
-    headers.MEASUREMENTTEXT?.map((t) => t.id),
+    headers.MEASUREMENTTEXT?.map((mt) => mt.id),
     headers.MEASUREMENTVAR?.map((v) => v.id)
   );
 
   const sections = [
     {
       id: "project",
-      title: "Project Information",
+      title: t("projectInformation"),
       items: getProjectInfo(headers, fileType, extension),
     },
     {
       id: "test_info",
-      title: "Test Information",
+      title: t("testInformation"),
       items: getTestInfo(headers, fileType, extension),
     },
     {
       id: "coordinates",
-      title: "Coordinates & Location",
+      title: t("coordinatesLocation"),
       items: getCoordinatesInfo(headers, fileType, extension),
     },
     {
       id: "equipment",
-      title: "Equipment & Capabilities",
+      title: t("equipmentCapabilities"),
       items: getEquipmentInfo(headers, fileType, extension),
     },
     {
       id: "conditions",
-      title: "Test Conditions & Remarks",
+      title: t("testConditionsRemarks"),
       items: getConditionsInfo(headers, fileType, extension),
     },
     {
       id: "processing",
-      title: "Data Processing",
+      title: t("dataProcessing"),
       items: getProcessingInfo(headers, fileType, extension),
     },
     {
       id: "calculations",
-      title: "Calculations & Formulas",
+      title: t("calculationsFormulas"),
       items: getCalculationsInfo(headers, fileType, extension),
     },
     {
       id: "data_structure",
-      title: "Data Structure",
+      title: t("dataStructure"),
       items: getDataStructure(headers),
     },
     {
       id: "calibration",
-      title: "Calibration Data",
+      title: t("calibrationData"),
       items: getCalibrationData(headers, fileType, extension),
     },
     {
       id: "metadata",
-      title: "File Metadata",
+      title: t("fileMetadata"),
       items: getFileMetadata(headers),
     },
     {
       id: "comments",
-      title: "Comments",
+      title: t("comments"),
       items: getComments(headers),
     },
     {
       id: "extension",
-      title: "Extension",
+      title: t("extension"),
       items: getExtensionInfo(headers, extension),
     },
   ].filter((section) => section.items.length > 0);
@@ -412,7 +415,7 @@ export function DetailedGefHeaders({ headers, fileType }: DetailedHeaderProps) {
   return (
     <div className="space-y-2">
       <h3 className="text-lg font-semibold text-gray-800 mb-3">
-        Technical Details
+        {t("technicalDetails")}
       </h3>
 
       {sections.map((section) => (

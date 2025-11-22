@@ -1,0 +1,86 @@
+export default {
+  translation: {
+    // App title and description
+    appTitle: "Bedrock GEF Viewer",
+    appDescription: "Bekijk en analyseer GEF (Geotechnical Exchange Format) bestanden voor CPT en boorgatgegevens.",
+    privacyNote: "Gegevens verlaten nooit uw browser, ze worden niet naar een server verzonden",
+
+    // File actions
+    chooseFiles: "Kies GEF Bestanden",
+    dropFilesHere: "Of sleep ze hierheen",
+    loadSampleFiles: "voorbeeldbestanden laden",
+    clearAllFiles: "Alle bestanden wissen",
+    or: "of",
+
+    // Errors and warnings
+    failedToParse: "Kon {{count}} bestand niet parsen:",
+    failedToParse_plural: "Kon {{count}} bestanden niet parsen:",
+    warning: "{{count}} waarschuwing:",
+    warning_plural: "{{count}} waarschuwingen:",
+
+    // Location
+    location: "Locatie",
+    allLocations: "Alle Locaties",
+
+    // Header labels
+    unknownTest: "Onbekende Test",
+    date: "Datum:",
+    locationLabel: "Locatie:",
+    groundLevel: "Maaiveld:",
+    waterLevel: "Waterstand:",
+    depth: "Diepte:",
+    scanNumber: "Scan #:",
+    downloadCsv: "Download CSV",
+
+    // Copy buttons
+    copyTestId: "Test ID kopiëren",
+    copyProjectId: "Project ID kopiëren",
+    copyDate: "Datum kopiëren",
+    copyCoordinates: "Coördinaten kopiëren",
+    copyWgs84: "WGS84 coördinaten kopiëren",
+    copyElevation: "Hoogte kopiëren",
+    copyWaterLevel: "Waterstand kopiëren",
+
+    // Technical details sections
+    technicalDetails: "Technische Details",
+    projectInformation: "Projectinformatie",
+    testInformation: "Testinformatie",
+    coordinatesLocation: "Coördinaten & Locatie",
+    equipmentCapabilities: "Apparatuur & Mogelijkheden",
+    testConditionsRemarks: "Testcondities & Opmerkingen",
+    dataProcessing: "Gegevensverwerking",
+    calculationsFormulas: "Berekeningen & Formules",
+    dataStructure: "Gegevensstructuur",
+    calibrationData: "Kalibratiegegevens",
+    fileMetadata: "Bestandsmetadata",
+    comments: "Opmerkingen",
+    extension: "Extensie",
+
+    // Plot labels
+    columns: "Kolommen",
+    yAxisVertical: "Y-as (Verticaal)",
+    boreLog: "Boorstaat",
+    legend: "Legenda",
+
+    // Soil types
+    sand: "Zand",
+    clay: "Klei",
+    peat: "Veen",
+    silt: "Leem",
+    gravel: "Grind",
+    notDescribed: "Niet beschreven",
+
+    // Specimen table
+    specimenSamples: "Monstersamples",
+    number: "#",
+    depthRange: "Dieptebereik",
+    code: "Code",
+    type: "Type",
+    apparatus: "Apparaat",
+    method: "Methode",
+
+    // Pre-excavation
+    preExcavationLayers: "Voorontgraven lagen",
+    material: "Materiaal",
+  }
+} as const;
