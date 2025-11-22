@@ -212,7 +212,7 @@ export function CompactGefHeader({
           {projectId && (
             <div className="text-gray-600 flex items-center gap-1">
               {projectId}
-              <CopyButton value={projectId} label="Copy Project ID" />
+              <CopyButton value={projectId} label={t("copyProjectId")} />
             </div>
           )}
           {company && <div className="text-gray-600">{company.name}</div>}
@@ -254,7 +254,7 @@ export function CompactGefHeader({
                   {xyid.x.toFixed(2)}, {xyid.y.toFixed(2)}
                   <CopyButton
                     value={`${xyid.x.toFixed(2)}, ${xyid.y.toFixed(2)}`}
-                    label="Copy coordinates"
+                    label={t("copyCoordinates")}
                   />
                 </div>
 
@@ -265,7 +265,7 @@ export function CompactGefHeader({
                       {wgs84.lat.toFixed(6)}, {wgs84.lon.toFixed(6)}
                       <CopyButton
                         value={`${wgs84.lat.toFixed(6)}, ${wgs84.lon.toFixed(6)}`}
-                        label="Copy WGS84 coordinates"
+                        label={t("copyWgs84")}
                       />
                     </div>
                   </>
