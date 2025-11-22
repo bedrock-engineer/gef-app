@@ -4,7 +4,7 @@ import {
   DisclosurePanel,
   Heading,
 } from "react-aria-components";
-import { useTranslation } from "react-i18next";
+import { useTranslation, type TFunction } from "react-i18next";
 import {
   decodeMeasurementText,
   detectGefExtension,
@@ -353,17 +353,17 @@ export function DetailedGefHeaders({ headers, fileType }: DetailedHeaderProps) {
     {
       id: "project",
       title: t("projectInformation"),
-      items: getProjectInfo(headers, fileType, extension),
+      items: getProjectInfo(headers, fileType, extension, t),
     },
     {
       id: "test_info",
       title: t("testInformation"),
-      items: getTestInfo(headers, fileType, extension),
+      items: getTestInfo(headers, fileType, extension, t),
     },
     {
       id: "coordinates",
       title: t("coordinatesLocation"),
-      items: getCoordinatesInfo(headers, fileType, extension),
+      items: getCoordinatesInfo(headers, fileType, extension, t),
     },
     {
       id: "equipment",
@@ -388,7 +388,7 @@ export function DetailedGefHeaders({ headers, fileType }: DetailedHeaderProps) {
     {
       id: "data_structure",
       title: t("dataStructure"),
-      items: getDataStructure(headers),
+      items: getDataStructure(headers, t),
     },
     {
       id: "calibration",
@@ -398,17 +398,17 @@ export function DetailedGefHeaders({ headers, fileType }: DetailedHeaderProps) {
     {
       id: "metadata",
       title: t("fileMetadata"),
-      items: getFileMetadata(headers),
+      items: getFileMetadata(headers, t),
     },
     {
       id: "comments",
       title: t("comments"),
-      items: getComments(headers),
+      items: getComments(headers, t),
     },
     {
       id: "extension",
       title: t("extension"),
-      items: getExtensionInfo(headers, extension),
+      items: getExtensionInfo(headers, extension, t),
     },
   ].filter((section) => section.items.length > 0);
 
@@ -460,21 +460,22 @@ export function DetailedGefHeaders({ headers, fileType }: DetailedHeaderProps) {
 function getProjectInfo(
   headers: GefHeaders,
   fileType: GefFileType,
-  extension: GefExtension
+  extension: GefExtension,
+  t: TFunction
 ) {
   const items: Array<HeaderItem> = [];
 
   if (headers.PROJECTID)
-    items.push({ label: "Project ID", value: headers.PROJECTID });
-  if (headers.TESTID) items.push({ label: "Test ID", value: headers.TESTID });
+    items.push({ label: t("projectId"), value: headers.PROJECTID });
+  if (headers.TESTID) items.push({ label: t("testId"), value: headers.TESTID });
 
   const company = headers.COMPANYID;
   if (company) {
-    items.push({ label: "Company", value: company.name });
+    items.push({ label: t("company"), value: company.name });
     if (company.address)
-      items.push({ label: "Address", value: company.address });
+      items.push({ label: t("address"), value: company.address });
     if (company.companyId)
-      items.push({ label: "Company ID", value: company.companyId });
+      items.push({ label: t("companyId"), value: company.companyId });
   }
 
   const a = items.concat(
@@ -492,25 +493,26 @@ function getProjectInfo(
 function getTestInfo(
   headers: GefHeaders,
   fileType: GefFileType,
-  extension: GefExtension
+  extension: GefExtension,
+  t: TFunction
 ) {
   const items: Array<{ label: string; value: string }> = [];
 
   if (headers.STARTDATE) {
     items.push({
-      label: "Start Date",
+      label: t("startDate"),
       value: formatDate(headers.STARTDATE),
     });
   }
 
   if (headers.STARTTIME) {
-    const t = headers.STARTTIME;
+    const time = headers.STARTTIME;
     items.push({
-      label: "Start Time",
-      value: `${String(t.hour).padStart(2, "0")}:${String(t.minute).padStart(
+      label: t("startTime"),
+      value: `${String(time.hour).padStart(2, "0")}:${String(time.minute).padStart(
         2,
         "0"
-      )}:${String(t.second).padStart(2, "0")}`,
+      )}:${String(time.second).padStart(2, "0")}`,
     });
   }
 
@@ -550,7 +552,8 @@ function getTestInfo(
 function getCoordinatesInfo(
   headers: GefHeaders,
   fileType: GefFileType,
-  extension: GefExtension
+  extension: GefExtension,
+  t: TFunction
 ) {
   const items: Array<HeaderItem> = [];
 
@@ -563,17 +566,17 @@ function getCoordinatesInfo(
     const coordSystem = COORDINATE_SYSTEMS[xyid.coordinateSystem];
 
     items.push({
-      label: "Coordinate System",
+      label: t("coordinateSystem"),
       value: `${coordSystem.name} ${coordSystem.epsg} (${xyid.coordinateSystem})`,
     });
 
     items.push({
-      label: "X Coordinate",
+      label: t("xCoordinate"),
       value: `${xyid.x.toFixed()} ± ${xyid.deltaX.toFixed()} m`,
     });
 
     items.push({
-      label: "Y Coordinate",
+      label: t("yCoordinate"),
       value: `${xyid.y.toFixed()} ± ${xyid.deltaY.toFixed()} m`,
     });
   }
@@ -582,9 +585,9 @@ function getCoordinatesInfo(
 
   if (zid) {
     const heightSystem = HEIGHT_SYSTEM_MAP[zid.code];
-    items.push({ label: "Height System", value: heightSystem });
+    items.push({ label: t("heightSystem"), value: heightSystem });
     items.push({
-      label: "Surface Level",
+      label: t("surfaceLevel"),
       value: `${zid.height.toFixed()} ± ${zid.deltaZ.toFixed()} m`,
     });
   }
@@ -628,21 +631,21 @@ function getEquipmentInfo(
   return items;
 }
 
-function getDataStructure(headers: GefHeaders) {
+function getDataStructure(headers: GefHeaders, t: TFunction) {
   const items: Array<{ label: string; value: ReactNode }> = [];
 
   if (headers.COLUMN)
-    items.push({ label: "Number of Columns", value: String(headers.COLUMN) });
+    items.push({ label: t("numberOfColumns"), value: String(headers.COLUMN) });
 
   if (headers.LASTSCAN)
-    items.push({ label: "Number of Scans", value: String(headers.LASTSCAN) });
+    items.push({ label: t("numberOfScans"), value: String(headers.LASTSCAN) });
 
   if (headers.DATAFORMAT)
-    items.push({ label: "Data Format", value: headers.DATAFORMAT });
+    items.push({ label: t("dataFormat"), value: headers.DATAFORMAT });
 
   if (headers.COLUMNINFO) {
     items.push({
-      label: "Data Columns",
+      label: t("dataColumns"),
       value: (
         <ul className="list list-disc list-inside">
           {headers.COLUMNINFO.map((col) => (
@@ -679,32 +682,32 @@ function getCalibrationData(
   return items;
 }
 
-function getFileMetadata(headers: GefHeaders) {
+function getFileMetadata(headers: GefHeaders, t: TFunction) {
   const items: Array<{ label: string; value: string }> = [];
 
   if (headers.GEFID)
     items.push({
-      label: "GEF Version",
+      label: t("gefVersion"),
       value: `${headers.GEFID.major}.${headers.GEFID.minor}.${headers.GEFID.patch}`,
     });
 
   if (headers.REPORTCODE) {
     items.push({
-      label: "Report Code",
+      label: t("reportCode"),
       value: `${headers.REPORTCODE.code} v${headers.REPORTCODE.major}.${headers.REPORTCODE.minor}.${headers.REPORTCODE.patch}`,
     });
   }
 
   if (headers.FILEDATE) {
     items.push({
-      label: "File Date",
+      label: t("fileDate"),
       value: formatDate(headers.FILEDATE),
     });
   }
 
   if (headers.FILEOWNER)
-    items.push({ label: "File Owner", value: headers.FILEOWNER });
-  if (headers.OS) items.push({ label: "Operating System", value: headers.OS });
+    items.push({ label: t("fileOwner"), value: headers.FILEOWNER });
+  if (headers.OS) items.push({ label: t("operatingSystem"), value: headers.OS });
 
   return items;
 }
@@ -743,13 +746,13 @@ function getCalculationsInfo(
   );
 }
 
-function getComments(headers: GefHeaders) {
+function getComments(headers: GefHeaders, t: TFunction) {
   const items: Array<HeaderItem> = [];
 
   if (headers.COMMENT && headers.COMMENT.length > 0) {
     headers.COMMENT.forEach((comment, index) => {
       items.push({
-        label: `Comment ${index + 1}`,
+        label: `${t("comment")} ${index + 1}`,
         value: comment,
       });
     });
@@ -760,7 +763,8 @@ function getComments(headers: GefHeaders) {
 
 function getExtensionInfo(
   headers: GefHeaders,
-  extension: GefExtension
+  extension: GefExtension,
+  t: TFunction
 ): Array<HeaderItem> {
   if (extension === "standard") {
     return [];
@@ -770,7 +774,7 @@ function getExtensionInfo(
 
   if (extension === "dutch") {
     items.push({
-      label: "Extension Type",
+      label: t("extensionType"),
       value: "Dutch BRO/VOTB (GEF-CPT v1.1.3)",
     });
 
@@ -800,7 +804,7 @@ function getExtensionInfo(
     // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
   } else if (extension === "belgian") {
     items.push({
-      label: "Extension Type",
+      label: t("extensionType"),
       value: "Belgian DOV",
     });
 
