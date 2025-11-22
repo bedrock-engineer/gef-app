@@ -1,7 +1,20 @@
+import { redirect } from "react-router";
 import type { Route } from "./+types/home";
 import { App } from "../components/app";
+import { localeCookie } from "~/middleware/i18next";
 
 const title = "Bedrock GEF file Viewer";
+
+export async function action({ request }: Route.ActionArgs) {
+  const formData = await request.formData();
+  const newLang = formData.get("lang") as string;
+
+  return redirect("/", {
+    headers: {
+      "Set-Cookie": await localeCookie.serialize(newLang),
+    },
+  });
+}
 const description =
   "View and visualize GEF Files easily in your browser. View CPT data and Bore charts instantly";
   

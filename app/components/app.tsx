@@ -6,8 +6,8 @@ import {
   ToggleButton,
   ToggleButtonGroup,
 } from "react-aria-components";
+import { Form } from "react-router";
 import { useTranslation } from "react-i18next";
-import Cookies from "js-cookie";
 import { downloadGefDataAsCsv } from "~/util/csv-download";
 import { parseGefFile, type GefData } from "~/util/gef";
 import { BorePlot } from "./BorePlot";
@@ -20,12 +20,6 @@ import { SpecimenTable } from "./SpecimenTable";
 export function App() {
   const { t, i18n } = useTranslation();
   const [gefData, setGefData] = useState<Record<string, GefData>>({});
-
-  function toggleLanguage() {
-    const newLang = i18n.language === "nl" ? "en" : "nl";
-    void i18n.changeLanguage(newLang);
-    Cookies.set("lng", newLang, { path: "/", sameSite: "lax" });
-  }
   const [selectedFileName, setSelectedFileName] = useState("");
   const [failedFiles, setFailedFiles] = useState<
     Array<{ name: string; error: string }>
@@ -99,12 +93,15 @@ export function App() {
         <h1 className="text-2xl flex gap-4 text-center items-center">
           <img src="bedrock.svg" width={30} /> {t("appTitle")}
         </h1>
-        <Button
-          onPress={toggleLanguage}
-          className="px-3 py-1 text-sm border border-gray-300 rounded hover:bg-gray-100 transition-colors"
-        >
-          {i18n.language === "nl" ? "EN" : "NL"}
-        </Button>
+        <Form method="post">
+          <input type="hidden" name="lang" value={i18n.language === "nl" ? "en" : "nl"} />
+          <button
+            type="submit"
+            className="px-3 py-1 text-sm border border-gray-300 rounded hover:bg-gray-100 transition-colors"
+          >
+            {i18n.language === "nl" ? "EN" : "NL"}
+          </button>
+        </Form>
       </div>
 
       <div className="text-center mb-6 max-w-md mx-auto">
