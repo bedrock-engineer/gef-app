@@ -20,6 +20,7 @@
     "i18next-fetch-backend": "^7.0.0",
     "isbot": "^5.1.27",
     "leaflet": "^1.9.4",
+    "munsell": "^1.1.6",
     "proj4": "^2.20.1",
     "proj4leaflet": "^1.0.2",
     "react": "^19.2.0",
