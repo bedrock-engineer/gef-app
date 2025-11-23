@@ -1,14 +1,18 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { COORDINATE_SYSTEMS, type CoordinateSystemCode } from "../util/gef-schemas";
+import {
+  COORDINATE_SYSTEMS,
+  type CoordinateSystemCode,
+} from "../util/gef-schemas";
 import { convertToWGS84 } from "../util/coordinates";
-import type { GefData } from "~/util/gef";
+import type { GefData, GefFileType } from "~/util/gef";
 
 interface GefLocation {
   filename: string;
   x: number;
   y: number;
-  coordinateSystem: CoordinateSystemCode;
+  coordinateSystem: CoordinateSystemCode | "-";
+  fileType: GefFileType;
 }
 
 interface GefMultiMapProps {
@@ -33,23 +37,25 @@ export function GefMultiMap({
   const [error, setError] = useState<string | null>(null);
 
   // Extract locations from GEF data
-  const locations: Array<GefLocation> = Object.entries(gefData)
-    .filter(([_, data]) => data.headers.XYID)
-    .map(([filename, data]) => ({
-      filename,
-      x: data.headers.XYID!.x,
-      y: data.headers.XYID!.y,
-      coordinateSystem: data.headers.XYID!.coordinateSystem,
-    }));
+  const locations: Array<GefLocation> = useMemo(
+    () =>
+      Object.entries(gefData)
+        .filter(([_, data]) => data.headers.XYID)
+        .map(([filename, data]) => ({
+          filename,
+          x: data.headers.XYID?.x ?? 0,
+          y: data.headers.XYID?.y ?? 0,
+          coordinateSystem: data.headers.XYID?.coordinateSystem ?? "-",
+          fileType: data.fileType,
+        })),
+    [gefData]
+  );
 
   useEffect(() => {
     if (!mapRef.current || locations.length === 0) return;
 
     // Dynamic imports to avoid SSR issues
-    Promise.all([
-      import("leaflet"),
-      import("leaflet/dist/leaflet.css"),
-    ])
+    Promise.all([import("leaflet"), import("leaflet/dist/leaflet.css")])
       .then(([leafletModule]) => {
         const L = leafletModule.default;
 
@@ -106,19 +112,21 @@ export function GefMultiMap({
 
         // Add markers for each location
         transformedLocations.forEach((loc) => {
-          const marker = L.marker([loc.lat, loc.lng], {
-            icon: L.icon({
-              iconUrl: "https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-blue.png",
-              shadowUrl:
-                "https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png",
-              iconSize: [25, 41],
-              iconAnchor: [12, 41],
-              popupAnchor: [1, -34],
-              shadowSize: [41, 41],
-            }),
+          // CPT = blue, BORE = orange
+          const color = loc.fileType === "CPT" ? "#2563eb" : "#ea580c";
+
+          const marker = L.circleMarker([loc.lat, loc.lng], {
+            radius: 8,
+            fillColor: color,
+            color: "#fff",
+            weight: 2,
+            opacity: 1,
+            fillOpacity: 0.8,
           }).addTo(map);
 
-          const coordSysName = COORDINATE_SYSTEMS[loc.coordinateSystem]?.name ?? loc.coordinateSystem;
+          const coordSysName =
+            COORDINATE_SYSTEMS[loc.coordinateSystem]?.name ??
+            loc.coordinateSystem;
           marker.bindPopup(`
             <div class="text-xs">
               <strong>${loc.filename}</strong><br/>
@@ -149,38 +157,28 @@ export function GefMultiMap({
         mapInstanceRef.current = null;
       }
     };
-  }, [locations, locations.length, onMarkerClick]);
+  }, [locations, locations.length, onMarkerClick, t]);
 
   // Update marker styles when selection changes
   useEffect(() => {
     if (!mapInstanceRef.current) return;
 
-    Promise.all([import("leaflet")])
-      .then(([leafletModule]) => {
-        const L = leafletModule.default;
+    markersRef.current.forEach((marker, filename) => {
+      const isSelected = filename === selectedFileName;
+      const loc = locations.find((l) => l.filename === filename);
+      const baseColor = loc?.fileType === "CPT" ? "#2563eb" : "#ea580c";
 
-        markersRef.current.forEach((marker, filename) => {
-          const isSelected = filename === selectedFileName;
-          
-          marker.setIcon(
-            L.icon({
-              iconUrl: isSelected
-                ? "https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-red.png"
-                : "https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-blue.png",
-              shadowUrl:
-                "https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png",
-              iconSize: [25, 41],
-              iconAnchor: [12, 41],
-              popupAnchor: [1, -34],
-              shadowSize: [41, 41],
-            })
-          );
-        });
-      })
-      .catch((error: unknown) => {
-        console.log("Failed to update map markers", error);
+      marker.setStyle({
+        radius: isSelected ? 10 : 8,
+        fillColor: isSelected ? "#dc2626" : baseColor,
+        weight: isSelected ? 3 : 2,
       });
-  }, [selectedFileName]);
+
+      if (isSelected) {
+        marker.bringToFront();
+      }
+    });
+  }, [selectedFileName, locations]);
 
   if (locations.length === 0) {
     return (

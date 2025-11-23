@@ -25,16 +25,16 @@ import {
   findMeasurementTextVariable,
   findMeasurementVariable,
   getMeasurementVarValue,
-  type GefExtension
+  type GefExtension,
 } from "../util/gef-metadata";
 import {
   COORDINATE_SYSTEMS,
   HEIGHT_SYSTEM_MAP,
-  type GefHeaders
+  type GefHeaders,
 } from "../util/gef-schemas";
 import { CopyButton } from "./CopyButton";
+import { DownloadIcon } from "lucide-react";
 
-// Helper to get description based on locale
 function getLocalizedDescription(
   varInfo: { description: string; descriptionNl?: string } | undefined,
   locale: string
@@ -46,7 +46,6 @@ function getLocalizedDescription(
   return varInfo.description;
 }
 
-// Map phone country codes to translation keys
 function getCountryTranslationKey(phoneCode: string): string | undefined {
   const codeMap: Record<string, string> = {
     "31": "countryNetherlands",
@@ -130,7 +129,6 @@ function formatNumericValue(value: string): string {
   return formatNumber(num);
 }
 
-// Helper function to extract MEASUREMENTTEXT items by category
 function getMeasurementTextItems(
   headers: GefHeaders,
   categories: Array<string>,
@@ -157,7 +155,6 @@ function getMeasurementTextItems(
 
     if (!categories.includes(textInfo.category)) return;
 
-    // Decode standardized codes
     const displayValue = decodeMeasurementTextByFileType(
       id,
       text,
@@ -165,20 +162,25 @@ function getMeasurementTextItems(
       extension
     );
 
-    items.push({ label: getLocalizedDescription(textInfo, locale), value: displayValue });
+    items.push({
+      label: getLocalizedDescription(textInfo, locale),
+      value: displayValue,
+    });
   });
 
   return items;
 }
 
-// CPT-specific compact info
-function CptCompactInfo({
-  measurementVars,
-  lastScan,
-}: {
-  measurementVars: Array<{ id: number; value: string; unit: string }>;
+interface CptCompactInfoProps {
+  measurementVars: Array<{
+    id: number;
+    value: string;
+    unit: string;
+  }>;
   lastScan: number | undefined;
-}) {
+}
+
+function CptCompactInfo({ measurementVars, lastScan }: CptCompactInfoProps) {
   const { t } = useTranslation();
 
   const waterLevelValue = getMeasurementVarValue(measurementVars, 42);
@@ -220,12 +222,11 @@ function BoreCompactInfo({ headers }: { headers: GefHeaders }) {
   const { t } = useTranslation();
 
   // Get key BORE measurementtext values
-  const datumBoring = headers.MEASUREMENTTEXT?.find(mt => mt.id === 16);
-  const plaatsnaam = headers.MEASUREMENTTEXT?.find(mt => mt.id === 3);
-  const boorbedrijf = headers.MEASUREMENTTEXT?.find(mt => mt.id === 13);
-  const beschrijver = headers.MEASUREMENTTEXT?.find(mt => mt.id === 6);
+  const datumBoring = headers.MEASUREMENTTEXT?.find((mt) => mt.id === 16);
+  const plaatsnaam = headers.MEASUREMENTTEXT?.find((mt) => mt.id === 3);
+  const boorbedrijf = headers.MEASUREMENTTEXT?.find((mt) => mt.id === 13);
 
-  if (!datumBoring && !plaatsnaam && !boorbedrijf && !beschrijver) {
+  if (!datumBoring && !plaatsnaam && !boorbedrijf) {
     return null;
   }
 
@@ -247,12 +248,6 @@ function BoreCompactInfo({ headers }: { headers: GefHeaders }) {
         <>
           <dt className="font-medium text-gray-500">{t("drillingCompany")}</dt>
           <dd>{boorbedrijf.text}</dd>
-        </>
-      )}
-      {beschrijver && (
-        <>
-          <dt className="font-medium text-gray-500">{t("layerDescriber")}</dt>
-          <dd>{beschrijver.text}</dd>
         </>
       )}
     </>
@@ -291,7 +286,7 @@ export function CompactGefHeader({
 
   return (
     <div className="bg-white border border-gray-300 rounded-lg shadow-sm p-4 mb-6">
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 text-sm">
         <div>
           <div className="font-bold text-lg text-gray-900 flex items-center gap-1">
             {testId ?? t("unknownTest")}
@@ -300,19 +295,13 @@ export function CompactGefHeader({
           {projectId && (
             <div className="text-gray-600 flex items-center gap-1">
               {projectId}
-              <CopyButton value={projectId} label={t("copyProjectId")} />
             </div>
           )}
           {company && <div className="text-gray-600">{company.name}</div>}
 
-          <Button
-            onPress={() => {
-              onDownload();
-            }}
-            className="px-3 py-2 mt-2 border hover:bg-blue-100 rounded-sm transition-colors"
-          >
-            {t("downloadCsv")}
-          </Button>
+          {fileType == "CPT" ? (
+            <DownloadCSVButton onDownload={onDownload} />
+          ) : null}
         </div>
 
         <dl
@@ -334,7 +323,8 @@ export function CompactGefHeader({
               <dt className="text-gray-500">{t("locationLabel")}</dt>
               <dd>
                 <div className="font-semibold">
-                  {COORDINATE_SYSTEMS[xyid.coordinateSystem]?.name ?? t("unknownCoordinateSystem")}{" "}
+                  {COORDINATE_SYSTEMS[xyid.coordinateSystem]?.name ??
+                    t("unknownCoordinateSystem")}{" "}
                   ({COORDINATE_SYSTEMS[xyid.coordinateSystem]?.epsg})
                 </div>
 
@@ -368,7 +358,10 @@ export function CompactGefHeader({
               <dd className="flex items-center gap-1">
                 {elevationDisplay}
                 {elevationValue && (
-                  <CopyButton value={elevationValue} label={t("copyElevation")} />
+                  <CopyButton
+                    value={elevationValue}
+                    label={t("copyElevation")}
+                  />
                 )}
               </dd>
             </>
@@ -380,10 +373,26 @@ export function CompactGefHeader({
               lastScan={headers.LASTSCAN}
             />
           )}
+
           {fileType === "BORE" && <BoreCompactInfo headers={headers} />}
         </dl>
       </div>
     </div>
+  );
+}
+
+function DownloadCSVButton({ onDownload }: { onDownload: () => void }) {
+  const { t } = useTranslation();
+
+  return (
+    <Button
+      onPress={() => {
+        onDownload();
+      }}
+      className="button transition-colors mt-4"
+    >
+      {t("downloadCsv")} <DownloadIcon size={14} />
+    </Button>
   );
 }
 
@@ -469,41 +478,45 @@ export function DetailedGefHeaders({ headers, fileType }: DetailedHeaderProps) {
         {t("technicalDetails")}
       </h3>
 
-      {sections.map((section) => (
-        <Disclosure
-          key={section.id}
-          className="border border-gray-200 rounded-lg overflow-hidden"
-        >
-          <Heading>
-            <Button
-              slot="trigger"
-              className="w-full px-4 py-3 bg-gray-50 hover:bg-gray-100 flex items-center justify-between text-left transition-colors data-[expanded]:bg-gray-100"
-            >
-              <span className="font-medium text-gray-800">{section.title}</span>
-              <span className="text-gray-500 data-[expanded]:hidden">+</span>
-              <span className="text-gray-500 hidden data-[expanded]:inline">
-                −
-              </span>
-            </Button>
-          </Heading>
+      <div className="grid grid-cols-2 gap-x-2 gap-y-2">
+        {sections.map((section) => (
+          <Disclosure
+            key={section.id}
+            className="border border-gray-200 rounded-lg overflow-hidden"
+          >
+            <Heading>
+              <Button
+                slot="trigger"
+                className="w-full px-4 py-3 bg-gray-50 hover:bg-gray-100 flex items-center justify-between text-left transition-colors data-[expanded]:bg-gray-100"
+              >
+                <span className="font-medium text-gray-800">
+                  {section.title}
+                </span>
+                <span className="text-gray-500 data-expanded:hidden">+</span>
+                <span className="text-gray-500 hidden data-expanded:inline">
+                  −
+                </span>
+              </Button>
+            </Heading>
 
-          <DisclosurePanel className="p-4 bg-white">
-            <dl className="space-y-2">
-              {section.items.map((item, idx) => (
-                <div
-                  key={idx}
-                  className="grid grid-cols-[200px_1fr] gap-4 text-sm"
-                >
-                  <dt className="text-gray-600">{item.label}</dt>
-                  <dd className="text-gray-900 font-mono text-xs">
-                    {item.value}
-                  </dd>
-                </div>
-              ))}
-            </dl>
-          </DisclosurePanel>
-        </Disclosure>
-      ))}
+            <DisclosurePanel className=" bg-white">
+              <dl className="space-y-2 p-4">
+                {section.items.map((item, idx) => (
+                  <div
+                    key={idx}
+                    className="grid grid-cols-[200px_1fr] gap-4 text-sm"
+                  >
+                    <dt className="text-gray-600">{item.label}</dt>
+                    <dd className="text-gray-900 font-mono text-xs">
+                      {item.value}
+                    </dd>
+                  </div>
+                ))}
+              </dl>
+            </DisclosurePanel>
+          </Disclosure>
+        ))}
+      </div>
     </div>
   );
 }
@@ -530,19 +543,33 @@ function getProjectInfo(
     if (company.companyId) {
       const countryKey = getCountryTranslationKey(company.companyId);
       if (countryKey) {
-        items.push({ label: t("country"), value: t(countryKey as "countryNetherlands" | "countryBelgium" | "countryGermany") });
+        items.push({
+          label: t("country"),
+          value: t(
+            countryKey as
+              | "countryNetherlands"
+              | "countryBelgium"
+              | "countryGermany"
+          ),
+        });
       }
     }
   }
 
-  const a = items.concat(
-    getMeasurementTextItems(
-      headers,
-      ["project_info", "standards", "location", "personnel", "data_management", "related_investigations"],
-      fileType,
-      extension
-    )
+  const measuremenTextItems = getMeasurementTextItems(
+    headers,
+    [
+      "project_info",
+      "standards",
+      "location",
+      "personnel",
+      "data_management",
+      "related_investigations",
+    ],
+    fileType,
+    extension
   );
+  const a = items.concat(measuremenTextItems);
 
   return a;
 }
@@ -566,10 +593,9 @@ function getTestInfo(
     const time = headers.STARTTIME;
     items.push({
       label: t("startTime"),
-      value: `${String(time.hour).padStart(2, "0")}:${String(time.minute).padStart(
-        2,
-        "0"
-      )}:${String(time.second).padStart(2, "0")}`,
+      value: `${String(time.hour).padStart(2, "0")}:${String(
+        time.minute
+      ).padStart(2, "0")}:${String(time.second).padStart(2, "0")}`,
     });
   }
 
@@ -617,7 +643,12 @@ function getCoordinatesInfo(
   items.push(
     ...getMeasurementTextItems(
       headers,
-      ["coordinates", "reference_system", "elevation_determination", "position_determination"],
+      [
+        "coordinates",
+        "reference_system",
+        "elevation_determination",
+        "position_determination",
+      ],
       fileType,
       extension
     )
@@ -668,7 +699,12 @@ function getEquipmentInfo(
   items.push(
     ...getMeasurementTextItems(
       headers,
-      ["equipment", "drilling_methods", "drilling_equipment", "drilling_segments"],
+      [
+        "equipment",
+        "drilling_methods",
+        "drilling_equipment",
+        "drilling_segments",
+      ],
       fileType,
       extension,
       locale
@@ -677,7 +713,18 @@ function getEquipmentInfo(
 
   headers.MEASUREMENTVAR?.forEach(({ id, value, unit }) => {
     const varInfo = findMeasurementVariableByFileType(id, fileType, extension);
-    if (!varInfo || !["equipment", "capabilities", "drilling_equipment", "drilling_segments", "borehole_geometry", "groundwater", "monitoring_wells"].includes(varInfo.category))
+    if (
+      !varInfo ||
+      ![
+        "equipment",
+        "capabilities",
+        "drilling_equipment",
+        "drilling_segments",
+        "borehole_geometry",
+        "groundwater",
+        "monitoring_wells",
+      ].includes(varInfo.category)
+    )
       return;
 
     let displayValue: string;
@@ -792,7 +839,8 @@ function getFileMetadata(headers: GefHeaders, t: TFunction) {
 
   if (headers.FILEOWNER)
     items.push({ label: t("fileOwner"), value: headers.FILEOWNER });
-  if (headers.OS) items.push({ label: t("operatingSystem"), value: headers.OS });
+  if (headers.OS)
+    items.push({ label: t("operatingSystem"), value: headers.OS });
 
   return items;
 }
@@ -805,7 +853,14 @@ function getConditionsInfo(
 ) {
   return getMeasurementTextItems(
     headers,
-    ["conditions", "general", "infrastructure", "measurements", "sample_condition", "monitoring_wells"],
+    [
+      "conditions",
+      "general",
+      "infrastructure",
+      "measurements",
+      "sample_condition",
+      "monitoring_wells",
+    ],
     fileType,
     extension,
     locale
@@ -818,7 +873,13 @@ function getProcessingInfo(
   extension: GefExtension,
   locale: string
 ) {
-  return getMeasurementTextItems(headers, ["processing"], fileType, extension, locale);
+  return getMeasurementTextItems(
+    headers,
+    ["processing"],
+    fileType,
+    extension,
+    locale
+  );
 }
 
 function getCalculationsInfo(

@@ -7,6 +7,7 @@ import { getSoilColor } from "~/util/gef-bore";
 import { decodeBoreCode } from "~/util/gef-bore-codes";
 import { getMunsellColor } from "~/util/munsell-colors";
 import { PlotDownloadButtons } from "./PlotDownload";
+import { Card } from "./card";
 
 interface BorePlotProps {
   layers: Array<BoreLayer>;
@@ -17,6 +18,7 @@ interface BorePlotProps {
 }
 
 const MIN_LAYER_HEIGHT_PX = 15; // minimum pixel height to show label
+const id = "boreplot";
 
 export function BorePlot({
   layers,
@@ -34,8 +36,8 @@ export function BorePlot({
     }
 
     // Calculate the depth range and pixels per meter
-    const minDepth = min(layers.map((l) => l.depthTop));
-    const maxDepth = max(layers.map((l) => l.depthBottom));
+    const minDepth = min(layers.map((l) => l.depthTop)) ?? 0;
+    const maxDepth = max(layers.map((l) => l.depthBottom)) ?? 0;
     const depthRange = maxDepth - minDepth;
     const plotHeight = height - 30 - 40; // subtract margins
     const pixelsPerMeter = plotHeight / depthRange;
@@ -50,6 +52,7 @@ export function BorePlot({
     const plot = Plot.plot({
       style: {
         overflow: "visible",
+        backgroundColor: "white",
       },
       width,
       height,
@@ -165,24 +168,30 @@ export function BorePlot({
   }, [layers, specimens, width, height]);
 
   return (
-    <div className="bg-white border border-gray-300 rounded-lg shadow-sm p-6">
+    <Card>
       <h3 className="text-lg font-semibold mb-4">{t("boreLog")}</h3>
       <div className="flex justify-center">
-        <div id="bore-plot" ref={containerRef}></div>
+        <div id={id} ref={containerRef}></div>
       </div>
-      <PlotDownloadButtons plotId="bore-plot" filename={`${baseFilename}-boorstaat`} />
       <div className="mt-4">
-        <h4 className="text-sm font-medium text-gray-700 mb-2">{t("legend")}</h4>
+        <h4 className="text-sm font-medium text-gray-700 mb-2">
+          {t("legend")}
+        </h4>
         <div className="flex flex-wrap gap-2 text-xs">
           <LegendItem color={getSoilColor("Z")} label={`Z - ${t("sand")}`} />
           <LegendItem color={getSoilColor("K")} label={`K - ${t("clay")}`} />
           <LegendItem color={getSoilColor("V")} label={`V - ${t("peat")}`} />
           <LegendItem color={getSoilColor("L")} label={`L - ${t("silt")}`} />
           <LegendItem color={getSoilColor("G")} label={`G - ${t("gravel")}`} />
-          <LegendItem color={getSoilColor("NBE")} label={`NBE - ${t("notDescribed")}`} />
+          <LegendItem
+            color={getSoilColor("NBE")}
+            label={`NBE - ${t("notDescribed")}`}
+          />
         </div>
       </div>
-    </div>
+
+      <PlotDownloadButtons plotId={id} filename={`${baseFilename}-boorstaat`} />
+    </Card>
   );
 }
 

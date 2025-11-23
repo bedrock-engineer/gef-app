@@ -1,6 +1,7 @@
 import { downloadPng, downloadSvg } from "svg-crowbar";
 import { Button } from "react-aria-components";
 import { useTranslation } from "react-i18next";
+import { DownloadIcon } from "lucide-react";
 
 interface PlotDownloadButtonsProps {
   plotId: string;
@@ -25,12 +26,11 @@ export function PlotDownloadButtons({
       downloadSvg(plotElement, filename, {
         css: "none",
       });
-    } else if (format === "png") {
+    } else {
       downloadPng(plotElement, filename, {
         css: "internal",
         downloadPNGOptions: {
           scale: window.devicePixelRatio,
-          background: "white",
         },
       });
     }
@@ -39,16 +39,20 @@ export function PlotDownloadButtons({
   return (
     <div className="flex gap-2 mt-3">
       <Button
-        className="px-2 py-1 text-xs border border-gray-300 rounded hover:bg-gray-100"
-        onPress={() => download("svg")}
+        className="button transition-colors"
+        onPress={() => {
+          download("svg");
+        }}
       >
-        {t("downloadSvg")}
+        {t("downloadSvg")} <DownloadIcon size={14} />
       </Button>
       <Button
-        className="px-2 py-1 text-xs border border-gray-300 rounded hover:bg-gray-100"
-        onPress={() => download("png")}
+        className="button"
+        onPress={() => {
+          download("png");
+        }}
       >
-        {t("downloadPng")}
+        {t("downloadPng")} <DownloadIcon size={14} />
       </Button>
     </div>
   );

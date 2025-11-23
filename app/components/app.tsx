@@ -1,23 +1,21 @@
-import { Suspense, useState } from "react";
-import {
-  Button,
-  DropZone,
-  FileTrigger,
-} from "react-aria-components";
-import { Form } from "react-router";
+import { Suspense, useState, useTransition } from "react";
+import { Button, FileTrigger } from "react-aria-components";
 import { useTranslation } from "react-i18next";
+import { Form } from "react-router";
 import { downloadGefDataAsCsv } from "~/util/csv-download";
 import { parseGefFile, type GefData } from "~/util/gef";
 import { BorePlot } from "./BorePlot";
 import { CptPlots } from "./CptPlot";
+import { FileTable } from "./FileTable";
 import { CompactGefHeader, DetailedGefHeaders } from "./GefHeaderDisplay";
 import { GefMultiMap } from "./GefMultiMap";
 import { PreExcavationPlot } from "./PreExcavationPlot";
 import { SpecimenTable } from "./SpecimenTable";
-import { FileTable } from "./FileTable";
+import { TrashIcon, UploadIcon } from "lucide-react";
 
 export function App() {
   const { t, i18n } = useTranslation();
+  const [isPending, startTransition] = useTransition();
   const [gefData, setGefData] = useState<Record<string, GefData>>({});
   const [selectedFileName, setSelectedFileName] = useState("");
   const [failedFiles, setFailedFiles] = useState<
@@ -72,231 +70,267 @@ export function App() {
 
       const gef = Object.fromEntries(parsedGefFiles) as Record<string, GefData>;
 
-      setGefData(gef);
-      setFailedFiles(failed);
+      startTransition(() => {
+        setGefData(gef);
+        setFailedFiles(failed);
 
-      if (files[0]) {
-        setSelectedFileName(files[0].name);
-      }
+        if (files[0]) {
+          setSelectedFileName(files[0].name);
+        }
+      });
     }
   }
 
   const selectedFile = selectedFileName ? gefData[selectedFileName] : undefined;
 
   return (
-    <main className="p-8 max-w-6xl mx-auto">
-      <div className="flex justify-between items-center mb-6">
-        <div className="w-16" /> {/* Spacer for centering */}
-        <h1 className="text-2xl flex gap-4 text-center items-center">
-          <img src="bedrock.svg" width={30} /> {t("appTitle")}
-        </h1>
-        <Form method="post">
-          <input
-            type="hidden"
-            name="lang"
-            value={i18n.language === "nl" ? "en" : "nl"}
-          />
-          <button
-            type="submit"
-            className="px-3 py-1 text-sm border border-gray-300 rounded hover:bg-gray-100 transition-colors"
-          >
-            {i18n.language === "nl" ? "EN" : "NL"}
-          </button>
-        </Form>
-      </div>
-
-      <div className="text-center mb-6 max-w-md mx-auto">
-        <p className="text-gray-600 text-sm mb-2">{t("appDescription")}</p>
-        <p className="text-green-700 text-xs font-medium">{t("privacyNote")}</p>
-      </div>
-
-      <div className="max-w-[300px] mx-auto mb-8">
-        <DropZone
-          // eslint-disable-next-line @typescript-eslint/no-misused-promises
-          onDrop={async (e) => {
-            const fileItems = e.items.filter((file) => file.kind === "file");
-
-            const files = await Promise.all(fileItems.map((d) => d.getFile()));
-
-            // eslint-disable-next-line @typescript-eslint/no-floating-promises
-            handleFiles(files);
-          }}
+    <div className="pancake">
+      <header className="mb-6 border-b border-gray-200 py-4 px-2">
+        <div
+          style={{ maxWidth: "clamp(360px, 100%, 1800px)" }}
+          className=" mx-auto flex justify-between items-center"
         >
-          <FileTrigger
-            acceptedFileTypes={[".gef", ".GEF"]}
-            allowsMultiple
-            onSelect={(fileList) => {
-              handleFiles(fileList).catch((error: unknown) => {
-                console.error(error);
-              });
-            }}
-          >
-            <Button className="w-full p-3 border-2 border-blue-400 aria-selected:bg-blue-200 rounded-lg bg-blue-50 hover:bg-blue-100 text-blue-700 transition-colors">
-              {t("chooseFiles")}
-            </Button>
-          </FileTrigger>
-          {t("dropFilesHere")}
-          {/* TODO Nice icon */}
-        </DropZone>
-        <div className="mt-3 text-center">
-          <span className="text-sm text-gray-500">{t("or")} </span>
-          <Button
-            className="text-sm text-blue-600 hover:text-blue-800 underline"
-            onPress={() => {
-              loadSampleFiles().catch((error: unknown) => {
-                console.error(error);
-              });
-            }}
-          >
-            {t("loadSampleFiles")}
-          </Button>
-        </div>
-      </div>
-
-      {failedFiles.length > 0 && (
-        <div className="mb-4 p-4 bg-red-50 border border-red-200 rounded-lg">
-          <h2 className="text-red-800 font-semibold mb-2">
-            {t("failedToParse", { count: failedFiles.length })}
-          </h2>
-          <ul className="space-y-1">
-            {failedFiles.map(({ name, error }) => (
-              <li key={name} className="text-sm text-red-700">
-                <span className="font-medium">{name}</span>: {error}
-              </li>
-            ))}
-          </ul>
-        </div>
-      )}
-
-      <FileTable
-        gefData={gefData}
-        selectedFileName={selectedFileName}
-        onSelectionChange={setSelectedFileName}
-        onFileDrop={(files) => {
-          handleFiles(files).catch((error: unknown) => {
-            console.error(error);
-          });
-        }}
-      />
-      {Object.keys(gefData).length > 0 && (
-        <Button
-          className={"px-2 py-1 border rounded-sm hover:bg-blue-100"}
-          onPress={() => {
-            setGefData({});
-            setSelectedFileName("");
-            setFailedFiles([]);
-          }}
-        >
-          {t("clearAllFiles")}
-        </Button>
-      )}
-
-      {Object.keys(gefData).length > 0 && (
-        <div className="mb-6 mt-2">
-          <h2 className="text-xl font-semibold mb-3">
-            {Object.keys(gefData).length > 1
-              ? t("allLocations")
-              : t("location")}
-          </h2>
-
-          <Suspense
-            fallback={
-              <div className="w-full h-96 rounded-lg border border-gray-300 shadow-sm bg-gray-100 flex items-center justify-center">
-                <span className="text-gray-500">{t("loadingMap")}</span>
-              </div>
-            }
-          >
-            <GefMultiMap
-              gefData={gefData}
-              selectedFileName={selectedFileName}
-              onMarkerClick={setSelectedFileName}
+          <h1 className="text-2xl flex gap-4 text-center items-center">
+            <img src="bedrock.svg" width={30} /> {t("appTitle")}
+          </h1>
+          <Form method="post">
+            <input
+              type="hidden"
+              name="lang"
+              value={i18n.language === "nl" ? "en" : "nl"}
             />
-          </Suspense>
+            <button
+              type="submit"
+              className="px-3 py-1 text-sm border border-gray-300 rounded hover:bg-gray-100 transition-colors"
+            >
+              {i18n.language === "nl" ? "EN" : "NL"}
+            </button>
+          </Form>
         </div>
-      )}
+      </header>
 
-      {selectedFile && (
-        <div className="space-y-6">
-          {selectedFile.warnings.length > 0 && (
-            <div className="p-4 bg-amber-50 border border-amber-200 rounded-lg">
-              <h2 className="text-amber-800 font-semibold mb-2">
-                {t("warning", { count: selectedFile.warnings.length })}
+      <main className="main-grid px-2">
+        <div>
+          <div className="mb-8">
+            <FileTrigger
+              acceptedFileTypes={[".gef", ".GEF"]}
+              allowsMultiple
+              onSelect={(fileList) => {
+                handleFiles(fileList).catch((error: unknown) => {
+                  console.error(error);
+                });
+              }}
+            >
+              <Button
+                isPending={isPending}
+                className="flex gap-1 items-center justify-center w-full p-2 border border-blue-300 aria-selected:bg-blue-200 data-pressed:bg-blue-200 data-pressed:text-blue-800 rounded-sm bg-blue-50 hover:bg-blue-100 text-blue-700 transition-colors"
+              >
+                {isPending ? (
+                  <>
+                    {t("processingFiles")}{" "}
+                    <svg
+                      className="animate-spin h-4 w-4"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                    >
+                      <circle
+                        className="opacity-25"
+                        cx="12"
+                        cy="12"
+                        r="10"
+                        stroke="currentColor"
+                        strokeWidth="4"
+                      />
+                      <path
+                        className="opacity-75"
+                        fill="currentColor"
+                        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"
+                      />
+                    </svg>
+                  </>
+                ) : (
+                  <>
+                    {t("chooseFiles")}
+                    <UploadIcon size={14} />
+                  </>
+                )}
+              </Button>
+            </FileTrigger>
+
+            <div className="text-xs mt-1 text-center">
+              <span className=" text-gray-500">{t("or")} </span>
+              <Button
+                className=" text-blue-600 hover:text-blue-800 underline"
+                onPress={() => {
+                  loadSampleFiles().catch((error: unknown) => {
+                    console.error(error);
+                  });
+                }}
+              >
+                {t("loadSampleFiles")}
+              </Button>
+            </div>
+          </div>
+
+          {failedFiles.length > 0 && (
+            <div className="mb-4 p-4 bg-red-50 border border-red-200 rounded-lg">
+              <h2 className="text-red-800 font-semibold mb-2">
+                {t("failedToParse", { count: failedFiles.length })}
               </h2>
               <ul className="space-y-1">
-                {selectedFile.warnings.map((warning, i) => (
-                  <li key={i} className="text-sm text-amber-700">
-                    {warning}
+                {failedFiles.map(({ name, error }) => (
+                  <li key={name} className="text-sm text-red-700">
+                    <span className="font-medium">{name}</span>: {error}
                   </li>
                 ))}
               </ul>
             </div>
           )}
 
-          <CompactGefHeader
-            headers={selectedFile.headers}
-            fileType={selectedFile.fileType}
-            onDownload={() => {
-              if (selectedFile.fileType === "CPT") {
-                downloadGefDataAsCsv(selectedFile, selectedFileName);
-              }
+          <FileTable
+            gefData={gefData}
+            selectedFileName={selectedFileName}
+            onSelectionChange={setSelectedFileName}
+            onFileDrop={(files) => {
+              handleFiles(files).catch((error: unknown) => {
+                console.error(error);
+              });
             }}
           />
-
-          {selectedFile.fileType === "CPT" && (
-            <>
-              {selectedFile.chartAxes.xAxis && selectedFile.chartAxes.yAxis && (
-                <CptPlots
-                  data={selectedFile.data}
-                  xAxis={selectedFile.chartAxes.xAxis}
-                  yAxis={selectedFile.chartAxes.yAxis}
-                  availableColumns={selectedFile.chartAxes.availableColumns}
-                  yAxisOptions={selectedFile.chartAxes.yAxisOptions}
-                  baseFilename={selectedFileName.replace(/\.gef$/i, "")}
-                />
-              )}
-              {selectedFile.preExcavationLayers.length > 0 && (
-                <PreExcavationPlot
-                  layers={selectedFile.preExcavationLayers}
-                  baseFilename={selectedFileName.replace(/\.gef$/i, "")}
-                />
-              )}
-            </>
+          {Object.keys(gefData).length > 0 && (
+            <Button
+              className={"button mt-2 ml-auto transition-colors"}
+              onPress={() => {
+                setGefData({});
+                setSelectedFileName("");
+                setFailedFiles([]);
+              }}
+            >
+              {t("clearAllFiles")} <TrashIcon size={14} />
+            </Button>
           )}
 
-          {selectedFile.fileType === "BORE" && (
-            <>
-              <BorePlot
-                layers={selectedFile.layers}
-                specimens={selectedFile.specimens}
-                baseFilename={selectedFileName.replace(/\.gef$/i, "")}
-              />
-              {selectedFile.specimens.length > 0 && (
-                <SpecimenTable specimens={selectedFile.specimens} />
-              )}
-            </>
-          )}
+          {Object.keys(gefData).length > 0 && (
+            <div className="mb-6 mt-2">
+              <h2 className="text-xl font-semibold mb-3">
+                {Object.keys(gefData).length > 1
+                  ? t("allLocations")
+                  : t("location")}
+              </h2>
 
-          <DetailedGefHeaders
-            headers={selectedFile.headers}
-            fileType={selectedFile.fileType}
-          />
+              <Suspense
+                fallback={
+                  <div className="w-full h-96 rounded-lg border border-gray-300 shadow-sm bg-gray-100 flex items-center justify-center">
+                    <span className="text-gray-500">{t("loadingMap")}</span>
+                  </div>
+                }
+              >
+                <GefMultiMap
+                  gefData={gefData}
+                  selectedFileName={selectedFileName}
+                  onMarkerClick={setSelectedFileName}
+                />
+              </Suspense>
+            </div>
+          )}
         </div>
-      )}
 
-      <footer className="mt-8 pt-4 border-t border-gray-200 text-center text-sm text-gray-500">
+        {selectedFile ? (
+          <div className="space-y-6">
+            {selectedFile.warnings.length > 0 && (
+              <div className="p-4 bg-amber-50 border border-amber-200 rounded-lg">
+                <h2 className="text-amber-800 font-semibold mb-2">
+                  {t("warning", { count: selectedFile.warnings.length })}
+                </h2>
+                <ul className="space-y-1">
+                  {selectedFile.warnings.map((warning, i) => (
+                    <li key={i} className="text-sm text-amber-700">
+                      {warning}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+
+            <CompactGefHeader
+              headers={selectedFile.headers}
+              fileType={selectedFile.fileType}
+              onDownload={() => {
+                if (selectedFile.fileType === "CPT") {
+                  downloadGefDataAsCsv(selectedFile, selectedFileName);
+                }
+              }}
+            />
+
+            {selectedFile.fileType === "CPT" && (
+              <>
+                {selectedFile.chartAxes.xAxis &&
+                  selectedFile.chartAxes.yAxis && (
+                    <CptPlots
+                      data={selectedFile.data}
+                      xAxis={selectedFile.chartAxes.xAxis}
+                      yAxis={selectedFile.chartAxes.yAxis}
+                      availableColumns={selectedFile.chartAxes.availableColumns}
+                      yAxisOptions={selectedFile.chartAxes.yAxisOptions}
+                      baseFilename={selectedFileName.replace(/\.gef$/i, "")}
+                    />
+                  )}
+                {selectedFile.preExcavationLayers.length > 0 && (
+                  <PreExcavationPlot
+                    layers={selectedFile.preExcavationLayers}
+                    baseFilename={selectedFileName.replace(/\.gef$/i, "")}
+                  />
+                )}
+              </>
+            )}
+
+            {selectedFile.fileType === "BORE" && (
+              <>
+                <BorePlot
+                  layers={selectedFile.layers}
+                  specimens={selectedFile.specimens}
+                  baseFilename={selectedFileName.replace(/\.gef$/i, "")}
+                />
+                {selectedFile.specimens.length > 0 && (
+                  <SpecimenTable specimens={selectedFile.specimens} />
+                )}
+              </>
+            )}
+
+            <DetailedGefHeaders
+              headers={selectedFile.headers}
+              fileType={selectedFile.fileType}
+            />
+          </div>
+        ) : (
+          <p className="text-gray-400">Upload a GEF file</p>
+        )}
+      </main>
+
+      <footer className="mt-8 py-8 border-t border-gray-200 text-center text-sm text-gray-500">
+        <div className="text-sm text-center mb-6 max-w-md mx-auto border-b border-gray-300 pb-4">
+          <p className="mb-2">{t("appDescription")}</p>
+          <p className="">{t("privacyNote")}</p>
+        </div>
+
         <p>
-          
+          <a
+            className="text-blue-600 hover:underline"
+            href="https://bedrock.engineer"
+          >
+            Bedrock.engineer
+          </a>
         </p>
         <p>
-          Feedback or requests?{" "}
+          {t("feedbackOrRequests")}{" "}
           <a
             href="mailto:jules@bedrock.engineer"
             className="text-blue-600 hover:underline"
           >
-            jules@bedrock.engineer
+            jules.blom@bedrock.engineer
           </a>
         </p>
       </footer>
-    </main>
+    </div>
   );
 }

@@ -140,7 +140,7 @@ export const xyidSchema = z
       return null;
     }
     return {
-      coordinateSystem: arr[0]!,
+      coordinateSystem: arr[0]!.trim(),
       x: parseFloat(arr[1]!),
       y: parseFloat(arr[2]!),
       deltaX: arr[3] ? parseFloat(arr[3]) : 0.01,

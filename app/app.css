@@ -9,6 +9,22 @@
 html,
 body {
   @apply bg-white;
+  height: 100%;
+}
+
+.pancake {
+  display: grid;
+  grid-template-rows: auto 1fr auto;
+  height: 100%;
+}
+
+.main-grid {
+  max-width: clamp(360px, 100%, 1800px);
+  margin-inline: auto;
+  display: grid;
+  grid-template-columns: minmax(360px, 1fr) minmax(0, 2fr);
+  width: 100%;
+  column-gap: 16px;
 }
 
 .checkbox {
@@ -24,11 +40,11 @@ body {
   }
 
   &[data-selected] .checkbox-box {
-    background-color: var(--color-green-4);
+    background-color: var(--color-green-200);
     border-color: var(--color);
 
     &[data-pressed] {
-      background-color: var(--color-green-5);
+      background-color: var(--color-green-300);
     }
   }
 }
@@ -46,4 +62,153 @@ body {
   transition: all;
   background-color: white;
   border-color: var(--color-gray-8);
+}
+
+/* File Table styles */
+.file-table-dropzone {
+  margin-bottom: var(--spacing-4);
+  border: 1px solid var(--color-gray-200);
+  transition: all;
+  max-height: 80svh;
+  overflow-block: auto;
+
+  &[data-drop-target] {
+    border-color: var(--color-blue-400);
+    background-color: var(--color-blue-50);
+  }
+}
+
+.file-table-header {
+  border-bottom: 1px solid var(--color-gray-200);
+}
+
+.file-table-column {
+  text-align: left;
+  background-color: var(--color-gray-50);
+  border-bottom: 1px solid var(--color-gray-200);
+  padding-block: 4px;
+  padding-inline: 4px;
+  font-weight: 400;
+  font-size: var(--text-sm);
+  color: var(--color-gray-700);
+  position: sticky;
+  top: 0;
+  z-index: 2;
+}
+
+.file-table-row {
+  border-bottom: 1px solid var(--color-gray-100);
+  cursor: pointer;
+  transition: all;
+
+  &:hover {
+    background-color: var(--color-blue-50);
+  }
+
+  &[data-selected] {
+    background-color: var(--color-blue-200);
+  }
+}
+
+.file-table-cell {
+  padding-block: 4px;
+  padding-inline: 4px;
+  font-size: var(--text-sm);
+}
+
+.button {
+  /* Configuration */
+  --button-padding: 6px;
+  --button-gap: 0.5em;
+  --button-bg: var(--color-gray-100);
+  --button-color: var(--color-gray-800);
+
+  --button-border-width: 1px;
+  --button-border-style: solid;
+  --button-border-color: var(--color-gray-400);
+  --button-radius: var(--radius-sm);
+
+  --button-hover-bg: var(--color-blue-100);
+  --button-hover-border-color: var(--color-blue-800);
+  --button-hover-color: var(--color-blue-900);
+
+  --button-disabled-bg: var(--color-gray-200);
+
+  --button-pressed-bg: var(--color-blue-300);
+
+  /* Layout and spacing */
+  display: flex;
+  align-items: center;
+  gap: var(--button-gap);
+  padding: 0;
+  padding-inline: var(--button-padding);
+  padding-block: var(--button-padding);
+  justify-content: center;
+  /* Don't stretch button in a flex container */
+  align-self: center;
+
+  /* Colours */
+  background: var(--button-bg);
+  color: var(--button-color);
+
+  /* Stroke and radius */
+  border-width: var(--button-border-width);
+  border-style: var(--button-border-style);
+  border-color: var(--button-border-color);
+  border-radius: var(--button-radius);
+
+  /* Typography */
+  text-decoration: none;
+  font-size: var(--text-sm, 1em);
+  letter-spacing: 0.05ch;
+  line-height: 1;
+  font-family: sans-serif;
+
+  /* Interactive */
+  cursor: pointer;
+
+  &[data-focused="true"] {
+    outline: var(--focus-outline);
+    z-index: 1;
+  }
+
+  &[data-hovered="true"] {
+    background-color: var(--button-hover-bg);
+    color: var(--button-hover-color);
+    border-color: var(--button-hover-border-color);
+  }
+
+  &[data-pressed="true"] {
+    background-color: var(--button-pressed-bg);
+  }
+
+  &[data-disabled="true"] {
+    background-color: var(--button-disabled-bg);
+    border-color: var(--color-gray-4);
+    cursor: not-allowed;
+    color: lightgray;
+  }
+
+  &[aria-expanded="true"] {
+    background-color: var(--color-green-400);
+    border-color: var(--color-green-700);
+  }
+
+  & svg {
+    flex-shrink: 0;
+    line-height: 0;
+    display: block;
+  }
+}
+
+.button[data-button-variant="positive"] {
+  --button-bg: #2d936c;
+  --button-border-color: #107350;
+  --button-hover-bg: #359d75;
+}
+
+.button[data-button-variant="negative"] {
+  --button-bg: var(--color-red-400);
+  --button-border-color: var(--color-red-600);
+  --button-hover-bg: var(--color-red-500);
 }

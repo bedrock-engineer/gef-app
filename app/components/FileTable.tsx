@@ -1,5 +1,10 @@
-import { useMemo } from "react";
-import type { Selection, FileDropItem } from "react-aria-components";
+import { ChevronDownIcon, ChevronUpIcon } from "lucide-react";
+import { useMemo, useState } from "react";
+import type {
+  FileDropItem,
+  Selection,
+  SortDescriptor,
+} from "react-aria-components";
 import {
   Cell,
   Column,
@@ -8,10 +13,16 @@ import {
   Table,
   TableBody,
   TableHeader,
-  Text,
 } from "react-aria-components";
-import type { GefData } from "~/util/gef";
-import { Checkbox } from "./checkbox";
+import { useTranslation } from "react-i18next";
+import type { GefData, GefFileType } from "~/util/gef";
+import { getMeasurementVarValue } from "~/util/gef-metadata";
+
+function SortIndicator({ column, sortDescriptor }: { column: string; sortDescriptor: SortDescriptor }) {
+  const isActive = sortDescriptor.column === column;
+  const Icon = sortDescriptor.direction === "ascending" ? ChevronUpIcon : ChevronDownIcon;
+  return <Icon size={14} className={`inline ml-1 ${isActive ? "" : "opacity-0"}`} />;
+}
 
 interface FileTableProps {
   gefData: Record<string, GefData>;
@@ -24,7 +35,8 @@ interface FileRow {
   id: string;
   filename: string;
   testDate: string | null;
-  type: "CPT" | "BORE";
+  type: GefFileType;
+  finalDepth: number | null;
 }
 
 function formatDate(date: {
@@ -41,19 +53,39 @@ export function FileTable({
   onSelectionChange,
   onFileDrop,
 }: FileTableProps) {
+  const { t } = useTranslation();
+  const [sortDescriptor, setSortDescriptor] = useState<SortDescriptor>({
+    column: "filename",
+    direction: "ascending",
+  });
+
   const rows: Array<FileRow> = useMemo(() => {
     return Object.entries(gefData).map(([filename, data]) => {
       let testDate: string | null = null;
+      let finalDepth: number | null = null;
 
       if (data.fileType === "BORE") {
         // For BORE files, use MEASUREMENTTEXT 16 (Datum boring)
-        const datumBoring = data.headers.MEASUREMENTTEXT?.find(mt => mt.id === 16);
+        const datumBoring = data.headers.MEASUREMENTTEXT?.find(
+          (mt) => mt.id === 16
+        );
         if (datumBoring) {
           testDate = datumBoring.text;
         }
-      } else if (data.headers.STARTDATE) {
+        // Get final depth from last layer
+        if (data.layers.length > 0) {
+          const lastLayer = data.layers[data.layers.length - 1];
+          finalDepth = lastLayer?.depthBottom ?? null;
+        }
+      // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+      } else if (data.fileType === "CPT") {
         // For CPT files, use STARTDATE
-        testDate = formatDate(data.headers.STARTDATE);
+        if (data.headers.STARTDATE) {
+          testDate = formatDate(data.headers.STARTDATE);
+        }
+        // Get end depth from MEASUREMENTVAR 16
+        const measurementVars = data.headers.MEASUREMENTVAR ?? [];
+        finalDepth = getMeasurementVarValue(measurementVars, 16) ?? null;
       }
 
       return {
@@ -61,9 +93,34 @@ export function FileTable({
         filename,
         testDate,
         type: data.fileType,
+        finalDepth,
       };
     });
   }, [gefData]);
+
+  const sortedRows = useMemo(() => {
+    const sorted = [...rows].sort((a, b) => {
+      const column = sortDescriptor.column as keyof FileRow;
+      let aVal = a[column];
+      let bVal = b[column];
+
+      // Handle null values
+      if (aVal === null && bVal === null) return 0;
+      if (aVal === null) return 1;
+      if (bVal === null) return -1;
+
+      // Compare values
+      let cmp: number;
+      if (typeof aVal === "number" && typeof bVal === "number") {
+        cmp = aVal - bVal;
+      } else {
+        cmp = String(aVal).localeCompare(String(bVal));
+      }
+
+      return sortDescriptor.direction === "descending" ? -cmp : cmp;
+    });
+    return sorted;
+  }, [rows, sortDescriptor]);
 
   const selectedKeys: Selection = useMemo(() => {
     return selectedFileName ? new Set([selectedFileName]) : new Set();
@@ -85,21 +142,14 @@ export function FileTable({
     onFileDrop(files);
   };
 
-  if (rows.length === 0) {
-    return (
-      <DropZone
-        onDrop={handleDrop}
-        className="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center text-gray-500 hover:border-blue-400 hover:bg-blue-50 transition-colors"
-      >
-        <Text slot="label">Drop files here</Text>
-      </DropZone>
-    );
-  }
-
   return (
     <DropZone
-      onDrop={handleDrop}
-      className="mb-4 rounded-lg border border-gray-200 drop-target:border-blue-400 drop-target:bg-blue-50 transition-colors"
+      onDrop={(event) => {
+        handleDrop(event).catch((error: unknown) => {
+          console.error(error);
+        });
+      }}
+      className="file-table-dropzone"
     >
       <Table
         aria-label="Files"
@@ -107,35 +157,54 @@ export function FileTable({
         selectionBehavior="toggle"
         selectedKeys={selectedKeys}
         onSelectionChange={handleSelectionChange}
-        className="w-full"
+        sortDescriptor={sortDescriptor}
+        onSortChange={setSortDescriptor}
+        className="max-h-[800px] w-full"
       >
-        <TableHeader className="bg-gray-50 border-b border-gray-200">
-          <Column className="w-10 p-3" />
+        <TableHeader className="file-table-header">
           <Column
+            id="filename"
             isRowHeader
-            className="text-left p-3 font-medium text-gray-700"
+            allowsSorting
+            className="file-table-column"
           >
-            Filename
+            {t("filename")}
+            <SortIndicator column="filename" sortDescriptor={sortDescriptor} />
           </Column>
-          <Column className="text-left p-3 font-medium text-gray-700">
-            Test Date
+          <Column id="testDate" allowsSorting className="file-table-column">
+            {t("testDate")}
+            <SortIndicator column="testDate" sortDescriptor={sortDescriptor} />
           </Column>
-          <Column className="text-left p-3 font-medium text-gray-700">
-            Type
+          <Column id="type" allowsSorting className="file-table-column">
+            {t("type")}
+            <SortIndicator column="type" sortDescriptor={sortDescriptor} />
+          </Column>
+          <Column id="finalDepth" allowsSorting className="file-table-column">
+            {t("depthM_table")}
+            <SortIndicator column="finalDepth" sortDescriptor={sortDescriptor} />
           </Column>
         </TableHeader>
-        <TableBody items={rows}>
+        <TableBody
+          items={sortedRows}
+          renderEmptyState={() => (
+            <div className="py-8 text-center text-gray-500">
+              {t("dropFilesHere")}
+            </div>
+          )}
+        >
           {(row) => (
-            <Row
-              id={row.id}
-              className="border-b border-gray-100 hover:bg-blue-50 selected:bg-blue-200 cursor-pointer transition-colors"
-            >
-              <Cell className="p-3">
-                <Checkbox slot="selection" />
+            <Row id={row.id} className="file-table-row">
+              <Cell className="file-table-cell">{row.filename}</Cell>
+              <Cell className="file-table-cell">{row.testDate ?? "-"}</Cell>
+              <Cell className="file-table-cell">
+                <TypeBadge>{row.type}</TypeBadge>
               </Cell>
-              <Cell className="p-3">{row.filename}</Cell>
-              <Cell className="p-3">{row.testDate ?? "-"}</Cell>
-              <Cell className="p-3">{row.type}</Cell>
+              <Cell
+                className="file-table-cell"
+                style={{ fontVariantNumeric: "tabular-nums" }}
+              >
+                {row.finalDepth !== null ? row.finalDepth.toFixed(2) : "-"}
+              </Cell>
             </Row>
           )}
         </TableBody>
@@ -143,3 +212,16 @@ export function FileTable({
     </DropZone>
   );
 }
+
+const badgeClassNames = {
+  BORE: "bg-orange-300 text-orange-800",
+  CPT: "bg-blue-300 text-blue-800",
+};
+
+const TypeBadge = ({ children }: { children: GefFileType }) => (
+  <div
+    className={`p-0.5 rounded-sm w-fit text-xs ${badgeClassNames[children]}`}
+  >
+    {children}
+  </div>
+);

@@ -5,6 +5,7 @@ import { useTranslation } from "react-i18next";
 import type { PreExcavationLayer } from "~/util/gef";
 import { getSoilColor } from "~/util/gef-bore";
 import { PlotDownloadButtons } from "./PlotDownload";
+import { Card } from "./card";
 
 // Map common Dutch soil descriptions to soil codes
 function getSoilCodeFromDescription(description: string): string {
@@ -46,7 +47,7 @@ export function PreExcavationPlot({
       }
 
       // Calculate the depth range and pixels per meter
-      const maxDepth = max(layers.map((l) => l.depthBottom));
+      const maxDepth = max(layers.map((l) => l.depthBottom)) ?? 1;
       const plotHeight = height - 30 - 40; // subtract margins
       const pixelsPerMeter = plotHeight / maxDepth;
 
@@ -60,6 +61,7 @@ export function PreExcavationPlot({
       const plot = Plot.plot({
         style: {
           overflow: "visible",
+          backgroundColor: "white",
         },
         width,
         height,
@@ -128,16 +130,20 @@ export function PreExcavationPlot({
     return null;
   }
 
+  const id = "pre-excavation-plot";
   return (
-    <div className="bg-white border border-gray-300 rounded-lg shadow-sm p-6">
+    <Card>
       <h3 className="text-lg font-semibold mb-2">{t("preExcavation")}</h3>
       <p className="text-sm text-gray-600 mb-4">
         {t("preExcavationDescription")}
       </p>
       <div className="flex justify-center">
-        <div id="pre-excavation-plot" ref={containerRef}></div>
+        <div id={id} ref={containerRef}></div>
       </div>
-      <PlotDownloadButtons plotId="pre-excavation-plot" filename={`${baseFilename}-pre-excavation`} />
-    </div>
+      <PlotDownloadButtons
+        plotId={id}
+        filename={`${baseFilename}-pre-excavation`}
+      />
+    </Card>
   );
 }

@@ -14,6 +14,7 @@ import {
 import { useTranslation } from "react-i18next";
 import { PlotDownloadButtons } from "./PlotDownload";
 import { DEPTH_KEYWORDS } from "~/util/gef";
+import { Card } from "./card";
 
 interface Column {
   key: string;
@@ -64,7 +65,9 @@ export function CptPlots({
   const isElevation = selectedYAxis === "elevation";
 
   return (
-    <div className="bg-white border border-gray-300 rounded-lg shadow-sm p-6">
+    <Card>
+      <h3 className="text-lg font-semibold mb-4">{t("boreLog")}</h3>
+
       <div className="mb-4 flex flex-wrap gap-4 items-end">
         <CheckboxGroup
           value={selectedAxes}
@@ -82,7 +85,7 @@ export function CptPlots({
                 value={x.key}
                 className="flex items-center gap-2 group"
               >
-                <div className="w-4 h-4 border-2 border-gray-300 rounded flex items-center justify-center group-data-[selected]:bg-blue-600 group-data-[selected]:border-blue-600 transition-colors">
+                <div className="w-4 h-4 border-2 border-gray-300 rounded flex items-center justify-center group-data-[selected]:bg-blue-600 group-data-[selected]:border-blue-600 group-hover:border-gray-400 group-data-[selected]:group-hover:bg-blue-700 group-data-[pressed]:scale-95 transition-all">
                   <svg
                     viewBox="0 0 18 18"
                     className="w-3 h-3 fill-none stroke-white stroke-2 opacity-0 group-data-selected:opacity-100"
@@ -105,13 +108,16 @@ export function CptPlots({
           {yAxisOptions.length > 1 ? (
             <Select
               value={selectedYAxis}
-              onChange={(key) => { setSelectedYAxis(key as string); }}
-              className="w-full"
+              onChange={(key) => {
+                setSelectedYAxis(key as string);
+              }}
+              className="w-full max-w-2xs"
             >
               <Button className="w-full px-3 py-2 bg-white border border-gray-300 rounded-md text-sm text-gray-700 text-left flex justify-between items-center hover:bg-gray-50">
                 <SelectValue />
                 <span aria-hidden="true">▼</span>
               </Button>
+
               <Popover className="w-[--trigger-width] bg-white border border-gray-300 rounded-md shadow-lg">
                 <ListBox className="max-h-60 overflow-auto p-1">
                   {yAxisOptions.map((opt) => (
@@ -142,7 +148,10 @@ export function CptPlots({
 
           const plotId = `cpt-plot-${k}`;
           return (
-            <div key={`${k}-${selectedYAxis}`} className="flex flex-col items-center">
+            <div
+              key={`${k}-${selectedYAxis}`}
+              className="flex flex-col items-center"
+            >
               <CptPlot
                 plotId={plotId}
                 data={data}
@@ -152,12 +161,15 @@ export function CptPlots({
                 xAxis={xAxis}
                 reverseY={!isElevation}
               />
-              <PlotDownloadButtons plotId={plotId} filename={`${baseFilename}-${xAxis.name}`} />
+              <PlotDownloadButtons
+                plotId={plotId}
+                filename={`${baseFilename}-${xAxis.name}`}
+              />
             </div>
           );
         })}
       </div>
-    </div>
+    </Card>
   );
 }
 
@@ -190,6 +202,9 @@ function CptPlot({
     const plot = Plot.plot({
       height,
       width,
+      style: {
+        backgroundColor: "white",
+      },
       x: {
         label: `${xAxis.name} (${xAxis.unit})`,
         grid: true,
