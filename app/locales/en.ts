@@ -25,6 +25,10 @@ export default {
     // Header labels
     unknownTest: "Unknown Test",
     date: "Date:",
+    boringDate: "Boring date:",
+    placeName: "Place:",
+    drillingCompany: "Drilling company:",
+    layerDescriber: "Layer describer:",
     locationLabel: "Location:",
     groundLevel: "Ground level:",
     waterLevel: "Water level:",

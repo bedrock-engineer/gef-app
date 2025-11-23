@@ -3,7 +3,7 @@ import { max } from "d3-array";
 import { useEffect, useRef } from "react";
 import { useTranslation } from "react-i18next";
 import type { PreExcavationLayer } from "~/util/gef";
-import { getSoilColor } from "~/util/gef-bore-schemas";
+import { getSoilColor } from "~/util/gef-bore";
 import { PlotDownloadButtons } from "./PlotDownload";
 
 // Map common Dutch soil descriptions to soil codes

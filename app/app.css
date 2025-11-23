@@ -1,11 +1,49 @@
 @import "tailwindcss";
 
 @theme {
-  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif,
-    "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+  --font-sans:
+    "Inter", ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji",
+    "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
 }
 
 html,
 body {
   @apply bg-white;
+}
+
+.checkbox {
+  display: flex;
+  gap: var(--spacing-1_5);
+  align-items: center;
+  font-size: var(--text-sm);
+  transition: all;
+  line-height: 1;
+
+  &[data-disabled] {
+    color: var(--color-gray-5);
+  }
+
+  &[data-selected] .checkbox-box {
+    background-color: var(--color-green-4);
+    border-color: var(--color);
+
+    &[data-pressed] {
+      background-color: var(--color-green-5);
+    }
+  }
+}
+
+.checkbox-box {
+  --size: var(--spacing-5);
+  width: var(--size);
+  height: var(--size);
+  flex-shrink: 0;
+  border-radius: var(--radius-xs);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-width: 1px;
+  transition: all;
+  background-color: white;
+  border-color: var(--color-gray-8);
 }

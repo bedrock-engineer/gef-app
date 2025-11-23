@@ -1,0 +1,16 @@
+{
+  "name": "Bedrock GEF File Viewer",
+  "short_name": "GEF Viewer",
+  "description": "View and visualize GEF files easily in your browser. View CPT data and Bore charts instantly.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "hsl(111, 15%, 43%)",
+  "icons": [
+    {
+      "src": "/favicon.ico",
+      "sizes": "48x48",
+      "type": "image/x-icon"
+    }
+  ]
+}

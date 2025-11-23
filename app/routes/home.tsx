@@ -3,7 +3,20 @@ import type { Route } from "./+types/home";
 import { App } from "../components/app";
 import { localeCookie } from "~/middleware/i18next";
 
-const title = "Bedrock GEF file Viewer";
+const siteUrl = "https://gef.bedrock.engineer";
+
+const translations = {
+  en: {
+    title: "Bedrock GEF File Viewer",
+    description:
+      "Free online GEF file viewer. View and visualize GEF files easily in your browser. View CPT data and Bore charts instantly.",
+  },
+  nl: {
+    title: "Bedrock GEF Bestandsviewer",
+    description:
+      "Gratis online GEF bestandsviewer. Visualisatie van sondeergegevens eenvoudig in uw browser. Bekijk CPT-gegevens en boorgrafieken direct.",
+  },
+};
 
 export async function action({ request }: Route.ActionArgs) {
   const formData = await request.formData();
@@ -15,39 +28,37 @@ export async function action({ request }: Route.ActionArgs) {
     },
   });
 }
-const description =
-  "View and visualize GEF Files easily in your browser. View CPT data and Bore charts instantly";
-  
-export function meta({}: Route.MetaArgs) {
+
+export function meta({ matches }: Route.MetaArgs) {
+  const rootMatch = matches.find((m) => m?.id === "root");
+  const locale = ((rootMatch?.loaderData as { locale?: string } | undefined)?.locale || "en") ;
+  const t = translations[locale] || translations.en;
+  const ogLocale = locale === "nl" ? "nl_NL" : "en_US";
+  const altLocale = locale === "nl" ? "en_US" : "nl_NL";
+
   return [
-    { title },
-    { name: "description", content: "Bedrock GEF file viewer. View " },
-    { name: "View GEF files in the browser" },
-    // <!-- Facebook Meta Tags -->
-    { property: "og:url", content: "https://bedrock.engineer/geotop-voxels/" },
+    { title: t.title },
+    { name: "description", content: t.description },
+    // Open Graph
+    { property: "og:url", content: siteUrl },
     { property: "og:type", content: "website" },
-    { property: "og:title", content: title },
-    { property: "og:description", content: description },
+    { property: "og:title", content: t.title },
+    { property: "og:description", content: t.description },
+    { property: "og:locale", content: ogLocale },
+    { property: "og:locale:alternate", content: altLocale },
     {
       property: "og:image",
-      content: "https://bedrock.engineer/geotop-voxels/og-voxel.png",
+      content: `${siteUrl}/og-image.png`, // TODO: Create OG image
     },
-
-    // <!-- Twitter Meta Tags -->
+    // Twitter
     { name: "twitter:card", content: "summary_large_image" },
     { property: "twitter:domain", content: "gef.bedrock.engineer" },
-    {
-      property: "twitter:url",
-      content: "https://gef.bedrock.engineer",
-    },
-    { name: "twitter:title", content: "Bedrock GEF File Viewer" },
-    {
-      name: "twitter:description",
-      content: description,
-    },
+    { property: "twitter:url", content: siteUrl },
+    { name: "twitter:title", content: t.title },
+    { name: "twitter:description", content: t.description },
     {
       name: "twitter:image",
-      content: "https://bedrock.engineer/geotop-voxels/og-voxel.png",
+      content: `${siteUrl}/og-image.png`, // TODO: Create OG image
     },
   ];
 }

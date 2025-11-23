@@ -25,6 +25,10 @@ export default {
     // Header labels
     unknownTest: "Onbekende Test",
     date: "Datum:",
+    boringDate: "Datum boring:",
+    placeName: "Plaatsnaam:",
+    drillingCompany: "Boorbedrijf:",
+    layerDescriber: "Beschrijver lagen:",
     locationLabel: "Locatie:",
     groundLevel: "Maaiveld:",
     waterLevel: "Waterstand:",

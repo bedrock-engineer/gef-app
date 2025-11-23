@@ -14,7 +14,7 @@ import {
   decodeBoreMeasurementText,
   findBoreMeasurementTextVariable,
   findBoreMeasurementVariable,
-} from "../util/gef-bore-metadata";
+} from "../util/gef-bore";
 import {
   belgianMeasurementTextVariables,
   belgianMeasurementVariables,
@@ -215,10 +215,48 @@ function CptCompactInfo({
   );
 }
 
-// BORE-specific compact info (placeholder for future bore-specific fields)
-function BoreCompactInfo() {
-  // Add bore-specific fields here as needed
-  return null;
+// BORE-specific compact info
+function BoreCompactInfo({ headers }: { headers: GefHeaders }) {
+  const { t } = useTranslation();
+
+  // Get key BORE measurementtext values
+  const datumBoring = headers.MEASUREMENTTEXT?.find(mt => mt.id === 16);
+  const plaatsnaam = headers.MEASUREMENTTEXT?.find(mt => mt.id === 3);
+  const boorbedrijf = headers.MEASUREMENTTEXT?.find(mt => mt.id === 13);
+  const beschrijver = headers.MEASUREMENTTEXT?.find(mt => mt.id === 6);
+
+  if (!datumBoring && !plaatsnaam && !boorbedrijf && !beschrijver) {
+    return null;
+  }
+
+  return (
+    <>
+      {datumBoring && (
+        <>
+          <dt className="font-medium text-gray-500">{t("boringDate")}</dt>
+          <dd>{datumBoring.text}</dd>
+        </>
+      )}
+      {plaatsnaam && (
+        <>
+          <dt className="font-medium text-gray-500">{t("placeName")}</dt>
+          <dd>{plaatsnaam.text}</dd>
+        </>
+      )}
+      {boorbedrijf && (
+        <>
+          <dt className="font-medium text-gray-500">{t("drillingCompany")}</dt>
+          <dd>{boorbedrijf.text}</dd>
+        </>
+      )}
+      {beschrijver && (
+        <>
+          <dt className="font-medium text-gray-500">{t("layerDescriber")}</dt>
+          <dd>{beschrijver.text}</dd>
+        </>
+      )}
+    </>
+  );
 }
 
 interface CompactHeaderProps {
@@ -342,7 +380,7 @@ export function CompactGefHeader({
               lastScan={headers.LASTSCAN}
             />
           )}
-          {fileType === "BORE" && <BoreCompactInfo />}
+          {fileType === "BORE" && <BoreCompactInfo headers={headers} />}
         </dl>
       </div>
     </div>

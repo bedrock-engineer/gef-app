@@ -9,7 +9,7 @@ import {
 } from "./gef-schemas";
 import initGefFileToMap, { parse_gef_wasm } from "../pkg/gef_file_to_map.js";
 import z from "zod";
-import type { BoreLayer, BoreSpecimen } from "./gef-bore-schemas";
+import type { BoreLayer, BoreSpecimen } from "./gef-bore";
 import { addComputedDepthColumns } from "./depth-correction";
 import { columnQuantities } from "./gef-metadata";
 

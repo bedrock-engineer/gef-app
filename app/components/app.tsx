@@ -3,8 +3,6 @@ import {
   Button,
   DropZone,
   FileTrigger,
-  ToggleButton,
-  ToggleButtonGroup,
 } from "react-aria-components";
 import { Form } from "react-router";
 import { useTranslation } from "react-i18next";
@@ -16,6 +14,7 @@ import { CompactGefHeader, DetailedGefHeaders } from "./GefHeaderDisplay";
 import { GefMultiMap } from "./GefMultiMap";
 import { PreExcavationPlot } from "./PreExcavationPlot";
 import { SpecimenTable } from "./SpecimenTable";
+import { FileTable } from "./FileTable";
 
 export function App() {
   const { t, i18n } = useTranslation();
@@ -169,23 +168,16 @@ export function App() {
         </div>
       )}
 
-      <ToggleButtonGroup
-        selectedKeys={[selectedFileName]}
-        className="flex flex-wrap gap-x-3 gap-y-3 mb-4"
-      >
-        {Object.keys(gefData).map((filename) => (
-          <ToggleButton
-            onClick={() => {
-              setSelectedFileName(filename);
-            }}
-            id={filename}
-            key={filename}
-            className="border border-gray-300 hover:bg-blue-100 hover:border-gray-400 p-2 rounded-sm data-selected:bg-blue-300 transition-colors"
-          >
-            {filename}
-          </ToggleButton>
-        ))}
-      </ToggleButtonGroup>
+      <FileTable
+        gefData={gefData}
+        selectedFileName={selectedFileName}
+        onSelectionChange={setSelectedFileName}
+        onFileDrop={(files) => {
+          handleFiles(files).catch((error: unknown) => {
+            console.error(error);
+          });
+        }}
+      />
       {Object.keys(gefData).length > 0 && (
         <Button
           className={"px-2 py-1 border rounded-sm hover:bg-blue-100"}

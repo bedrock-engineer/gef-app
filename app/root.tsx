@@ -39,25 +39,26 @@ export const links: Route.LinksFunction = () => [
     rel: "stylesheet",
     href: "https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap",
   },
-  // TODO favicons
-  {
-    rel: "icon",
-    type: "image/png",
-    sizes: "32x32",
-    href: `${import.meta.env.BASE_URL}favicons/favicon-32.png`,
-  },
-  {
-    rel: "apple-touch-icon",
-    type: "image/png",
-    sizes: "180x180",
-    href: `${import.meta.env.BASE_URL}favicons/favicon-180.png`,
-  },
-  {
-    rel: "icon",
-    type: "image/png",
-    sizes: "192x192",
-    href: `${import.meta.env.BASE_URL}favicons/favicon-192.png`,
-  },
+  // TODO favicons - uncomment when created
+  // {
+  //   rel: "icon",
+  //   type: "image/png",
+  //   sizes: "32x32",
+  //   href: `${import.meta.env.BASE_URL}favicons/favicon-32.png`,
+  // },
+  // {
+  //   rel: "apple-touch-icon",
+  //   type: "image/png",
+  //   sizes: "180x180",
+  //   href: `${import.meta.env.BASE_URL}favicons/favicon-180.png`,
+  // },
+  // {
+  //   rel: "icon",
+  //   type: "image/png",
+  //   sizes: "192x192",
+  //   href: `${import.meta.env.BASE_URL}favicons/favicon-192.png`,
+  // },
+  { rel: "manifest", href: `${import.meta.env.BASE_URL}manifest.json` },
   { rel: "canonical", href: "https://gef.bedrock.engineer/" },
 ];
 
@@ -76,8 +77,30 @@ export function Layout({
       <head>
         <meta charSet="utf-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <meta name="theme-color" content="hsl(111, 15%, 43%)" />
         <Meta />
         <Links />
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify({
+              "@context": "https://schema.org",
+              "@type": "WebApplication",
+              name: "Bedrock GEF File Viewer",
+              url: "https://gef.bedrock.engineer",
+              description:
+                "View and visualize GEF files easily in your browser. View CPT data and Bore charts instantly.",
+              applicationCategory: "UtilityApplication",
+              operatingSystem: "Any",
+              browserRequirements: "Requires JavaScript",
+              offers: {
+                "@type": "Offer",
+                price: "0",
+                priceCurrency: "EUR",
+              },
+            }),
+          }}
+        />
       </head>
       <body>
         {children}

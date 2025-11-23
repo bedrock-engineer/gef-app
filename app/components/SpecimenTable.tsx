@@ -1,6 +1,6 @@
 import { useTranslation } from "react-i18next";
-import type { BoreSpecimen } from "~/util/gef-bore-schemas";
-import { SPECIMEN_CODES } from "~/util/gef-bore-schemas";
+import type { BoreSpecimen } from "~/util/gef-bore";
+import { SPECIMEN_CODES } from "~/util/gef-bore";
 
 function getCodeDescription(
   code: string | undefined,
