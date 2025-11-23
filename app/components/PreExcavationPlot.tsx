@@ -113,6 +113,14 @@ export function PreExcavationPlot({
             textAnchor: "middle",
           }),
           Plot.frame(),
+          // Watermark
+          Plot.text(["Made with Bedrock GEF Viewer"], {
+            frameAnchor: "top-right",
+            dx: -5,
+            dy: 5,
+            fill: "#9ca3af",
+            fontSize: 8,
+          }),
         ],
       });
 

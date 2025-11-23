@@ -134,6 +134,11 @@ export function calculateElevation(
   });
 }
 
+export type Row = Record<string, number> & {
+  preExcavatedDepth: number;
+  isVoid: boolean;
+};
+
 /**
  * Add computed depth columns to GEF data
  *
@@ -145,7 +150,7 @@ export function calculateElevation(
  * soil was removed before testing, so first measurements start at that depth.
  */
 export function addComputedDepthColumns(
-  data: Array<Record<string, number>>,
+  data: Array<Row>,
   columnInfo: Array<ColumnInfo>,
   zid: ZID | undefined,
   measurementVars: Array<MeasurementVar> | undefined
@@ -166,16 +171,25 @@ export function addComputedDepthColumns(
   // the penetration length is still measured from the reference level
   result = calculateElevation(result, zid);
 
-  console.log({ result });
-
-  // If there's pre-excavated depth, we might want to indicate it
-  // The GEF spec says penetration length starts at 0 even with pre-excavation,
-  // but the first meaningful reading is at pre-excavated depth
+  // Mark rows in pre-excavation zone as void
+  // Per GEF spec section 3.6.2, data in pre-excavation zone should be treated as void
   if (preExcavatedDepth > 0) {
-    result = result.map((row) => ({
-      ...row,
-      preExcavatedDepth,
-    }));
+    const penetrationCol = findColumnByQuantity(
+      columnInfo,
+      QUANTITY_NUMBERS.PENETRATION_LENGTH
+    );
+    const penetrationKey = penetrationCol?.name;
+
+    result = result.map((row) => {
+      const penetration = penetrationKey ? (row[penetrationKey] ?? 0) : 0;
+      const isVoid = penetration < preExcavatedDepth;
+
+      return {
+        ...row,
+        preExcavatedDepth,
+        isVoid,
+      };
+    });
   }
 
   return result;

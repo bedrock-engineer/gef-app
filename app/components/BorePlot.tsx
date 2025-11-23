@@ -58,8 +58,7 @@ export function BorePlot({
       height,
       marginLeft: 50,
       marginRight: 20,
-      marginTop: 30,
-      marginBottom: 40,
+      marginBottom: 20,
       x: {
         axis: null,
         domain: [0, 1],
@@ -156,6 +155,14 @@ export function BorePlot({
             ]
           : []),
         Plot.frame(),
+        // Watermark
+        Plot.text(["Made with Bedrock GEF Viewer"], {
+          frameAnchor: "bottom-right",
+          dx: 0,
+          dy: 15,
+          fill: "#9ca3af",
+          fontSize: 8,
+        }),
       ],
     });
 
