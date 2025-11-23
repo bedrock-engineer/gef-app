@@ -10,6 +10,7 @@ export default {
     dropFilesHere: "Drop GEF files here",
     loadSampleFiles: "load sample files",
     clearAllFiles: "Clear all files",
+    removeFile: "Remove file",
     processingFiles: "Processing files...",
     or: "or",
 

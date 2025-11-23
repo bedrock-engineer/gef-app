@@ -5,7 +5,7 @@ import { useTranslation } from "react-i18next";
 import type { PreExcavationLayer } from "~/util/gef";
 import { getSoilColor } from "~/util/gef-bore";
 import { PlotDownloadButtons } from "./PlotDownload";
-import { Card } from "./card";
+import { Card, CardTitle } from "./card";
 
 // Map common Dutch soil descriptions to soil codes
 function getSoilCodeFromDescription(description: string): string {
@@ -118,7 +118,7 @@ export function PreExcavationPlot({
             frameAnchor: "top-right",
             dx: -5,
             dy: 5,
-            fill: "#9ca3af",
+            fill: "gray",
             fontSize: 8,
           }),
         ],
@@ -141,7 +141,7 @@ export function PreExcavationPlot({
   const id = "pre-excavation-plot";
   return (
     <Card>
-      <h3 className="text-lg font-semibold mb-2">{t("preExcavation")}</h3>
+      <CardTitle>{t("preExcavation")}</CardTitle>
       <p className="text-sm text-gray-600 mb-4">
         {t("preExcavationDescription")}
       </p>

@@ -74,7 +74,14 @@ const coordinateSystemCodeSchema = z.enum(coordinateSystemCodes);
 
 export type CoordinateSystemCode = z.infer<typeof coordinateSystemCodeSchema>;
 
-const heightSystemCodes = ["00000", "00001", "31000", "32000", "32001", "49000"] as const;
+const heightSystemCodes = [
+  "00000",
+  "00001",
+  "31000",
+  "32000",
+  "32001",
+  "49000",
+] as const;
 
 export const HEIGHT_SYSTEMS = {
   "00000": {
@@ -97,8 +104,8 @@ export const HEIGHT_SYSTEMS = {
   },
   "32000": {
     name: "Ostend Level",
-    nameEn: "Ostend Level",
-    epsg: null,
+    nameEn: "Ostend Height",
+    epsg: "EPSG:5710",
     country: "Belgium",
   },
   "32001": {
@@ -115,21 +122,11 @@ export const HEIGHT_SYSTEMS = {
   },
 } as const;
 
-// Short name mapping for backwards compatibility
-export const HEIGHT_SYSTEM_MAP = {
-  "00000": "Local",
-  "00001": "LLWS",
-  "31000": "NAP",
-  "32000": "Ostend",
-  "32001": "TAW",
-  "49000": "NN",
-} as const;
-
 const heightSystemCodeSchema = z.enum(heightSystemCodes);
 
 export type HeightSystemCode = z.infer<typeof heightSystemCodeSchema>;
 
-// XYID - Coordinate System (parses from string tuple, validates as numbers)
+// Coordinate System (parses from string tuple, validates as numbers)
 // Default to RD (31000) if coordinate system is invalid or unrecognized
 // Handle empty arrays or missing values gracefully some GEF files have empty XYID
 export const xyidSchema = z
@@ -169,7 +166,8 @@ export const xyidSchema = z
 
 export type XYID = z.infer<typeof xyidSchema>;
 
-// ZID - Height Reference System
+// Height Reference System
+// Default to NAP (31000) if coordinate system is invalid or unrecognized
 export const zidSchema = z
   .array(z.string())
   .min(1, {
@@ -312,7 +310,11 @@ export const timeSchema = z
 export type GefTime = z.infer<typeof timeSchema>;
 
 export const companyIdSchema = z
-  .tuple([z.string().trim(), z.string().trim().optional(), z.string().trim().optional()])
+  .tuple([
+    z.string().trim(),
+    z.string().trim().optional(),
+    z.string().trim().optional(),
+  ])
   .transform(([name, address, companyId]) => ({
     name,
     address,
@@ -348,7 +350,12 @@ export const columnInfoSchema = z
 export type ColumnInfo = z.infer<typeof columnInfoSchema>;
 
 export const measurementVarSchema = z
-  .tuple([z.string(), z.string().trim(), z.string().trim().optional(), z.string().trim().optional()])
+  .tuple([
+    z.string().trim(),
+    z.string().trim(),
+    z.string().trim().optional(),
+    z.string().trim().optional(),
+  ])
   .transform(([id, value, unit, description]) => ({
     id: parseInt(id),
     value,

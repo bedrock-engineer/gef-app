@@ -10,6 +10,7 @@ export default {
     dropFilesHere: "Sleep GEF bestanden hierheen",
     loadSampleFiles: "laad voorbeeldbestanden",
     clearAllFiles: "Alle bestanden wissen",
+    removeFile: "Bestand verwijderen",
     processingFiles: "Bestanden verwerken...",
     or: "of",
 

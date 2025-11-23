@@ -127,6 +127,7 @@ export function GefMultiMap({
           const coordSysName =
             COORDINATE_SYSTEMS[loc.coordinateSystem]?.name ??
             loc.coordinateSystem;
+
           marker.bindPopup(`
             <div class="text-xs">
               <strong>${loc.filename}</strong><br/>
@@ -182,7 +183,7 @@ export function GefMultiMap({
 
   if (locations.length === 0) {
     return (
-      <div className="w-full h-96 rounded-lg border border-gray-300 shadow-sm bg-gray-50 flex items-center justify-center">
+      <div className="w-full h-96 rounded-md border border-gray-300 bg-gray-50 flex items-center justify-center">
         <span className="text-gray-500">{t("noLocationData")}</span>
       </div>
     );
@@ -190,7 +191,7 @@ export function GefMultiMap({
 
   if (error) {
     return (
-      <div className="w-full h-96 rounded-lg border border-red-300 shadow-sm bg-red-50 flex items-center justify-center p-4">
+      <div className="w-full h-96 rounded-md border border-red-300 bg-red-50 flex items-center justify-center p-4">
         <div className="text-center">
           <span className="text-red-600 font-semibold block mb-1">
             Map Error
@@ -204,7 +205,7 @@ export function GefMultiMap({
   return (
     <div
       ref={mapRef}
-      className="w-full h-96 rounded-lg border border-gray-300 shadow-sm"
+      className="w-full h-96 rounded-md border border-gray-300"
       style={{ zIndex: 0 }}
     />
   );

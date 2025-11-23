@@ -14,7 +14,7 @@ import {
 import { useTranslation } from "react-i18next";
 import { PlotDownloadButtons } from "./PlotDownload";
 import { DEPTH_KEYWORDS } from "~/util/gef";
-import { Card } from "./card";
+import { Card, CardTitle } from "./card";
 
 interface Column {
   key: string;
@@ -66,7 +66,7 @@ export function CptPlots({
 
   return (
     <Card>
-      <h3 className="text-lg font-semibold mb-4">{t("boreLog")}</h3>
+      <CardTitle>{t("boreLog")}</CardTitle>
 
       <div className="mb-4 flex flex-wrap gap-4 items-end">
         <CheckboxGroup
@@ -229,7 +229,7 @@ function CptPlot({
           frameAnchor: "top-right",
           dx: -5,
           dy: 5,
-          fill: "#9ca3af",
+          fill: "gray",
           fontSize: 8,
         }),
       ],

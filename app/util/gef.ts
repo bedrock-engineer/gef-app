@@ -1,6 +1,6 @@
 import {
   parseGefHeaders,
-  HEIGHT_SYSTEM_MAP,
+  HEIGHT_SYSTEMS,
   type ColumnInfo,
   type GefHeaders,
   type SpecimenVar,
@@ -210,7 +210,7 @@ function detectChartAxes(
   // Add elevation if ZID is available
   const hasElevation = data.length > 0 && data[0]?.elevation !== undefined;
   if (hasElevation && zid) {
-    const heightSystem = HEIGHT_SYSTEM_MAP[zid.code];
+    const heightSystem = HEIGHT_SYSTEMS[zid.code].name;
 
     yAxisOptions.push({
       key: "elevation",
@@ -285,7 +285,7 @@ function generateWarnings(
     warnings.push("Missing ZID (height reference system) - defaulting to NAP");
   } else {
     const heightCode = rawZid[0]?.trim();
-    if (heightCode && !(heightCode in HEIGHT_SYSTEM_MAP)) {
+    if (heightCode && !(heightCode in HEIGHT_SYSTEMS)) {
       warnings.push(
         `Unknown height system code "${heightCode}" - defaulting to NAP`
       );

@@ -12,6 +12,7 @@ import { GefMultiMap } from "./GefMultiMap";
 import { PreExcavationPlot } from "./PreExcavationPlot";
 import { SpecimenTable } from "./SpecimenTable";
 import { TrashIcon, UploadIcon } from "lucide-react";
+import { Card } from "./card";
 
 export function App() {
   const { t, i18n } = useTranslation();
@@ -71,8 +72,8 @@ export function App() {
       const gef = Object.fromEntries(parsedGefFiles) as Record<string, GefData>;
 
       startTransition(() => {
-        setGefData(gef);
-        setFailedFiles(failed);
+        setGefData((prev) => ({ ...prev, ...gef }));
+        setFailedFiles((prev) => [...prev, ...failed]);
 
         if (files[0]) {
           setSelectedFileName(files[0].name);
@@ -85,7 +86,7 @@ export function App() {
 
   return (
     <div className="pancake">
-      <header className="mb-6 border-b border-gray-200 py-4 px-2">
+      <header className="mb-6 border-b border-gray-300 py-4 px-2">
         <div
           style={{ maxWidth: "clamp(360px, 100%, 1800px)" }}
           className=" mx-auto flex justify-between items-center"
@@ -173,7 +174,7 @@ export function App() {
           </div>
 
           {failedFiles.length > 0 && (
-            <div className="mb-4 p-4 bg-red-50 border border-red-200 rounded-lg">
+            <div className="mb-4 p-4 bg-red-50 border border-red-200 rounded-sm">
               <h2 className="text-red-800 font-semibold mb-2">
                 {t("failedToParse", { count: failedFiles.length })}
               </h2>
@@ -195,6 +196,16 @@ export function App() {
               handleFiles(files).catch((error: unknown) => {
                 console.error(error);
               });
+            }}
+            onFileRemove={(filename) => {
+              setGefData((prev) => {
+                const { [filename]: _, ...rest } = prev;
+                return rest;
+              });
+              if (selectedFileName === filename) {
+                const remaining = Object.keys(gefData).filter((f) => f !== filename);
+                setSelectedFileName(remaining[0] ?? "");
+              }
             }}
           />
           {Object.keys(gefData).length > 0 && (
@@ -220,7 +231,7 @@ export function App() {
 
               <Suspense
                 fallback={
-                  <div className="w-full h-96 rounded-lg border border-gray-300 shadow-sm bg-gray-100 flex items-center justify-center">
+                  <div className="w-full h-96 rounded-md border border-gray-300 bg-gray-100 flex items-center justify-center">
                     <span className="text-gray-500">{t("loadingMap")}</span>
                   </div>
                 }
@@ -238,7 +249,7 @@ export function App() {
         {selectedFile ? (
           <div className="space-y-6">
             {selectedFile.warnings.length > 0 && (
-              <div className="p-4 bg-amber-50 border border-amber-200 rounded-lg">
+              <div className="p-4 bg-amber-50 border border-amber-200 rounded-md">
                 <h2 className="text-amber-800 font-semibold mb-2">
                   {t("warning", { count: selectedFile.warnings.length })}
                 </h2>
@@ -303,11 +314,13 @@ export function App() {
             />
           </div>
         ) : (
-          <p className="text-gray-400">Upload a GEF file</p>
+          <Card>
+            <p className="text-gray-400">Upload een GEF-bestand</p>
+          </Card>
         )}
       </main>
 
-      <footer className="mt-8 py-8 border-t border-gray-200 text-center text-sm text-gray-500">
+      <footer className="mt-8 py-8 border-t border-gray-300 text-center text-sm text-gray-500">
         <div className="text-sm text-center mb-6 max-w-md mx-auto border-b border-gray-300 pb-4">
           <p className="mb-2">{t("appDescription")}</p>
           <p className="">{t("privacyNote")}</p>

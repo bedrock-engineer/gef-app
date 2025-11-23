@@ -1,4 +1,4 @@
-import { ChevronDownIcon, ChevronUpIcon } from "lucide-react";
+import { ChevronDownIcon, ChevronUpIcon, XIcon } from "lucide-react";
 import { useMemo, useState } from "react";
 import type {
   FileDropItem,
@@ -6,6 +6,7 @@ import type {
   SortDescriptor,
 } from "react-aria-components";
 import {
+  Button,
   Cell,
   Column,
   DropZone,
@@ -18,10 +19,21 @@ import { useTranslation } from "react-i18next";
 import type { GefData, GefFileType } from "~/util/gef";
 import { getMeasurementVarValue } from "~/util/gef-metadata";
 
-function SortIndicator({ column, sortDescriptor }: { column: string; sortDescriptor: SortDescriptor }) {
+function SortIndicator({
+  column,
+  sortDescriptor,
+}: {
+  column: string;
+  sortDescriptor: SortDescriptor;
+}) {
   const isActive = sortDescriptor.column === column;
-  const Icon = sortDescriptor.direction === "ascending" ? ChevronUpIcon : ChevronDownIcon;
-  return <Icon size={14} className={`inline ml-1 ${isActive ? "" : "opacity-0"}`} />;
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+  const Icon =
+    sortDescriptor.direction === "ascending" ? ChevronUpIcon : ChevronDownIcon;
+
+  return (
+    <Icon size={14} className={`inline ml-1 ${isActive ? "" : "opacity-0"}`} />
+  );
 }
 
 interface FileTableProps {
@@ -29,6 +41,7 @@ interface FileTableProps {
   selectedFileName: string;
   onSelectionChange: (filename: string) => void;
   onFileDrop: (files: Array<File>) => void;
+  onFileRemove: (filename: string) => void;
 }
 
 interface FileRow {
@@ -52,6 +65,7 @@ export function FileTable({
   selectedFileName,
   onSelectionChange,
   onFileDrop,
+  onFileRemove,
 }: FileTableProps) {
   const { t } = useTranslation();
   const [sortDescriptor, setSortDescriptor] = useState<SortDescriptor>({
@@ -77,7 +91,7 @@ export function FileTable({
           const lastLayer = data.layers[data.layers.length - 1];
           finalDepth = lastLayer?.depthBottom ?? null;
         }
-      // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+        // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
       } else if (data.fileType === "CPT") {
         // For CPT files, use STARTDATE
         if (data.headers.STARTDATE) {
@@ -101,8 +115,8 @@ export function FileTable({
   const sortedRows = useMemo(() => {
     const sorted = [...rows].sort((a, b) => {
       const column = sortDescriptor.column as keyof FileRow;
-      let aVal = a[column];
-      let bVal = b[column];
+      const aVal = a[column];
+      const bVal = b[column];
 
       // Handle null values
       if (aVal === null && bVal === null) return 0;
@@ -181,7 +195,13 @@ export function FileTable({
           </Column>
           <Column id="finalDepth" allowsSorting className="file-table-column">
             {t("depthM_table")}
-            <SortIndicator column="finalDepth" sortDescriptor={sortDescriptor} />
+            <SortIndicator
+              column="finalDepth"
+              sortDescriptor={sortDescriptor}
+            />
+          </Column>
+          <Column id="remove" className="file-table-column w-10">
+            {/* Empty header for remove column */}
           </Column>
         </TableHeader>
         <TableBody
@@ -204,6 +224,17 @@ export function FileTable({
                 style={{ fontVariantNumeric: "tabular-nums" }}
               >
                 {row.finalDepth !== null ? row.finalDepth.toFixed(2) : "-"}
+              </Cell>
+              <Cell className="file-table-cell">
+                <Button
+                  onPress={() => {
+                    onFileRemove(row.filename);
+                  }}
+                  className="p-1 hover:bg-gray-200 rounded text-gray-500 hover:text-gray-700"
+                  aria-label={t("removeFile")}
+                >
+                  <XIcon size={14} />
+                </Button>
               </Cell>
             </Row>
           )}

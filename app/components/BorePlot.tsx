@@ -7,7 +7,7 @@ import { getSoilColor } from "~/util/gef-bore";
 import { decodeBoreCode } from "~/util/gef-bore-codes";
 import { getMunsellColor } from "~/util/munsell-colors";
 import { PlotDownloadButtons } from "./PlotDownload";
-import { Card } from "./card";
+import { Card, CardTitle } from "./card";
 
 interface BorePlotProps {
   layers: Array<BoreLayer>;
@@ -160,7 +160,7 @@ export function BorePlot({
           frameAnchor: "bottom-right",
           dx: 0,
           dy: 15,
-          fill: "#9ca3af",
+          fill: "gray",
           fontSize: 8,
         }),
       ],
@@ -176,10 +176,12 @@ export function BorePlot({
 
   return (
     <Card>
-      <h3 className="text-lg font-semibold mb-4">{t("boreLog")}</h3>
+      <CardTitle>{t("boreLog")}</CardTitle>
+
       <div className="flex justify-center">
         <div id={id} ref={containerRef}></div>
       </div>
+      
       <div className="mt-4">
         <h4 className="text-sm font-medium text-gray-700 mb-2">
           {t("legend")}

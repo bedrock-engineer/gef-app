@@ -1,6 +1,7 @@
 import { useTranslation } from "react-i18next";
 import type { BoreSpecimen } from "~/util/gef-bore";
 import { SPECIMEN_CODES } from "~/util/gef-bore";
+import { CardTitle } from "./card";
 
 function getCodeDescription(
   code: string | undefined,
@@ -24,9 +25,9 @@ export function SpecimenTable({ specimens }: SpecimenTableProps) {
 
   return (
     <div className="overflow-x-auto">
-      <h3 className="text-lg font-semibold mb-2">
+      <CardTitle>
         {t("specimensCount", { count: specimens.length })}
-      </h3>
+      </CardTitle>
 
       {specimens[0]?.remarks && specimens[0].remarks.length > 0 && (
         <div className="mb-4 p-2 bg-yellow-50 border border-yellow-200 rounded text-sm">

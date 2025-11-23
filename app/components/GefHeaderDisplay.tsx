@@ -29,11 +29,12 @@ import {
 } from "../util/gef-metadata";
 import {
   COORDINATE_SYSTEMS,
-  HEIGHT_SYSTEM_MAP,
+  HEIGHT_SYSTEMS,
   type GefHeaders,
 } from "../util/gef-schemas";
 import { CopyButton } from "./CopyButton";
 import { DownloadIcon } from "lucide-react";
+import { CardTitle } from "./card";
 
 function getLocalizedDescription(
   varInfo: { description: string; descriptionNl?: string } | undefined,
@@ -278,14 +279,14 @@ export function CompactGefHeader({
   const wgs84 = xyid ? convertToWGS84(xyid) : null;
 
   const zid = headers.ZID;
-  const heightSystem = zid ? HEIGHT_SYSTEM_MAP[zid.code] : null;
+  const heightSystem = zid ? HEIGHT_SYSTEMS[zid.code].name : null;
   const elevationValue = zid ? zid.height.toFixed(2) : null;
   const elevationDisplay = zid
     ? `${zid.height.toFixed(2)}m ${heightSystem}`
     : null;
 
   return (
-    <div className="bg-white border border-gray-300 rounded-lg shadow-sm p-4 mb-6">
+    <div className="bg-white border border-gray-300 rounded-md p-4 mb-6">
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 text-sm">
         <div>
           <div className="font-bold text-lg text-gray-900 flex items-center gap-1">
@@ -322,10 +323,14 @@ export function CompactGefHeader({
             <>
               <dt className="text-gray-500">{t("locationLabel")}</dt>
               <dd>
-                <div className="font-semibold">
-                  {COORDINATE_SYSTEMS[xyid.coordinateSystem]?.name ??
-                    t("unknownCoordinateSystem")}{" "}
-                  ({COORDINATE_SYSTEMS[xyid.coordinateSystem]?.epsg})
+                <div>
+                  <span className="font-semibold">
+                    {COORDINATE_SYSTEMS[xyid.coordinateSystem].name}
+                  </span>
+                  <span className="text-gray-400 text-sm">
+                    {" "}
+                    ({COORDINATE_SYSTEMS[xyid.coordinateSystem].epsg})
+                  </span>
                 </div>
 
                 <div className="flex items-center gap-1">
@@ -338,7 +343,13 @@ export function CompactGefHeader({
 
                 {wgs84 && (
                   <>
-                    <div className="font-semibold">WGS84</div>
+                    <div className="mt-2">
+                      <span className="font-semibold">WGS84</span>
+                      <span className="text-gray-400 text-sm">
+                        {" "}
+                        (EPSG:4326)
+                      </span>
+                    </div>
                     <div className="flex items-center gap-1">
                       {wgs84.lat.toFixed(6)}, {wgs84.lon.toFixed(6)}
                       <CopyButton
@@ -474,20 +485,18 @@ export function DetailedGefHeaders({ headers, fileType }: DetailedHeaderProps) {
 
   return (
     <div className="space-y-2">
-      <h3 className="text-lg font-semibold text-gray-800 mb-3">
-        {t("technicalDetails")}
-      </h3>
+      <CardTitle>{t("technicalDetails")}</CardTitle>
 
-      <div className="grid grid-cols-2 gap-x-2 gap-y-2">
+      <div className="grid grid-cols-2 gap-x-2 gap-y-2 items-start">
         {sections.map((section) => (
           <Disclosure
             key={section.id}
-            className="border border-gray-200 rounded-lg overflow-hidden"
+            className="border border-gray-300 rounded-md overflow-hidden"
           >
             <Heading>
               <Button
                 slot="trigger"
-                className="w-full px-4 py-3 bg-gray-50 hover:bg-gray-100 flex items-center justify-between text-left transition-colors data-[expanded]:bg-gray-100"
+                className="w-full px-4 py-3 bg-gray-100 hover:bg-gray-100 flex items-center justify-between text-left transition-color"
               >
                 <span className="font-medium text-gray-800">
                   {section.title}
@@ -660,28 +669,28 @@ function getCoordinatesInfo(
 
     items.push({
       label: t("coordinateSystem"),
-      value: `${coordSystem.name} ${coordSystem.epsg} (${xyid.coordinateSystem})`,
+      value: `${coordSystem.name} ${coordSystem.epsg}`,
     });
 
     items.push({
       label: t("xCoordinate"),
-      value: `${xyid.x.toFixed()} ± ${xyid.deltaX.toFixed()} m`,
+      value: `${xyid.x.toFixed()} m ± ${xyid.deltaX.toFixed()}`,
     });
 
     items.push({
       label: t("yCoordinate"),
-      value: `${xyid.y.toFixed()} ± ${xyid.deltaY.toFixed()} m`,
+      value: `${xyid.y.toFixed()} m ± ${xyid.deltaY.toFixed()}`,
     });
   }
 
   const zid = headers.ZID;
 
   if (zid) {
-    const heightSystem = HEIGHT_SYSTEM_MAP[zid.code];
+    const heightSystem = HEIGHT_SYSTEMS[zid.code].name;
     items.push({ label: t("heightSystem"), value: heightSystem });
     items.push({
       label: t("surfaceLevel"),
-      value: `${zid.height.toFixed()} ± ${zid.deltaZ.toFixed()} m`,
+      value: `${zid.height.toFixed()} m ± ${zid.deltaZ.toFixed()} m`,
     });
   }
 
