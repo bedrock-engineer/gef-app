@@ -6,7 +6,7 @@ import type { BoreLayer, BoreSpecimen } from "~/util/gef-bore";
 import { getSoilColor } from "~/util/gef-bore";
 import { decodeBoreCode } from "~/util/gef-bore-codes";
 import { getMunsellColor } from "~/util/munsell-colors";
-import { PlotDownloadButtons } from "./PlotDownload";
+import { PlotDownloadButtons } from "./plot-download-buttons";
 import { Card, CardTitle } from "./card";
 
 interface BorePlotProps {
@@ -181,7 +181,7 @@ export function BorePlot({
       <div className="flex justify-center">
         <div id={id} ref={containerRef}></div>
       </div>
-      
+
       <div className="mt-4">
         <h4 className="text-sm font-medium text-gray-700 mb-2">
           {t("legend")}

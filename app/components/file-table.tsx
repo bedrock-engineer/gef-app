@@ -16,8 +16,8 @@ import {
   TableHeader,
 } from "react-aria-components";
 import { useTranslation } from "react-i18next";
-import type { GefData, GefFileType } from "~/util/gef";
-import { getMeasurementVarValue } from "~/util/gef-metadata";
+import type { GefData, GefFileType } from "~/util/gef-cpt";
+import { getMeasurementVarValue } from "~/util/gef-common";
 
 function SortIndicator({
   column,
@@ -27,21 +27,13 @@ function SortIndicator({
   sortDescriptor: SortDescriptor;
 }) {
   const isActive = sortDescriptor.column === column;
-  // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+
   const Icon =
     sortDescriptor.direction === "ascending" ? ChevronUpIcon : ChevronDownIcon;
 
   return (
     <Icon size={14} className={`inline ml-1 ${isActive ? "" : "opacity-0"}`} />
   );
-}
-
-interface FileTableProps {
-  gefData: Record<string, GefData>;
-  selectedFileName: string;
-  onSelectionChange: (filename: string) => void;
-  onFileDrop: (files: Array<File>) => void;
-  onFileRemove: (filename: string) => void;
 }
 
 interface FileRow {
@@ -52,12 +44,12 @@ interface FileRow {
   finalDepth: number | null;
 }
 
-function formatDate(date: {
-  year: number;
-  month: number;
-  day: number;
-}): string {
-  return `${date.year}-${String(date.month).padStart(2, "0")}-${String(date.day).padStart(2, "0")}`;
+interface FileTableProps {
+  gefData: Record<string, GefData>;
+  selectedFileName: string;
+  onSelectionChange: (filename: string) => void;
+  onFileDrop: (files: Array<File>) => void;
+  onFileRemove: (filename: string) => void;
 }
 
 export function FileTable({
@@ -86,17 +78,13 @@ export function FileTable({
         if (datumBoring) {
           testDate = datumBoring.text;
         }
-        // Get final depth from last layer
-        if (data.layers.length > 0) {
-          const lastLayer = data.layers[data.layers.length - 1];
-          finalDepth = lastLayer?.depthBottom ?? null;
-        }
+        // Get end depth from MEASUREMENTVAR 16
+        const measurementVars = data.headers.MEASUREMENTVAR ?? [];
+        finalDepth = getMeasurementVarValue(measurementVars, 16) ?? null;
         // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
       } else if (data.fileType === "CPT") {
-        // For CPT files, use STARTDATE
-        if (data.headers.STARTDATE) {
-          testDate = formatDate(data.headers.STARTDATE);
-        }
+        // For CPT files, use processed startDate
+        testDate = data.processed.startDate ?? null;
         // Get end depth from MEASUREMENTVAR 16
         const measurementVars = data.headers.MEASUREMENTVAR ?? [];
         finalDepth = getMeasurementVarValue(measurementVars, 16) ?? null;
@@ -119,9 +107,15 @@ export function FileTable({
       const bVal = b[column];
 
       // Handle null values
-      if (aVal === null && bVal === null) return 0;
-      if (aVal === null) return 1;
-      if (bVal === null) return -1;
+      if (aVal === null && bVal === null) {
+        return 0;
+      }
+      if (aVal === null) {
+        return 1;
+      }
+      if (bVal === null) {
+        return -1;
+      }
 
       // Compare values
       let cmp: number;
@@ -141,7 +135,9 @@ export function FileTable({
   }, [selectedFileName]);
 
   const handleSelectionChange = (keys: Selection) => {
-    if (keys === "all") return;
+    if (keys === "all") {
+      return;
+    }
     const selected = Array.from(keys)[0];
     if (typeof selected === "string") {
       onSelectionChange(selected);

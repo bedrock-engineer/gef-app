@@ -20,7 +20,7 @@ export const [i18nextMiddleware, getLocale, getInstance] =
     detection: {
       supportedLanguages: languageCodes,
       fallbackLanguage: "nl",
-      cookie: localeCookie, 
+      cookie: localeCookie,
     },
     i18next: { resources },
     plugins: [initReactI18next],

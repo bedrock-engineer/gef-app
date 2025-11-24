@@ -1,18 +1,19 @@
+import { TrashIcon, UploadIcon } from "lucide-react";
 import { Suspense, useState, useTransition } from "react";
 import { Button, FileTrigger } from "react-aria-components";
 import { useTranslation } from "react-i18next";
 import { Form } from "react-router";
 import { downloadGefDataAsCsv } from "~/util/csv-download";
-import { parseGefFile, type GefData } from "~/util/gef";
-import { BorePlot } from "./BorePlot";
-import { CptPlots } from "./CptPlot";
-import { FileTable } from "./FileTable";
-import { CompactGefHeader, DetailedGefHeaders } from "./GefHeaderDisplay";
-import { GefMultiMap } from "./GefMultiMap";
-import { PreExcavationPlot } from "./PreExcavationPlot";
-import { SpecimenTable } from "./SpecimenTable";
-import { TrashIcon, UploadIcon } from "lucide-react";
+import { parseGefFile, type GefData } from "~/util/gef-cpt";
+import { BorePlot } from "./bore-plot";
 import { Card } from "./card";
+import { CptPlots } from "./cpt-plot";
+import { DownloadGeoJSONButton } from "./download-geojson-button";
+import { FileTable } from "./file-table";
+import { CompactGefHeader, DetailedGefHeaders } from "./gef-header-display";
+import { GefMultiMap } from "./gef-map";
+import { PreExcavationPlot } from "./preexcavation-plot";
+import { SpecimenTable } from "./specimen-table";
 
 export function App() {
   const { t, i18n } = useTranslation();
@@ -203,11 +204,14 @@ export function App() {
                 return rest;
               });
               if (selectedFileName === filename) {
-                const remaining = Object.keys(gefData).filter((f) => f !== filename);
+                const remaining = Object.keys(gefData).filter(
+                  (f) => f !== filename
+                );
                 setSelectedFileName(remaining[0] ?? "");
               }
             }}
           />
+
           {Object.keys(gefData).length > 0 && (
             <Button
               className={"button mt-2 ml-auto transition-colors"}
@@ -244,6 +248,8 @@ export function App() {
               </Suspense>
             </div>
           )}
+
+          <DownloadGeoJSONButton gefData={gefData} />
         </div>
 
         {selectedFile ? (
@@ -253,6 +259,7 @@ export function App() {
                 <h2 className="text-amber-800 font-semibold mb-2">
                   {t("warning", { count: selectedFile.warnings.length })}
                 </h2>
+
                 <ul className="space-y-1">
                   {selectedFile.warnings.map((warning, i) => (
                     <li key={i} className="text-sm text-amber-700">
@@ -264,8 +271,8 @@ export function App() {
             )}
 
             <CompactGefHeader
-              headers={selectedFile.headers}
-              fileType={selectedFile.fileType}
+              filename={selectedFileName}
+              data={selectedFile}
               onDownload={() => {
                 if (selectedFile.fileType === "CPT") {
                   downloadGefDataAsCsv(selectedFile, selectedFileName);
@@ -308,14 +315,11 @@ export function App() {
               </>
             )}
 
-            <DetailedGefHeaders
-              headers={selectedFile.headers}
-              fileType={selectedFile.fileType}
-            />
+            <DetailedGefHeaders data={selectedFile} />
           </div>
         ) : (
           <Card>
-            <p className="text-gray-400">Upload een GEF-bestand</p>
+            <p className="text-gray-400">{t("uploadGefFile")}</p>
           </Card>
         )}
       </main>

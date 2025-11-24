@@ -1,19 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
-import {
-  COORDINATE_SYSTEMS,
-  type CoordinateSystemCode,
-} from "../util/gef-schemas";
-import { convertToWGS84 } from "../util/coordinates";
-import type { GefData, GefFileType } from "~/util/gef";
-
-interface GefLocation {
-  filename: string;
-  x: number;
-  y: number;
-  coordinateSystem: CoordinateSystemCode | "-";
-  fileType: GefFileType;
-}
+import type { GefData, ProcessedMetadata } from "~/util/gef-cpt";
 
 interface GefMultiMapProps {
   gefData: Record<string, GefData>;
@@ -36,43 +23,27 @@ export function GefMultiMap({
   const markersRef = useRef<Map<string, any>>(new Map());
   const [error, setError] = useState<string | null>(null);
 
-  // Extract locations from GEF data
-  const locations: Array<GefLocation> = useMemo(
+  // Extract processed metadata from GEF data
+  const locations: Array<ProcessedMetadata> = useMemo(
     () =>
-      Object.entries(gefData)
-        .filter(([_, data]) => data.headers.XYID)
-        .map(([filename, data]) => ({
-          filename,
-          x: data.headers.XYID?.x ?? 0,
-          y: data.headers.XYID?.y ?? 0,
-          coordinateSystem: data.headers.XYID?.coordinateSystem ?? "-",
-          fileType: data.fileType,
-        })),
-    [gefData]
+      Object.values(gefData)
+        .map((data) => data.processed)
+        .filter((meta) => meta.wgs84 !== null),
+    [gefData],
   );
 
   useEffect(() => {
-    if (!mapRef.current || locations.length === 0) return;
+    if (!mapRef.current || locations.length === 0) {
+      return;
+    }
 
     // Dynamic imports to avoid SSR issues
     Promise.all([import("leaflet"), import("leaflet/dist/leaflet.css")])
       .then(([leafletModule]) => {
         const L = leafletModule.default;
 
-        // Transform all coordinates using shared utility
-        const transformedLocations = locations
-          .map((loc) => {
-            const coords = convertToWGS84({
-              coordinateSystem: loc.coordinateSystem,
-              x: loc.x,
-              y: loc.y,
-            });
-            if (!coords) return null;
-            return { ...loc, lat: coords.lat, lng: coords.lon };
-          })
-          .filter((loc): loc is NonNullable<typeof loc> => loc !== null);
-
-        if (transformedLocations.length === 0) {
+        // Locations are already filtered to have valid WGS84 coordinates
+        if (locations.length === 0) {
           setError(t("noValidLocations"));
           return;
         }
@@ -80,8 +51,8 @@ export function GefMultiMap({
         // Create or update map
         if (!mapInstanceRef.current) {
           // Calculate bounds
-          const lats = transformedLocations.map((l) => l.lat);
-          const lngs = transformedLocations.map((l) => l.lng);
+          const lats = locations.map((l) => l.wgs84!.lat);
+          const lngs = locations.map((l) => l.wgs84!.lon);
           const bounds: [[number, number], [number, number]] = [
             [Math.min(...lats), Math.min(...lngs)],
             [Math.max(...lats), Math.max(...lngs)],
@@ -111,11 +82,11 @@ export function GefMultiMap({
         markersRef.current.clear();
 
         // Add markers for each location
-        transformedLocations.forEach((loc) => {
+        locations.forEach((loc) => {
           // CPT = blue, BORE = orange
           const color = loc.fileType === "CPT" ? "#2563eb" : "#ea580c";
 
-          const marker = L.circleMarker([loc.lat, loc.lng], {
+          const marker = L.circleMarker([loc.wgs84!.lat, loc.wgs84!.lon], {
             radius: 8,
             fillColor: color,
             color: "#fff",
@@ -124,15 +95,13 @@ export function GefMultiMap({
             fillOpacity: 0.8,
           }).addTo(map);
 
-          const coordSysName =
-            COORDINATE_SYSTEMS[loc.coordinateSystem]?.name ??
-            loc.coordinateSystem;
+          const coordSysName = loc.coordinateSystem?.name ?? "Unknown";
 
           marker.bindPopup(`
             <div class="text-xs">
               <strong>${loc.filename}</strong><br/>
-              ${coordSysName}: ${loc.x.toFixed(2)}, ${loc.y.toFixed(2)}<br/>
-              Lat/Lng: ${loc.lat.toFixed(6)}, ${loc.lng.toFixed(6)}
+              ${coordSysName}: ${loc.originalX?.toFixed(2)}, ${loc.originalY?.toFixed(2)}<br/>
+              Lat/Lng: ${loc.wgs84!.lat.toFixed(6)}, ${loc.wgs84!.lon.toFixed(6)}
             </div>
           `);
 
@@ -147,7 +116,7 @@ export function GefMultiMap({
         setError(
           `Failed to load map: ${
             error instanceof Error ? error.message : String(error)
-          }`
+          }`,
         );
       });
 
@@ -162,12 +131,14 @@ export function GefMultiMap({
 
   // Update marker styles when selection changes
   useEffect(() => {
-    if (!mapInstanceRef.current) return;
+    if (!mapInstanceRef.current) {
+      return;
+    }
 
     markersRef.current.forEach((marker, filename) => {
       const isSelected = filename === selectedFileName;
-      const loc = locations.find((l) => l.filename === filename);
-      const baseColor = loc?.fileType === "CPT" ? "#2563eb" : "#ea580c";
+      const meta = locations.find((l) => l.filename === filename);
+      const baseColor = meta?.fileType === "CPT" ? "#2563eb" : "#ea580c";
 
       marker.setStyle({
         radius: isSelected ? 10 : 8,

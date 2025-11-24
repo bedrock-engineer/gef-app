@@ -2,8 +2,10 @@ export default {
   translation: {
     // App title and description
     appTitle: "Bedrock GEF File Viewer",
-    appDescription: "View and analyze GEF (Geotechnical Exchange Format) files for CPT and borehole data in your browser.",
-    privacyNote: "Data never leaves your browser, it is not sent to any server.",
+    appDescription:
+      "View and analyze GEF (Geotechnical Exchange Format) files for CPT and borehole data in your browser.",
+    privacyNote:
+      "Data never leaves your browser, it is not sent to any server.",
 
     // File actions
     chooseFiles: "Choose GEF files",
@@ -141,7 +143,13 @@ export default {
     filename: "Filename",
     testDate: "Test Date",
 
+    // Empty state
+    uploadGefFile: "Upload a GEF file to get started",
+
+    // Download
+    downloadLocationsGeoJson: "Download locations as GeoJSON",
+
     // Footer
     feedbackOrRequests: "Feedback or requests?",
-  }
+  },
 } as const;

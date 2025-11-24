@@ -1,12 +1,14 @@
-// GEF-BORE specific metadata, schemas and types
-// Based on GEF-BORE-Report specification
-// Note: DRILLING_METHOD_CODES is in gef-metadata.ts (used by decodeDrillingMethod)
-
-import { heightDeterminationCodes, placeDeterminationCodes } from "./gef-metadata";
-
-// =============================================================================
-// Measurement Variables
-// =============================================================================
+import {
+  heightDeterminationCodes,
+  placeDeterminationCodes,
+} from "./gef-common";
+import type { GEFHeadersMap } from "./gef-cpt";
+import {
+  parseGefHeaders,
+  type GefHeaders,
+  type SpecimenText,
+  type SpecimenVar,
+} from "./gef-schemas";
 
 export const boreMeasurementVariables = [
   // Borehole depth and geometry
@@ -267,7 +269,7 @@ export const boreMeasurementTextVariables = [
     description: "Maaiveldhoogtebepaling",
     category: "elevation_determination",
     required: false,
-    standardizedCodes:  heightDeterminationCodes
+    standardizedCodes: heightDeterminationCodes,
   },
   {
     id: 12,
@@ -695,4 +697,236 @@ export function getSpecimenTextId(
   property: keyof typeof specimentTextOffsets
 ): number {
   return specimentTextOffsets[property] + 7 * k;
+}
+
+export function parseGefBoreData(
+  dataString: string,
+  headersMap: GEFHeadersMap
+): { layers: Array<BoreLayer>; headers: GefHeaders } {
+  const headers = parseGefHeaders(headersMap);
+  const columnSeparator = headers.COLUMNSEPARATOR ?? ";";
+  const columnInfo = headers.COLUMNINFO ?? [];
+
+  // Split by record separator and filter empty lines
+  const recordSeparator = "!";
+  const records = dataString
+    .split(recordSeparator)
+    .map((r) => r.trim())
+    .filter((r) => r.length > 0);
+
+  // Create void values map
+  const voidValuesMap = new Map(
+    headers.COLUMNVOID?.map(({ columnNumber, voidValue }) => [
+      columnNumber,
+      voidValue,
+    ]) ?? []
+  );
+
+  const layers: Array<BoreLayer> = records.map((record) => {
+    // Split by column separator, handling both numeric and text columns
+    const parts = record
+      .split(columnSeparator)
+      .map((p) => p.trim())
+      .filter((p) => p !== "");
+
+    // Parse numeric columns (first N columns based on COLUMNINFO)
+    const numericValues = parts
+      .slice(0, columnInfo.length)
+      .map((val, index) => {
+        const num = parseFloat(val);
+        const voidValue = voidValuesMap.get(index + 1);
+        return num === voidValue ? null : num;
+      });
+
+    // Parse text columns (remaining parts, strip quotes)
+    const textParts = parts
+      .slice(columnInfo.length)
+      .map((t) => t.replace(/^'|'$/g, "").trim())
+      .filter((t) => t.length > 0);
+
+    // Find depth columns by quantity number
+    const depthTopIdx = columnInfo.findIndex(
+      (c) =>
+        c.quantityNumber === 1 || c.name.toLowerCase().includes("bovenkant")
+    );
+    const depthBottomIdx = columnInfo.findIndex(
+      (c) =>
+        c.quantityNumber === 2 || c.name.toLowerCase().includes("onderkant")
+    );
+
+    // Default to columns 0 and 1 if not found
+    const depthTop = numericValues[depthTopIdx >= 0 ? depthTopIdx : 0] ?? 0;
+    const depthBottom =
+      numericValues[depthBottomIdx >= 0 ? depthBottomIdx : 1] ?? 0;
+
+    // First text part is the main soil code
+    const soilCode = textParts[0] ?? "";
+    const additionalCodes = textParts.slice(1);
+
+    // Check if last additional code is a description (not a standard code)
+    let description: string | undefined;
+    if (additionalCodes.length > 0) {
+      const lastCode = additionalCodes[additionalCodes.length - 1];
+      // If it contains spaces or is longer than typical codes, treat as description
+      if (lastCode && (lastCode.includes(" ") || lastCode.length > 10)) {
+        description = additionalCodes.pop();
+      }
+    }
+
+    return {
+      depthTop,
+      depthBottom,
+      soilCode,
+      additionalCodes,
+      description,
+
+      sandMedian: numericValues[2] ?? null,
+      gravelMedian: numericValues[3] ?? null,
+
+      sandPercent: numericValues[6] ?? null,
+
+      organicPercent: numericValues[8] ?? null,
+    };
+  });
+
+  return { layers, headers };
+}
+
+export function parseGefBoreSpecimens(headers: GefHeaders): Array<BoreSpecimen> {
+  const specimenVars = headers.SPECIMENVAR ?? [];
+  const specimenTexts = headers.SPECIMENTEXT ?? [];
+
+  // Get number of specimens from SPECIMENVAR id=1
+  const countVar = specimenVars.find((v) => v.id === 1);
+  const specimenCount = countVar ? Math.floor(countVar.value) : 0;
+
+  if (specimenCount === 0) {
+    return [];
+  }
+
+  // Create lookup maps for quick access
+  const varMap = new Map<number, SpecimenVar>();
+  for (const v of specimenVars) {
+    varMap.set(v.id, v);
+  }
+
+  const textMap = new Map<number, SpecimenText>();
+  for (const t of specimenTexts) {
+    textMap.set(t.id, t);
+  }
+
+  // Collect remarks from SPECIMENTEXT 1-5
+  const remarks: Array<string> = [];
+  for (let i = 1; i <= 5; i++) {
+    const remark = textMap.get(i);
+    if (remark?.text) {
+      remarks.push(remark.text);
+    }
+  }
+
+  const specimens: Array<BoreSpecimen> = [];
+
+  for (let k = 1; k <= specimenCount; k++) {
+    // Get SPECIMENVAR values using formula: 4 + 7k, 5 + 7k, etc.
+    const depthTopVar = varMap.get(4 + 7 * k);
+    const depthBottomVar = varMap.get(5 + 7 * k);
+    const diameterMonsterVar = varMap.get(6 + 7 * k);
+    const diameterApparaatVar = varMap.get(7 + 7 * k);
+
+    // Get SPECIMENTEXT values using formula: 4 + 7k, 5 + 7k, etc.
+    const monstercodeText = textMap.get(4 + 7 * k);
+    const monsterdatumText = textMap.get(5 + 7 * k);
+    const monstertijdText = textMap.get(6 + 7 * k);
+    const geroerdText = textMap.get(7 + 7 * k);
+    const monstersteekapparaatText = textMap.get(8 + 7 * k);
+    const dikDunwandigText = textMap.get(9 + 7 * k);
+    const monstermethodeText = textMap.get(10 + 7 * k);
+
+    const specimen: BoreSpecimen = {
+      specimenNumber: k,
+      depthTop: depthTopVar?.value ?? 0,
+      depthBottom: depthBottomVar?.value ?? 0,
+      diameterMonster: diameterMonsterVar?.value ?? null,
+      diameterMonstersteekapparaat: diameterApparaatVar?.value ?? null,
+      monstercode: monstercodeText?.text,
+      monsterdatum: monsterdatumText?.text,
+      monstertijd: monstertijdText?.text,
+      geroerdOngeroerd: geroerdText?.text,
+      monstersteekapparaat: monstersteekapparaatText?.text,
+      dikDunwandig: dikDunwandigText?.text,
+      monstermethode: monstermethodeText?.text,
+      remarks: k === 1 ? remarks : undefined, // Only include remarks on first specimen
+    };
+
+    specimens.push(specimen);
+  }
+
+  return specimens;
+}
+
+// Drilling method codes for GEF-BORE files (NEN 5104)
+export const DRILLING_METHOD_CODES = {
+  ACK: "Ackermann-steekboring",
+  AVE: "Avegaarboring",
+  AVH: "Holle avegaarboring",
+  AVS: "Avegaar-steekboring",
+  BES: "Begemann-steekboring",
+  BEI: "Beitel",
+  BSA: "Beeker-sampler",
+  BEV: "Bevriezen",
+  CFL: "Counter-flushboring",
+  DRC: "Dropcorer",
+  EDM: "Edelmanboring",
+  GD1: "Geodoff 1 boring",
+  GD2: "Geodoff 2 boring",
+  GD3: "Geodoff 3 boring",
+  GUT: "Guts",
+  GRA: "Graven",
+  HAH: "Hamon happer",
+  HAN: "Handboring",
+  HAP: "Hapmonster",
+  KER: "Kernboring",
+  LEP: "Lepelboring",
+  LUC: "Luchtliftboring",
+  LUH: "Luchthamer",
+  ONT: "Ontsluiting",
+  OSC: "Oscorer",
+  PIS: "Pistoncorer",
+  PUL: "Pulsboring",
+  PUH: "Handpuls",
+  PUK: "Pulsboring (lichte stelling)",
+  PUM: "Pulsboring (mechanisch)",
+  RAM: "Ramguts",
+  RFL: "Ro-flushboring",
+  RIV: "Riverside boring",
+  SFC: "Straight-flushboring met core sampling",
+  SFL: "Straight-flushboring",
+  SLB: "Slibsteker",
+  SPI: "Spiraalboring",
+  SPO: "Spoelboring",
+  SPS: "Spoelboring met steekmonsters",
+  SPU: "Spuitboring",
+  STE: "Steekboring",
+  TRF: "Trilflipboring",
+  TRI: "Trilboring",
+  VDS: "Van der Staay boring",
+  VVH: "Van Veen happer",
+  VIB: "Vibrocorer",
+  ZEN: "Zenkovitchboring",
+  ZUI: "Zuigboring",
+} as const;
+
+type DrillingCode = keyof typeof DRILLING_METHOD_CODES;
+
+/**
+ * Decode a drilling method code
+ * Returns formatted string like "Pulsboring (PUL)" or the original code if not found
+ */
+export function decodeDrillingMethod(code: string): string {
+  const upperCode = code.trim().toUpperCase() as DrillingCode; // TODO better check
+  const description = DRILLING_METHOD_CODES[upperCode];
+  if (description) {
+    return `${description} (${upperCode})`;
+  }
+  return code;
 }

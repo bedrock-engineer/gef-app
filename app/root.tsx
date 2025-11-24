@@ -24,7 +24,7 @@ export async function loader({ context }: Route.LoaderArgs) {
   const locale = getLocale(context);
   return data(
     { locale },
-    { headers: { "Set-Cookie": await localeCookie.serialize(locale) } }
+    { headers: { "Set-Cookie": await localeCookie.serialize(locale) } },
   );
 }
 
@@ -120,7 +120,7 @@ export default function App({ loaderData: { locale } }: Route.ComponentProps) {
         void i18n.changeLanguage(locale);
       }
     },
-    [locale, i18n]
+    [locale, i18n],
   );
 
   return (

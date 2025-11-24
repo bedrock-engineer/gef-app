@@ -12,8 +12,8 @@ import {
   ListBoxItem,
 } from "react-aria-components";
 import { useTranslation } from "react-i18next";
-import { PlotDownloadButtons } from "./PlotDownload";
-import { DEPTH_KEYWORDS } from "~/util/gef";
+import { PlotDownloadButtons } from "./plot-download-buttons";
+import { DEPTH_KEYWORDS } from "~/util/gef-cpt";
 import { Card, CardTitle } from "./card";
 
 interface Column {
@@ -144,13 +144,15 @@ export function CptPlots({
         {selectedAxes.map((k) => {
           const xAxis = xAxisOptions.find((c) => c.key === k);
 
-          if (!xAxis) return null;
+          if (!xAxis) {
+            return null;
+          }
 
           const plotId = `cpt-plot-${k}`;
           return (
             <div
               key={`${k}-${selectedYAxis}`}
-              className="flex flex-col items-center"
+              className="flex flex-col flex-wrap items-center"
             >
               <CptPlot
                 plotId={plotId}

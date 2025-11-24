@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
 import { z } from "zod";
-import type { GEFHeadersMap } from "./gef";
+import type { GEFHeadersMap } from "./gef-cpt";
 
 const stringArray = z.array(z.string().trim());
 
@@ -161,7 +161,7 @@ export const xyidSchema = z
           message: "Y uncertainty (deltaY) must be a non-negative number",
         }),
       })
-      .nullable()
+      .nullable(),
   );
 
 export type XYID = z.infer<typeof xyidSchema>;
@@ -188,7 +188,7 @@ export const zidSchema = z
       deltaZ: z.number().nonnegative({
         message: "Height uncertainty (deltaZ) must be a non-negative number",
       }),
-    })
+    }),
   );
 
 export type ZID = z.infer<typeof zidSchema>;
@@ -211,7 +211,7 @@ export const gefIdSchema = z
       major: z.number().int().min(0),
       minor: z.number().int().min(0),
       patch: z.number().int().min(0),
-    })
+    }),
   );
 
 export type GefId = z.infer<typeof gefIdSchema>;
@@ -234,7 +234,7 @@ export const reportCodeSchema = z
       minor: z.number().int().min(0),
       patch: z.number().int().min(0),
       extra: z.array(z.string()),
-    })
+    }),
   );
 
 export type ReportCode = z.infer<typeof reportCodeSchema>;
@@ -265,7 +265,7 @@ export const dateSchema = z
         .int()
         .min(1, { message: "Day must be between 1 and 31" })
         .max(31, { message: "Day must be between 1 and 31" }),
-    })
+    }),
   );
 
 export type GefDate = z.infer<typeof dateSchema>;
@@ -304,7 +304,7 @@ export const timeSchema = z
           .min(0, { message: "Second must be between 0 and 59" })
           .max(59, { message: "Second must be between 0 and 59" }),
       })
-      .nullable()
+      .nullable(),
   );
 
 export type GefTime = z.infer<typeof timeSchema>;
@@ -315,10 +315,10 @@ export const companyIdSchema = z
     z.string().trim().optional(),
     z.string().trim().optional(),
   ])
-  .transform(([name, address, companyId]) => ({
+  .transform(([name, address, countryCode]) => ({
     name,
     address,
-    companyId,
+    countryCode,
   }));
 
 export type CompanyId = z.infer<typeof companyIdSchema>;
@@ -344,7 +344,7 @@ export const columnInfoSchema = z
       unit: z.string(),
       name: z.string(),
       quantityNumber: z.number().int().min(0),
-    })
+    }),
   );
 
 export type ColumnInfo = z.infer<typeof columnInfoSchema>;
@@ -368,7 +368,7 @@ export const measurementVarSchema = z
       value: z.string(),
       unit: z.string(),
       description: z.string(),
-    })
+    }),
   );
 
 export type MeasurementVar = z.infer<typeof measurementVarSchema>;
@@ -386,7 +386,7 @@ export const measurementTextSchema = z
       id: z.number().int().min(1),
       text: z.string().max(256),
       extra: z.array(z.string()),
-    })
+    }),
   );
 
 export type MeasurementText = z.infer<typeof measurementTextSchema>;
@@ -407,7 +407,7 @@ export const specimenVarSchema = z
       value: z.number(),
       unit: z.string(),
       description: z.string(),
-    })
+    }),
   );
 
 export type SpecimenVar = z.infer<typeof specimenVarSchema>;
@@ -426,12 +426,16 @@ export const specimenTextSchema = z
       id: z.number().int().min(1).max(1410),
       text: z.string(),
       extra: z.array(z.string()),
-    })
+    }),
   );
 
 export type SpecimenText = z.infer<typeof specimenTextSchema>;
 
-export const gefHeadersSchema = z.object({
+// =============================================================================
+// BASE SCHEMA - Shared fields between CPT and BORE
+// =============================================================================
+
+const gefBaseHeadersSchema = z.object({
   // Project Information
   PROJECTID: z
     .array(stringArray)
@@ -455,7 +459,9 @@ export const gefHeadersSchema = z.object({
     .array(z.tuple([z.string(), z.string(), z.string()]))
     .optional()
     .transform((arr) => {
-      if (!arr?.[0]) return undefined;
+      if (!arr?.[0]) {
+        return undefined;
+      }
       const parsed = timeSchema.parse(arr[0]);
       return parsed ?? undefined;
     }),
@@ -469,7 +475,9 @@ export const gefHeadersSchema = z.object({
     .array(z.array(z.string()))
     .optional()
     .transform((arr) => {
-      if (!arr?.[0]) return undefined;
+      if (!arr?.[0]) {
+        return undefined;
+      }
       const parsed = xyidSchema.parse(arr[0]);
       // If parsing returned null (empty/invalid coords), return undefined
       return parsed ?? undefined;
@@ -504,13 +512,13 @@ export const gefHeadersSchema = z.object({
     .array(z.tuple([z.coerce.number(), z.coerce.number()]))
     .optional()
     .transform((arr) =>
-      arr?.map(([columnNumber, voidValue]) => ({ columnNumber, voidValue }))
+      arr?.map(([columnNumber, voidValue]) => ({ columnNumber, voidValue })),
     ),
   COLUMNMINMAX: z
     .array(z.tuple([z.coerce.number(), z.coerce.number(), z.coerce.number()]))
     .optional()
     .transform((arr) =>
-      arr?.map(([columnNumber, min, max]) => ({ columnNumber, min, max }))
+      arr?.map(([columnNumber, min, max]) => ({ columnNumber, min, max })),
     ),
 
   // Measurement Data
@@ -521,7 +529,7 @@ export const gefHeadersSchema = z.object({
         z.string(),
         z.string().optional(),
         z.string().optional(),
-      ])
+      ]),
     )
     .optional()
     .transform((arr) => arr?.map((mv) => measurementVarSchema.parse(mv))),
@@ -529,16 +537,6 @@ export const gefHeadersSchema = z.object({
     .array(z.array(z.string()).min(2))
     .optional()
     .transform((arr) => arr?.map((mt) => measurementTextSchema.parse(mt))),
-
-  // Specimen Data (for GEF-BORE files)
-  SPECIMENVAR: z
-    .array(z.array(z.string()).min(2))
-    .optional()
-    .transform((arr) => arr?.map((sv) => specimenVarSchema.parse(sv))),
-  SPECIMENTEXT: z
-    .array(z.array(z.string()).min(2))
-    .optional()
-    .transform((arr) => arr?.map((st) => specimenTextSchema.parse(st))),
 
   // File Metadata
   GEFID: z
@@ -549,7 +547,7 @@ export const gefHeadersSchema = z.object({
     .array(z.array(z.string()).min(4))
     .optional()
     .transform((arr) =>
-      arr?.[0] ? reportCodeSchema.parse(arr[0]) : undefined
+      arr?.[0] ? reportCodeSchema.parse(arr[0]) : undefined,
     ),
   FILEOWNER: z
     .array(stringArray)
@@ -565,9 +563,41 @@ export const gefHeadersSchema = z.object({
     .array(stringArray)
     .optional()
     .transform((arr) =>
-      arr?.map((c) => c.join(", ")).filter((c) => c.length > 0)
+      arr?.map((c) => c.join(", ")).filter((c) => c.length > 0),
     ),
 });
+
+// =============================================================================
+// CPT-SPECIFIC SCHEMA
+// =============================================================================
+
+export const gefCptHeadersSchema = gefBaseHeadersSchema;
+
+export type GefCptHeaders = z.infer<typeof gefCptHeadersSchema>;
+
+// =============================================================================
+// BORE-SPECIFIC SCHEMA
+// =============================================================================
+
+export const gefBoreHeadersSchema = gefBaseHeadersSchema.extend({
+  // Specimen Data (BORE-specific)
+  SPECIMENVAR: z
+    .array(z.array(z.string()).min(2))
+    .optional()
+    .transform((arr) => arr?.map((sv) => specimenVarSchema.parse(sv))),
+  SPECIMENTEXT: z
+    .array(z.array(z.string()).min(2))
+    .optional()
+    .transform((arr) => arr?.map((st) => specimenTextSchema.parse(st))),
+});
+
+export type GefBoreHeaders = z.infer<typeof gefBoreHeadersSchema>;
+
+// =============================================================================
+// COMBINED SCHEMA (for backward compatibility)
+// =============================================================================
+
+export const gefHeadersSchema = gefBoreHeadersSchema;
 
 export type GefHeaders = z.infer<typeof gefHeadersSchema>;
 

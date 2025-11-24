@@ -2,25 +2,11 @@ import * as Plot from "@observablehq/plot";
 import { max } from "d3-array";
 import { useEffect, useRef } from "react";
 import { useTranslation } from "react-i18next";
-import type { PreExcavationLayer } from "~/util/gef";
+import type { PreExcavationLayer } from "~/util/gef-cpt";
 import { getSoilColor } from "~/util/gef-bore";
-import { PlotDownloadButtons } from "./PlotDownload";
+import { getSoilCodeFromDescription } from "~/util/gef-bore-codes";
+import { PlotDownloadButtons } from "./plot-download-buttons";
 import { Card, CardTitle } from "./card";
-
-// Map common Dutch soil descriptions to soil codes
-function getSoilCodeFromDescription(description: string): string {
-  const lower = description.toLowerCase();
-
-  // Check for main soil types in order of specificity
-  if (lower.includes("grind")) return "G";
-  if (lower.includes("veen")) return "V";
-  if (lower.includes("klei")) return "K";
-  if (lower.includes("leem")) return "L";
-  if (lower.includes("zand")) return "Z";
-
-  // Default fallback
-  return "NBE";
-}
 
 interface PreExcavationPlotProps {
   layers: Array<PreExcavationLayer>;
@@ -68,7 +54,7 @@ export function PreExcavationPlot({
         marginLeft: 50,
         marginRight: 20,
         marginTop: 30,
-        marginBottom: 40,
+        marginBottom: 50,
         x: {
           axis: null,
           domain: [0, 1],
@@ -115,7 +101,7 @@ export function PreExcavationPlot({
           Plot.frame(),
           // Watermark
           Plot.text(["Made with Bedrock GEF Viewer"], {
-            frameAnchor: "top-right",
+            frameAnchor: "bottom",
             dx: -5,
             dy: 5,
             fill: "gray",
@@ -131,7 +117,7 @@ export function PreExcavationPlot({
         plot.remove();
       };
     },
-    [layers, width, height]
+    [layers, width, height],
   );
 
   if (layers.length === 0) {
@@ -145,9 +131,11 @@ export function PreExcavationPlot({
       <p className="text-sm text-gray-600 mb-4">
         {t("preExcavationDescription")}
       </p>
+
       <div className="flex justify-center">
         <div id={id} ref={containerRef}></div>
       </div>
+
       <PlotDownloadButtons
         plotId={id}
         filename={`${baseFilename}-pre-excavation`}

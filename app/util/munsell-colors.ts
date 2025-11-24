@@ -33,7 +33,7 @@ export function munsellToHex(code: string): string | undefined {
       .replace(/(\d)(\d+\/\d+)$/, "$1 $2");
 
     const hex = munsell.munsellToHex(normalizedCode);
-    return hex ?? undefined;
+    return hex;
   } catch {
     return undefined;
   }
@@ -44,13 +44,17 @@ export function munsellToHex(code: string): string | undefined {
  * Returns both the code and its hex value
  */
 export function getMunsellColor(
-  additionalCodes: Array<string>
+  additionalCodes: Array<string>,
 ): { code: string; hex: string } | undefined {
   const code = extractMunsellCode(additionalCodes);
-  if (!code) return undefined;
+  if (!code) {
+    return undefined;
+  }
 
   const hex = munsellToHex(code);
-  if (!hex) return undefined;
+  if (!hex) {
+    return undefined;
+  }
 
   return { code, hex };
 }

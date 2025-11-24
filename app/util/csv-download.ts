@@ -1,12 +1,10 @@
 import { csvFormat } from "d3-dsv";
-import type { GefCptData } from "./gef";
+import type { GefCptData } from "./gef-cpt";
 
-/**
- * Downloads GEF CPT data as a CSV file
- * @param gefData - The parsed GEF CPT data
- * @param filename - The original filename (will be used for the CSV filename)
- */
-export function downloadGefDataAsCsv(gefData: GefCptData, filename: string): void {
+export function downloadGefDataAsCsv(
+  gefData: GefCptData,
+  filename: string
+): void {
   // Convert data to CSV format using d3-array
   const csvContent = csvFormat(gefData.data);
 

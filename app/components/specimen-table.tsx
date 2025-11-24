@@ -5,9 +5,11 @@ import { CardTitle } from "./card";
 
 function getCodeDescription(
   code: string | undefined,
-  codeList: ReadonlyArray<{ code: string; description: string }>
+  codeList: ReadonlyArray<{ code: string; description: string }>,
 ): string {
-  if (!code) return "-";
+  if (!code) {
+    return "-";
+  }
   const found = codeList.find((c) => c.code === code);
   return found ? `${code} (${found.description})` : code;
 }
@@ -25,9 +27,7 @@ export function SpecimenTable({ specimens }: SpecimenTableProps) {
 
   return (
     <div className="overflow-x-auto">
-      <CardTitle>
-        {t("specimensCount", { count: specimens.length })}
-      </CardTitle>
+      <CardTitle>{t("specimensCount", { count: specimens.length })}</CardTitle>
 
       {specimens[0]?.remarks && specimens[0].remarks.length > 0 && (
         <div className="mb-4 p-2 bg-yellow-50 border border-yellow-200 rounded text-sm">
@@ -43,8 +43,12 @@ export function SpecimenTable({ specimens }: SpecimenTableProps) {
       <table className="w-full border-collapse text-sm">
         <thead>
           <tr className="bg-gray-100">
-            <th className="border border-gray-300 px-2 py-1 text-left">{t("number")}</th>
-            <th className="border border-gray-300 px-2 py-1 text-left">{t("code")}</th>
+            <th className="border border-gray-300 px-2 py-1 text-left">
+              {t("number")}
+            </th>
+            <th className="border border-gray-300 px-2 py-1 text-left">
+              {t("code")}
+            </th>
             <th className="border border-gray-300 px-2 py-1 text-left">
               {t("depthM_table")}
             </th>
@@ -54,7 +58,9 @@ export function SpecimenTable({ specimens }: SpecimenTableProps) {
             <th className="border border-gray-300 px-2 py-1 text-left">
               {t("dateTime")}
             </th>
-            <th className="border border-gray-300 px-2 py-1 text-left">{t("type")}</th>
+            <th className="border border-gray-300 px-2 py-1 text-left">
+              {t("type")}
+            </th>
             <th className="border border-gray-300 px-2 py-1 text-left">
               {t("method")}
             </th>
@@ -86,7 +92,7 @@ export function SpecimenTable({ specimens }: SpecimenTableProps) {
                 <span
                   title={getCodeDescription(
                     spec.geroerdOngeroerd,
-                    SPECIMEN_CODES.geroerd
+                    SPECIMEN_CODES.geroerd,
                   )}
                 >
                   {spec.geroerdOngeroerd ?? "-"}
@@ -95,7 +101,7 @@ export function SpecimenTable({ specimens }: SpecimenTableProps) {
                 <span
                   title={getCodeDescription(
                     spec.monstersteekapparaat,
-                    SPECIMEN_CODES.monstersteekapparaat
+                    SPECIMEN_CODES.monstersteekapparaat,
                   )}
                 >
                   {spec.monstersteekapparaat ?? "-"}
@@ -104,7 +110,7 @@ export function SpecimenTable({ specimens }: SpecimenTableProps) {
                 <span
                   title={getCodeDescription(
                     spec.dikDunwandig,
-                    SPECIMEN_CODES.dikDunwandig
+                    SPECIMEN_CODES.dikDunwandig,
                   )}
                 >
                   {spec.dikDunwandig ?? "-"}
@@ -114,7 +120,7 @@ export function SpecimenTable({ specimens }: SpecimenTableProps) {
                 <span
                   title={getCodeDescription(
                     spec.monstermethode,
-                    SPECIMEN_CODES.monstermethode
+                    SPECIMEN_CODES.monstermethode,
                   )}
                 >
                   {spec.monstermethode ?? "-"}

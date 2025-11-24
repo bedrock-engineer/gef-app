@@ -11,7 +11,6 @@ export default defineConfig(
   tseslint.configs.strictTypeChecked,
   tseslint.configs.stylisticTypeChecked,
   reactHooks.configs.flat['recommended-latest'],
-
   {
     languageOptions: {
       parserOptions: {
@@ -19,6 +18,7 @@ export default defineConfig(
       },
     },
     rules: {
+      "curly": "error",
       "@typescript-eslint/array-type": ["error", { default: "generic" }],
       "@typescript-eslint/restrict-template-expressions": [
         "error",

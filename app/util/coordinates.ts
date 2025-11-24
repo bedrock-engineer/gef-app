@@ -16,11 +16,11 @@ export interface CoordinateInput {
  * Convert coordinates from a GEF coordinate system to WGS84 (EPSG:4326)
  * Returns null if the conversion fails or coordinates are invalid
  */
-export function convertToWGS84(
-  input: CoordinateInput
-): WGS84Coords | null {
+export function convertToWGS84(input: CoordinateInput): WGS84Coords | null {
   const coordSysConfig = COORDINATE_SYSTEMS[input.coordinateSystem];
-  if (!coordSysConfig || !coordSysConfig.epsg) return null;
+  if (!coordSysConfig?.epsg) {
+    return null;
+  }
 
   try {
     // Define custom projection if needed

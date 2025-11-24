@@ -2,8 +2,10 @@ export default {
   translation: {
     // App title and description
     appTitle: "Bedrock GEF Bestand Viewer",
-    appDescription: "Bekijk en analyseer GEF (Geotechnical Exchange Format) bestanden voor CPT en boorgatgegevens in je browser.",
-    privacyNote: "Gegevens verlaten nooit uw browser, ze worden niet naar een server verzonden.",
+    appDescription:
+      "Bekijk en analyseer GEF (Geotechnical Exchange Format) bestanden voor CPT en boorgatgegevens in je browser.",
+    privacyNote:
+      "Gegevens verlaten nooit uw browser, ze worden niet naar een server verzonden.",
 
     // File actions
     chooseFiles: "Kies GEF bestanden",
@@ -141,7 +143,13 @@ export default {
     filename: "Bestandsnaam",
     testDate: "Testdatum",
 
+    // Empty state
+    uploadGefFile: "Upload een GEF-bestand om te beginnen",
+
+    // Download
+    downloadLocationsGeoJson: "Download locaties als GeoJSON",
+
     // Footer
     feedbackOrRequests: "Feedback of verzoeken?",
-  }
+  },
 } as const;

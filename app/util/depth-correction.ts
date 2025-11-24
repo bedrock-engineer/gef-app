@@ -1,6 +1,6 @@
 import type { ColumnInfo, ZID, MeasurementVar } from "./gef-schemas";
-import { getMeasurementVarValue } from "./gef-metadata";
-import { findColumnByQuantity } from "./gef";
+import { getMeasurementVarValue } from "./gef-common";
+import { findColumnByQuantity } from "./gef-cpt";
 
 /**
  * GEF Quantity Numbers for depth-related columns
@@ -25,12 +25,12 @@ const PRE_EXCAVATED_DEPTH_MEASUREMNTVAR_ID = 13;
  */
 export function calculateTrueDepth(
   data: Array<Record<string, number>>,
-  columnInfo: Array<ColumnInfo>
+  columnInfo: Array<ColumnInfo>,
 ): Array<Record<string, number>> {
   // Check if corrected depth already exists (quantity 11)
   const correctedDepthCol = findColumnByQuantity(
     columnInfo,
-    QUANTITY_NUMBERS.CORRECTED_DEPTH
+    QUANTITY_NUMBERS.CORRECTED_DEPTH,
   );
 
   if (correctedDepthCol) {
@@ -44,11 +44,11 @@ export function calculateTrueDepth(
   // Find penetration length and inclination columns
   const penetrationCol = findColumnByQuantity(
     columnInfo,
-    QUANTITY_NUMBERS.PENETRATION_LENGTH
+    QUANTITY_NUMBERS.PENETRATION_LENGTH,
   );
   const inclinationCol = findColumnByQuantity(
     columnInfo,
-    QUANTITY_NUMBERS.INCLINATION_RESULTANT
+    QUANTITY_NUMBERS.INCLINATION_RESULTANT,
   );
 
   if (!penetrationCol) {
@@ -112,7 +112,7 @@ export function calculateTrueDepth(
  */
 export function calculateElevation(
   data: Array<Record<string, number>>,
-  zid: ZID | undefined
+  zid: ZID | undefined,
 ): Array<Record<string, number>> {
   if (!zid) {
     // No height reference, can't calculate elevation
@@ -153,13 +153,13 @@ export function addComputedDepthColumns(
   data: Array<Row>,
   columnInfo: Array<ColumnInfo>,
   zid: ZID | undefined,
-  measurementVars: Array<MeasurementVar> | undefined
+  measurementVars: Array<MeasurementVar> | undefined,
 ): Array<Record<string, number>> {
   // Get pre-excavated depth if present
   const preExcavatedDepth = measurementVars
     ? (getMeasurementVarValue(
         measurementVars,
-        PRE_EXCAVATED_DEPTH_MEASUREMNTVAR_ID
+        PRE_EXCAVATED_DEPTH_MEASUREMNTVAR_ID,
       ) ?? 0)
     : 0;
 
@@ -176,7 +176,7 @@ export function addComputedDepthColumns(
   if (preExcavatedDepth > 0) {
     const penetrationCol = findColumnByQuantity(
       columnInfo,
-      QUANTITY_NUMBERS.PENETRATION_LENGTH
+      QUANTITY_NUMBERS.PENETRATION_LENGTH,
     );
     const penetrationKey = penetrationCol?.name;
 
