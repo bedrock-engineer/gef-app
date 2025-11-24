@@ -17,7 +17,6 @@ import {
 } from "react-aria-components";
 import { useTranslation } from "react-i18next";
 import type { GefData, GefFileType } from "~/util/gef-cpt";
-import { getMeasurementVarValue } from "~/util/gef-common";
 
 function SortIndicator({
   column,
@@ -71,23 +70,16 @@ export function FileTable({
       let finalDepth: number | null = null;
 
       if (data.fileType === "BORE") {
-        // For BORE files, use MEASUREMENTTEXT 16 (Datum boring)
-        const datumBoring = data.headers.MEASUREMENTTEXT?.find(
-          (mt) => mt.id === 16
-        );
-        if (datumBoring) {
-          testDate = datumBoring.text;
-        }
-        // Get end depth from MEASUREMENTVAR 16
-        const measurementVars = data.headers.MEASUREMENTVAR ?? [];
-        finalDepth = getMeasurementVarValue(measurementVars, 16) ?? null;
+        // For BORE files, use processed boring date (MEASUREMENTTEXT ID 16 = "Datum boring")
+        testDate = data.processed.texts.datumBoring ?? null;
+        // Get end depth from processed measurements (MEASUREMENTVAR ID 16 = "Einddiepte")
+        finalDepth = data.processed.measurements.einddiepte?.value ?? null;
         // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
       } else if (data.fileType === "CPT") {
         // For CPT files, use processed startDate
         testDate = data.processed.startDate ?? null;
-        // Get end depth from MEASUREMENTVAR 16
-        const measurementVars = data.headers.MEASUREMENTVAR ?? [];
-        finalDepth = getMeasurementVarValue(measurementVars, 16) ?? null;
+        // Get end depth from processed measurements (MEASUREMENTVAR ID 16)
+        finalDepth = data.processed.measurements.endDepthOfPenetrationTest?.value ?? null;
       }
 
       return {

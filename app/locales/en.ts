@@ -151,5 +151,16 @@ export default {
 
     // Footer
     feedbackOrRequests: "Feedback or requests?",
+    needSimilarApp: "Need a similar app for your geotechnical workflow?",
+    contactUs: "Contact us",
+
+    // Empty state CTA
+    freeToolByBedrock: "Free tool by Bedrock. We build:",
+    customWebApps: "Custom web apps for geotechnical workflows",
+    pythonAutomation:
+      "Geotechnical workflow automation using Python and Marimo notebooks",
+    bimCadIntegrations:
+      "Geotechnical data integration into BIM software like Civil3D, Revit, and Rhino3D",
+    emptyStateContact: "Interested?",
   },
 } as const;

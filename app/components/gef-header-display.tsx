@@ -193,9 +193,9 @@ export function CompactGefHeader({
             </>
           )}
 
-          {fileType === "CPT" && headers.MEASUREMENTVAR && (
+          {fileType === "CPT" && (
             <CptCompactInfo
-              measurementVars={headers.MEASUREMENTVAR}
+              processed={processed}
               lastScan={headers.LASTSCAN}
             />
           )}

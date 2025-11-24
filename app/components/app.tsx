@@ -319,7 +319,24 @@ export function App() {
           </div>
         ) : (
           <Card>
-            <p className="text-gray-400">{t("uploadGefFile")}</p>
+            <p className="text-gray-400 mb-4">{t("uploadGefFile")}</p>
+            <div className="text-sm text-gray-600">
+              <p className="mb-2">{t("freeToolByBedrock")}</p>
+              <ul className="list-disc list-inside space-y-1 text-gray-500">
+                <li>{t("customWebApps")}</li>
+                <li>{t("pythonAutomation")}</li>
+                <li>{t("bimCadIntegrations")}</li>
+              </ul>
+              <p className="mt-3">
+                {t("emptyStateContact")}{" "}
+                <a
+                  href="mailto:info@bedrock.engineer"
+                  className="text-blue-600 hover:underline font-medium"
+                >
+                  {t("contactUs")}
+                </a>
+              </p>
+            </div>
           </Card>
         )}
       </main>
@@ -329,6 +346,16 @@ export function App() {
           <p className="mb-2">{t("appDescription")}</p>
           <p className="">{t("privacyNote")}</p>
         </div>
+
+        <p className="mb-3">
+          {t("needSimilarApp")}{" "}
+          <a
+            href="mailto:info@bedrock.engineer"
+            className="text-blue-600 hover:underline font-medium"
+          >
+            {t("contactUs")}
+          </a>
+        </p>
 
         <p>
           <a

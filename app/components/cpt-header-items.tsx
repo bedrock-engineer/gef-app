@@ -1,10 +1,10 @@
 import { useTranslation } from "react-i18next";
-import { getMeasurementVarValue } from "~/util/gef-common";
 import {
   decodeMeasurementText,
   findCptMeasurementTextVariable,
   findCptMeasurementVariable,
   type GefExtension,
+  type ProcessedMetadata,
 } from "../util/gef-cpt";
 import type { GefHeaders } from "../util/gef-schemas";
 import { CopyButton } from "./copy-button";
@@ -13,29 +13,6 @@ import {
   getLocalizedDescription,
   type HeaderItem,
 } from "./common-header-items";
-
-// CPT-specific lookup functions
-export function findCptMeasurementTextVariableById(
-  id: number,
-  extension: GefExtension
-) {
-  return findCptMeasurementTextVariable(id, extension);
-}
-
-export function findCptMeasurementVariableById(
-  id: number,
-  extension: GefExtension
-) {
-  return findCptMeasurementVariable(id, extension);
-}
-
-export function decodeCptMeasurementTextValue(
-  id: number,
-  text: string,
-  extension: GefExtension
-): string {
-  return decodeMeasurementText(id, text, extension);
-}
 
 // CPT-specific measurement text items
 export function getCptMeasurementTextItems(
@@ -80,60 +57,24 @@ export function getCptMeasurementTextItems(
   return items;
 }
 
-// CPT-specific measurement var items
-export function getCptMeasurementVarItems(
-  headers: GefHeaders,
-  categories: Array<string>,
-  extension: GefExtension,
-  locale: string
-): Array<HeaderItem> {
-  const items: Array<HeaderItem> = [];
-
-  headers.MEASUREMENTVAR?.forEach(({ id, value, unit }) => {
-    const varInfo = findCptMeasurementVariable(id, extension);
-    if (!varInfo || !categories.includes(varInfo.category)) {
-      return;
-    }
-
-    let displayValue: string;
-    if ("options" in varInfo) {
-      const numValue = parseFloat(value);
-      const option = (
-        varInfo.options as ReadonlyArray<{ value: number; meaning: string }>
-      ).find((o) => o.value === numValue);
-      displayValue = option ? option.meaning : formatNumericValue(value);
-    } else {
-      displayValue = formatNumericValue(value);
-    }
-
-    items.push({
-      label: getLocalizedDescription(varInfo, locale),
-      value: unit && unit !== "-" ? `${displayValue} ${unit}` : displayValue,
-    });
-  });
-
-  return items;
-}
-
 interface CptCompactInfoProps {
-  measurementVars: Array<{
-    id: number;
-    value: string;
-    unit: string;
-  }>;
+  processed: ProcessedMetadata;
   lastScan: number | undefined;
 }
 
 export function CptCompactInfo({
-  measurementVars,
+  processed,
   lastScan,
 }: CptCompactInfoProps) {
   const { t } = useTranslation();
 
-  const waterLevelValue = getMeasurementVarValue(measurementVars, 42);
-  const waterLevelDisplay = waterLevelValue?.toFixed(2) ?? null;
+  // Try both possible keys for water level (ID 42 = orientationBetweenXAxisInclinationAndNorth in spec, but may be used for water level in practice)
+  // or ID 14 = groundwaterLevelWithRespectToDatumOfHeightSystemInZid
+  const waterLevel = processed.measurements.orientationBetweenXAxisInclinationAndNorth ??
+                      processed.measurements.groundwaterLevelWithRespectToDatumOfHeightSystemInZid;
+  const waterLevelDisplay = waterLevel?.value.toFixed(2) ?? null;
 
-  const endDepthValue = getMeasurementVarValue(measurementVars, 16);
+  const finalDepth = processed.measurements.endDepthOfPenetrationTest;
 
   return (
     <>
@@ -147,10 +88,10 @@ export function CptCompactInfo({
         </>
       )}
 
-      {endDepthValue && (
+      {finalDepth && (
         <>
           <dt className="text-gray-500">{t("depth")}</dt>
-          <dd>{endDepthValue.toFixed(3)}m</dd>
+          <dd>{finalDepth.value.toFixed(3)}m</dd>
         </>
       )}
 

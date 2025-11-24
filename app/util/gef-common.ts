@@ -138,6 +138,16 @@ export const heightDeterminationCodes = [
 export type GefFileType = "CPT" | "BORE";
 
 /**
+ * Get a measurement variable object by ID from parsed headers
+ */
+function getMeasurementVar(
+  measurementVars: Array<{ id: number; value: string; unit: string }>,
+  id: number
+) {
+  return measurementVars.find((v) => v.id === id);
+}
+
+/**
  * Get a measurement variable numeric value by ID from parsed headers
  */
 export function getMeasurementVarValue(
@@ -150,14 +160,4 @@ export function getMeasurementVarValue(
   }
   const value = parseFloat(mv.value);
   return isNaN(value) ? undefined : value;
-}
-
-/**
- * Get a measurement variable object by ID from parsed headers
- */
-export function getMeasurementVar(
-  measurementVars: Array<{ id: number; value: string; unit: string }>,
-  id: number
-) {
-  return measurementVars.find((v) => v.id === id);
 }

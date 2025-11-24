@@ -3,6 +3,8 @@ import initGefFileToMap, { parse_gef_wasm } from "../pkg/gef_file_to_map.js";
 import { convertToWGS84, type WGS84Coords } from "./coordinates";
 import { addComputedDepthColumns } from "./depth-correction";
 import {
+  boreMeasurementTextVariables,
+  boreMeasurementVariables,
   parseGefBoreData,
   parseGefBoreSpecimens,
   type BoreLayer,
@@ -10,8 +12,12 @@ import {
 } from "./gef-bore";
 import {
   heightDeterminationCodes,
-  placeDeterminationCodes,
+  placeDeterminationCodes
 } from "./gef-common";
+import {
+  getMeasurementTextKey,
+  getMeasurementVarKey,
+} from "./gef-measurement-mappings";
 import { formatGefDate, formatGefTime } from "./gef-metadata-processed";
 import {
   COORDINATE_SYSTEMS,
@@ -252,6 +258,12 @@ function detectChartAxes(
 
 export type GefFileType = "CPT" | "BORE";
 
+// Processed measurement value with unit
+export interface ProcessedMeasurement {
+  value: number;
+  unit: string;
+}
+
 // Processed metadata for display - computed once during parsing
 export interface ProcessedMetadata {
   filename: string;
@@ -277,6 +289,8 @@ export interface ProcessedMetadata {
     epsg: string | null;
   } | null;
   surfaceElevation: number | undefined;
+  measurements: Record<string, ProcessedMeasurement>;
+  texts: Record<string, string>;
 }
 
 // Pre-excavation layer for CPT files
@@ -345,6 +359,38 @@ function processMetadata(
       }
     : null;
 
+  // Choose the correct metadata based on file type
+  const measurementVarMetadata = fileType === "BORE" ? boreMeasurementVariables : cptMeasurementVariables;
+  const measurementTextMetadata = fileType === "BORE" ? boreMeasurementTextVariables : cptMeasurementTextVariables;
+
+  // Process all MEASUREMENTVAR values into human-readable format
+  const measurements: Record<string, ProcessedMeasurement> = {};
+  if (headers.MEASUREMENTVAR) {
+    for (const mv of headers.MEASUREMENTVAR) {
+      const translationKey = getMeasurementVarKey(mv.id, measurementVarMetadata);
+      if (translationKey) {
+        const value = parseFloat(mv.value);
+        if (!isNaN(value)) {
+          measurements[translationKey] = {
+            value,
+            unit: mv.unit,
+          };
+        }
+      }
+    }
+  }
+
+  // Process all MEASUREMENTTEXT values into human-readable format
+  const texts: Record<string, string> = {};
+  if (headers.MEASUREMENTTEXT) {
+    for (const mt of headers.MEASUREMENTTEXT) {
+      const translationKey = getMeasurementTextKey(mt.id, measurementTextMetadata);
+      if (translationKey) {
+        texts[translationKey] = mt.text;
+      }
+    }
+  }
+
   return {
     filename,
     fileType,
@@ -359,6 +405,8 @@ function processMetadata(
     originalY: headers.XYID?.y,
     heightSystem,
     surfaceElevation: headers.ZID?.height,
+    measurements,
+    texts,
   };
 }
 

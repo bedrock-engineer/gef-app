@@ -1,5 +1,4 @@
 import { useTranslation } from "react-i18next";
-import { getMeasurementVarValue } from "~/util/gef-common";
 import {
   decodeBoreMeasurementText,
   findBoreMeasurementTextVariable,
@@ -12,22 +11,6 @@ import {
   getLocalizedDescription,
   type HeaderItem,
 } from "./common-header-items";
-
-// BORE-specific lookup functions
-export function findBoreMeasurementTextVariableById(id: number) {
-  return findBoreMeasurementTextVariable(id);
-}
-
-export function findBoreMeasurementVariableById(id: number) {
-  return findBoreMeasurementVariable(id);
-}
-
-export function decodeBoreMeasurementTextValue(
-  id: number,
-  text: string
-): string {
-  return decodeBoreMeasurementText(id, text);
-}
 
 // BORE-specific measurement text items
 export function getBoreMeasurementTextItems(
@@ -71,73 +54,49 @@ export function getBoreMeasurementTextItems(
   return items;
 }
 
-// BORE-specific measurement var items
-export function getBoreMeasurementVarItems(
-  headers: GefHeaders,
-  categories: Array<string>,
-  locale: string
-): Array<HeaderItem> {
-  const items: Array<HeaderItem> = [];
-
-  headers.MEASUREMENTVAR?.forEach(({ id, value, unit }) => {
-    const varInfo = findBoreMeasurementVariable(id);
-    if (!varInfo || !categories.includes(varInfo.category)) {
-      return;
-    }
-
-    const displayValue = formatNumericValue(value);
-
-    items.push({
-      label: getLocalizedDescription(varInfo, locale),
-      value: unit && unit !== "-" ? `${displayValue} ${unit}` : displayValue,
-    });
-  });
-
-  return items;
-}
-
 // BORE-specific compact info component
 export function BoreCompactInfo({ data }: { data: GefBoreData }) {
   const { t } = useTranslation();
-  const { headers } = data;
+  const { processed } = data;
 
-  // Get key BORE measurementtext values
-  const datumBoring = headers.MEASUREMENTTEXT?.find((mt) => mt.id === 16);
-  const plaatsnaam = headers.MEASUREMENTTEXT?.find((mt) => mt.id === 3);
-  const boorbedrijf = headers.MEASUREMENTTEXT?.find((mt) => mt.id === 13);
+  // Get key BORE values from processed metadata
+  // MEASUREMENTTEXT ID 16 = "Datum boring"
+  // MEASUREMENTTEXT ID 3 = "Plaatsnaam"
+  // MEASUREMENTTEXT ID 13 = "Boorbedrijf"
+  // MEASUREMENTVAR ID 16 = "Einddiepte"
+  const boringDate = processed.texts.datumBoring;
+  const placeName = processed.texts.plaatsnaam;
+  const drillingCompany = processed.texts.boorbedrijf;
+  const finalDepth = processed.measurements.einddiepte;
 
-  // Get end depth from MEASUREMENTVAR 16
-  const measurementVars = headers.MEASUREMENTVAR ?? [];
-  const finalDepth = getMeasurementVarValue(measurementVars, 16) ?? null;
-
-  if (!datumBoring && !plaatsnaam && !boorbedrijf && finalDepth === null) {
+  if (!boringDate && !placeName && !drillingCompany && !finalDepth) {
     return null;
   }
 
   return (
     <>
-      {datumBoring && (
+      {boringDate && (
         <>
           <dt className="font-medium text-gray-500">{t("boringDate")}</dt>
-          <dd>{datumBoring.text}</dd>
+          <dd>{boringDate}</dd>
         </>
       )}
-      {plaatsnaam && (
+      {placeName && (
         <>
           <dt className="font-medium text-gray-500">{t("placeName")}</dt>
-          <dd>{plaatsnaam.text}</dd>
+          <dd>{placeName}</dd>
         </>
       )}
-      {boorbedrijf && (
+      {drillingCompany && (
         <>
           <dt className="font-medium text-gray-500">{t("drillingCompany")}</dt>
-          <dd>{boorbedrijf.text}</dd>
+          <dd>{drillingCompany}</dd>
         </>
       )}
-      {finalDepth !== null && (
+      {finalDepth && (
         <>
           <dt className="font-medium text-gray-500">{t("depth")}</dt>
-          <dd>{finalDepth.toFixed(2)}m</dd>
+          <dd>{finalDepth.value.toFixed(2)}m</dd>
         </>
       )}
     </>

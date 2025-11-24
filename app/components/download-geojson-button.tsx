@@ -1,7 +1,6 @@
 import { DownloadIcon } from "lucide-react";
 import { Button } from "react-aria-components";
 import type { GefData, ProcessedMetadata } from "~/util/gef-cpt";
-import { getMeasurementVarValue } from "~/util/gef-common";
 import type { Feature, FeatureCollection } from "geojson";
 import { useTranslation } from "react-i18next";
 
@@ -18,8 +17,7 @@ function createGeoJSON(gefData: Record<string, GefData>): FeatureCollection {
     )
     .map((data) => {
       const meta = data.processed;
-      const measurementVars = data.headers.MEASUREMENTVAR ?? [];
-      const finalDepth = getMeasurementVarValue(measurementVars, 16) ?? null;
+      const finalDepth = meta.measurements.endDepthOfPenetrationTest?.value ?? null;
 
       return {
         type: "Feature" as const,
