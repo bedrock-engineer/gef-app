@@ -48,7 +48,7 @@ export function App() {
 
     if (files.length > 0) {
       const results = await Promise.allSettled(
-        files.map((file) => parseGefFile(file)),
+        files.map((file) => parseGefFile(file))
       );
 
       const parsedGefFiles = results
@@ -60,7 +60,7 @@ export function App() {
         .map((result, i) => ({ result, file: files[i] }))
         .filter(
           (item): item is { result: PromiseRejectedResult; file: File } =>
-            item.result.status === "rejected",
+            item.result.status === "rejected"
         )
         .map(({ result, file }) => ({
           name: file.name,
@@ -205,7 +205,7 @@ export function App() {
               });
               if (selectedFileName === filename) {
                 const remaining = Object.keys(gefData).filter(
-                  (f) => f !== filename,
+                  (f) => f !== filename
                 );
                 setSelectedFileName(remaining[0] ?? "");
               }
@@ -347,10 +347,6 @@ export function App() {
           <p className="">{t("privacyNote")}</p>
         </div>
 
-        <div className="mb-6 max-w-2xl mx-auto px-4">
-          <p className="text-xs text-gray-600 italic">{t("disclaimer")}</p>
-        </div>
-
         <p className="mb-3">
           {t("needSimilarApp")}{" "}
           <a
@@ -378,6 +374,10 @@ export function App() {
             jules.blom@bedrock.engineer
           </a>
         </p>
+
+        <div className="mt-6 max-w-2xl mx-auto px-4">
+          <p className="text-gray-400 ">{t("disclaimer")}</p>
+        </div>
       </footer>
     </div>
   );

@@ -169,10 +169,27 @@ export function detectChartAxes(
   };
 }
 
-// Processed measurement value with unit
+// Metadata attached to processed items for filtering/display
+export interface ProcessedItemMetadata {
+  id: number;
+  category: string;
+  description: string;
+  descriptionNl?: string;
+  required?: boolean;
+}
+
+// Processed measurement value with unit and metadata
 export interface ProcessedMeasurement {
   value: number;
   unit: string;
+  metadata: ProcessedItemMetadata;
+}
+
+// Processed text value with metadata
+export interface ProcessedText {
+  value: string;
+  decoded?: string; // Decoded/formatted version (e.g., "Pulsboring (PUL)")
+  metadata: ProcessedItemMetadata;
 }
 
 // Processed metadata for display - computed once during parsing
@@ -201,7 +218,7 @@ export interface ProcessedMetadata {
   } | null;
   surfaceElevation: number | undefined;
   measurements: Record<string, ProcessedMeasurement>;
-  texts: Record<string, string>;
+  texts: Record<string, ProcessedText>;
 }
 
 // Pre-excavation layer for CPT files
@@ -215,7 +232,7 @@ export interface PreExcavationLayer {
 export interface GefCptData {
   fileType: "CPT";
   data: Array<Record<string, number>>;
-  headers: GefHeaders;
+  headers: GefCptHeaders;
   chartAxes: {
     yAxis: { key: string; unit: string; name: string } | null;
     xAxis: { key: string; unit: string; name: string } | null;
@@ -319,36 +336,54 @@ export function processCptMetadata(
   const measurementTextMetadata =
     getCptMeasurementTextVariablesForExtension(extension);
 
-  // Process all MEASUREMENTVAR values into human-readable format
+  // Process all MEASUREMENTVAR values into human-readable format with metadata
   const measurements: Record<string, ProcessedMeasurement> = {};
   if (headers.MEASUREMENTVAR) {
     for (const mv of headers.MEASUREMENTVAR) {
-      const translationKey = getMeasurementVarKey(
-        mv.id,
-        measurementVarMetadata
-      );
+      const varInfo = measurementVarMetadata.find((m) => m.id === mv.id);
+      if (!varInfo) {continue;}
+
+      const translationKey = getMeasurementVarKey(mv.id, measurementVarMetadata);
       if (translationKey) {
         const value = parseFloat(mv.value);
         if (!isNaN(value)) {
           measurements[translationKey] = {
             value,
             unit: mv.unit,
+            metadata: {
+              id: varInfo.id,
+              category: varInfo.category,
+              description: varInfo.description,
+              descriptionNl: "descriptionNl" in varInfo ? (varInfo as { descriptionNl?: string }).descriptionNl : undefined,
+              required: "required" in varInfo ? (varInfo as { required?: boolean }).required : undefined,
+            },
           };
         }
       }
     }
   }
 
-  // Process all MEASUREMENTTEXT values into human-readable format
-  const texts: Record<string, string> = {};
+  // Process all MEASUREMENTTEXT values into human-readable format with metadata
+  const texts: Record<string, ProcessedText> = {};
   if (headers.MEASUREMENTTEXT) {
     for (const mt of headers.MEASUREMENTTEXT) {
-      const translationKey = getMeasurementTextKey(
-        mt.id,
-        measurementTextMetadata
-      );
+      const textInfo = measurementTextMetadata.find((m) => m.id === mt.id);
+      if (!textInfo) {continue;}
+
+      const translationKey = getMeasurementTextKey(mt.id, measurementTextMetadata);
       if (translationKey) {
-        texts[translationKey] = mt.text;
+        const decoded = decodeMeasurementText(mt.id, mt.text, extension);
+        texts[translationKey] = {
+          value: mt.text,
+          decoded: decoded !== mt.text ? decoded : undefined,
+          metadata: {
+            id: textInfo.id,
+            category: textInfo.category,
+            description: textInfo.description,
+            descriptionNl: "descriptionNl" in textInfo ? (textInfo as { descriptionNl?: string }).descriptionNl : undefined,
+            required: "required" in textInfo ? (textInfo as { required?: boolean }).required : undefined,
+          },
+        };
       }
     }
   }
@@ -2445,7 +2480,7 @@ function getCptMeasurementVariablesForExtension(
 /**
  * Find a CPT measurement text variable by ID, considering the extension
  */
-export function findCptMeasurementTextVariable(
+function findCptMeasurementTextVariable(
   id: number,
   extension: GefExtension
 ) {
@@ -2468,7 +2503,7 @@ export function findCptMeasurementVariable(
  * Decode a standardized code for a CPT measurement text variable
  * Returns formatted string like "Measured, surveying (MMET)" or the original text if no match
  */
-export function decodeMeasurementText(
+function decodeMeasurementText(
   id: number,
   text: string,
   extension: GefExtension = "standard"

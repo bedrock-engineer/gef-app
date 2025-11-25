@@ -1,8 +1,7 @@
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
 import { z } from "zod";
-import type { GEFHeadersMap } from "./gef-common";
-import type { ZodIssue } from "zod/v3";
 import type { $ZodIssue } from "zod/v4/core";
+import type { GEFHeadersMap } from "./gef-common";
 
 const stringArray = z.array(z.string().trim());
 

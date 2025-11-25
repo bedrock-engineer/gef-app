@@ -8,6 +8,8 @@ import {
   Heading,
 } from "react-aria-components";
 import { useTranslation } from "react-i18next";
+import type { GefData, GefFileType } from "~/util/gef-common";
+import type { GefBoreHeaders, GefCptHeaders } from "~/util/gef-schemas";
 import { findBoreMeasurementVariable } from "../util/gef-bore";
 import type { ProcessedMetadata } from "../util/gef-cpt";
 import {
@@ -33,8 +35,6 @@ import {
 } from "./common-header-items";
 import { CopyButton } from "./copy-button";
 import { CptCompactInfo, getCptMeasurementTextItems } from "./cpt-header-items";
-import type { GefFileType } from "~/util/gef-common";
-import type { GefBoreHeaders, GefCptHeaders } from "~/util/gef-schemas";
 
 // Unified lookup functions that consider file type
 function findMeasurementVariableByFileType(
@@ -49,16 +49,14 @@ function findMeasurementVariableByFileType(
 }
 
 function getMeasurementTextItems(
-  headers: GefBoreHeaders | GefCptHeaders,
+  processed: ProcessedMetadata,
   categories: Array<string>,
-  fileType: GefFileType,
-  extension: GefExtension,
   locale = "en"
 ): Array<HeaderItem> {
-  if (fileType === "BORE") {
-    return getBoreMeasurementTextItems(headers, categories, locale);
+  if (processed.fileType === "BORE") {
+    return getBoreMeasurementTextItems(processed, categories, locale);
   }
-  return getCptMeasurementTextItems(headers, categories, extension, locale);
+  return getCptMeasurementTextItems(processed, categories, locale);
 }
 
 interface CompactHeaderProps {
@@ -229,7 +227,7 @@ export function DetailedGefCptHeaders({ data }: DetailedHeaderProps) {
     {
       id: "project",
       title: t("projectInformation"),
-      items: getProjectInfo(headers, processed, fileType, extension, t),
+      items: getProjectInfo(headers, processed, t, locale),
     },
     {
       id: "test_info",
@@ -239,27 +237,27 @@ export function DetailedGefCptHeaders({ data }: DetailedHeaderProps) {
     {
       id: "coordinates",
       title: t("coordinatesLocation"),
-      items: getCoordinatesInfo(headers, processed, fileType, extension, t),
+      items: getCoordinatesInfo(headers, processed, t, locale),
     },
     {
       id: "equipment",
       title: t("equipmentCapabilities"),
-      items: getEquipmentInfo(headers, fileType, extension, locale),
+      items: getEquipmentInfo(headers, processed, fileType, extension, locale),
     },
     {
       id: "conditions",
       title: t("testConditionsRemarks"),
-      items: getConditionsInfo(headers, fileType, extension, locale),
+      items: getConditionsInfo(processed, locale),
     },
     {
       id: "processing",
       title: t("dataProcessing"),
-      items: getProcessingInfo(headers, fileType, extension, locale),
+      items: getProcessingInfo(processed, locale),
     },
     {
       id: "calculations",
       title: t("calculationsFormulas"),
-      items: getCalculationsInfo(headers, fileType, extension, locale),
+      items: getCalculationsInfo(processed, locale),
     },
     {
       id: "data_structure",
@@ -338,9 +336,8 @@ export function DetailedGefCptHeaders({ data }: DetailedHeaderProps) {
 function getProjectInfo(
   headers: GefBoreHeaders | GefCptHeaders,
   processed: ProcessedMetadata,
-  fileType: GefFileType,
-  extension: GefExtension,
-  t: TFunction
+  t: TFunction,
+  locale: string
 ) {
   const items: Array<HeaderItem> = [];
 
@@ -379,7 +376,7 @@ function getProjectInfo(
   }
 
   const measuremenTextItems = getMeasurementTextItems(
-    headers,
+    processed,
     [
       "project_info",
       "standards",
@@ -388,8 +385,7 @@ function getProjectInfo(
       "data_management",
       "related_investigations",
     ],
-    fileType,
-    extension
+    locale
   );
   const a = items.concat(measuremenTextItems);
 
@@ -455,23 +451,21 @@ function getTestInfo(
 function getCoordinatesInfo(
   headers: GefBoreHeaders | GefCptHeaders,
   processed: ProcessedMetadata,
-  fileType: GefFileType,
-  extension: GefExtension,
-  t: TFunction
+  t: TFunction,
+  locale: string
 ) {
   const items: Array<HeaderItem> = [];
 
   items.push(
     ...getMeasurementTextItems(
-      headers,
+      processed,
       [
         "coordinates",
         "reference_system",
         "elevation_determination",
         "position_determination",
       ],
-      fileType,
-      extension
+      locale
     )
   );
 
@@ -517,6 +511,7 @@ function getCoordinatesInfo(
 
 function getEquipmentInfo(
   headers: GefBoreHeaders | GefCptHeaders,
+  processed: ProcessedMetadata,
   fileType: GefFileType,
   extension: GefExtension,
   locale: string
@@ -525,15 +520,13 @@ function getEquipmentInfo(
 
   items.push(
     ...getMeasurementTextItems(
-      headers,
+      processed,
       [
         "equipment",
         "drilling_methods",
         "drilling_equipment",
         "drilling_segments",
       ],
-      fileType,
-      extension,
       locale
     )
   );
@@ -680,13 +673,11 @@ function getFileMetadata(headers: GefBoreHeaders, t: TFunction) {
 }
 
 function getConditionsInfo(
-  headers: GefBoreHeaders | GefCptHeaders,
-  fileType: GefFileType,
-  extension: GefExtension,
+  processed: ProcessedMetadata,
   locale: string
 ) {
   return getMeasurementTextItems(
-    headers,
+    processed,
     [
       "conditions",
       "general",
@@ -695,38 +686,28 @@ function getConditionsInfo(
       "sample_condition",
       "monitoring_wells",
     ],
-    fileType,
-    extension,
     locale
   );
 }
 
 function getProcessingInfo(
-  headers: GefBoreHeaders | GefCptHeaders,
-  fileType: GefFileType,
-  extension: GefExtension,
+  processed: ProcessedMetadata,
   locale: string
 ) {
   return getMeasurementTextItems(
-    headers,
+    processed,
     ["processing"],
-    fileType,
-    extension,
     locale
   );
 }
 
 function getCalculationsInfo(
-  headers: GefBoreHeaders | GefCptHeaders,
-  fileType: GefFileType,
-  extension: GefExtension,
+  processed: ProcessedMetadata,
   locale: string
 ) {
   return getMeasurementTextItems(
-    headers,
+    processed,
     ["calculations"],
-    fileType,
-    extension,
     locale
   );
 }

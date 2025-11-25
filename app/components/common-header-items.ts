@@ -1,5 +1,4 @@
 import { format } from "d3-format";
-import type { GefHeaders } from "../util/gef-schemas";
 
 export interface HeaderItem {
   label: string;

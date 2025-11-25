@@ -71,7 +71,7 @@ export function FileTable({
 
       if (data.fileType === "BORE") {
         // For BORE files, use processed boring date (MEASUREMENTTEXT ID 16 = "Datum boring")
-        testDate = data.processed.texts.datumBoring ?? null;
+        testDate = data.processed.texts.datumBoring?.value ?? null;
         // Get end depth from processed measurements (MEASUREMENTVAR ID 16 = "Einddiepte")
         finalDepth = data.processed.measurements.einddiepte?.value ?? null;
       } else if (data.fileType === "CPT") {

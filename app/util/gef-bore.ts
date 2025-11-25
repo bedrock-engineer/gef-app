@@ -1,5 +1,9 @@
 import { type GEFHeadersMap } from "./gef-common";
-import type { ProcessedMetadata, ProcessedMeasurement } from "./gef-cpt";
+import type {
+  ProcessedMeasurement,
+  ProcessedMetadata,
+  ProcessedText,
+} from "./gef-cpt";
 import { processCommonFields } from "./gef-cpt";
 import {
   getMeasurementTextKey,
@@ -35,6 +39,20 @@ const boreMeasurementVariables = [
     dataType: "float",
   },
   {
+    id: 14,
+    unit: "m",
+    description: "GHG (gemiddeld hoogste grondwaterstand)",
+    category: "groundwater",
+    dataType: "float",
+  },
+  {
+    id: 15,
+    unit: "m",
+    description: "GLG (gemiddeld laagste grondwaterstand)",
+    category: "groundwater",
+    dataType: "float",
+  },
+  {
     id: 16,
     unit: "m",
     description: "Einddiepte",
@@ -42,16 +60,16 @@ const boreMeasurementVariables = [
     dataType: "float",
   },
   {
-    id: 18,
-    unit: "m",
-    description: "Grondwaterstand direct na boring",
-    category: "groundwater",
+    id: 17,
+    unit: "l",
+    description: "Verbruik boor- en steunvloeistof",
+    category: "drilling_equipment",
     dataType: "float",
   },
   {
-    id: 14,
+    id: 18,
     unit: "m",
-    description: "GHG (gemiddeld hoogste grondwaterstand)",
+    description: "Grondwaterstand tijdens boren",
     category: "groundwater",
     dataType: "float",
   },
@@ -277,15 +295,15 @@ const boreMeasurementTextVariables = [
   },
   {
     id: 3,
-    description: "Plaatsnaam",
+    description: "Plaats uitvoering",
     category: "location",
     required: true,
     standardizedCodes: null,
   },
   {
     id: 4,
-    description: "Voor toekomstig gebruik gereserveerd",
-    category: "reserved",
+    description: "Boring volgens NEN5119 uitgevoerd",
+    category: "project_info",
     required: false,
     standardizedCodes: null,
   },
@@ -304,57 +322,36 @@ const boreMeasurementTextVariables = [
     standardizedCodes: null,
   },
   {
-    id: 7,
-    description: "Lokaal coördinatensysteem",
-    category: "coordinates",
-    required: false,
-    standardizedCodes: null,
-  },
-  {
-    id: 8,
-    description: "Lokaal referentiesysteem",
-    category: "reference_system",
-    required: false,
-    standardizedCodes: null,
-  },
-  {
     id: 9,
-    description: "Vast horizontaal niveau",
+    description: "Locaal referentiesysteem",
     category: "reference_system",
     required: true,
     standardizedCodes: null,
   },
   {
-    id: 10,
-    description: "Voor toekomstig gebruik gereserveerd",
-    category: "reserved",
-    required: false,
-    standardizedCodes: null,
-  },
-  {
     id: 11,
-    description: "Maaiveldhoogtebepaling",
+    description: "Methode maaiveldhoogtebepaling",
     category: "elevation_determination",
     required: false,
     standardizedCodes: heightDeterminationCodes,
   },
   {
     id: 12,
-    description: "Plaatsbepalingmethode",
+    description: "Methode plaatsbepaling",
     category: "position_determination",
     required: false,
     standardizedCodes: placeDeterminationCodes,
   },
   {
     id: 13,
-    description: "Boorbedrijf",
+    description: "Boorfirma",
     category: "personnel",
     required: true,
     standardizedCodes: null,
   },
   {
     id: 14,
-    description: "Vertrouwelijkheid",
+    description: "Vertrouwelijkheid boorbeschrijving",
     category: "data_management",
     required: false,
     standardizedCodes: [
@@ -378,7 +375,7 @@ const boreMeasurementTextVariables = [
   },
   {
     id: 17,
-    description: "Vochtigheidstoestand grond",
+    description: "Vochtigheidstoestand beschreven grond",
     category: "sample_condition",
     required: false,
     standardizedCodes: [
@@ -388,7 +385,7 @@ const boreMeasurementTextVariables = [
   },
   {
     id: 18,
-    description: "Peilbuis aanwezigheid",
+    description: "Aanwezigheid peilbuis",
     category: "monitoring_wells",
     required: false,
     standardizedCodes: [
@@ -405,28 +402,28 @@ const boreMeasurementTextVariables = [
   },
   {
     id: 20,
-    description: "Bij sondering",
+    description: "Koppeling met sondering",
     category: "related_investigations",
     required: false,
     standardizedCodes: null,
   },
   {
     id: 21,
-    description: "Voor toekomstig gebruik gereserveerd",
-    category: "reserved",
+    description: "Gebruik boor- en steunvloeistof",
+    category: "drilling_methods",
     required: false,
     standardizedCodes: null,
   },
   {
     id: 22,
-    description: "Voor toekomstig gebruik gereserveerd",
-    category: "reserved",
+    description: "Omschrijving boor- en steunvloeistof",
+    category: "drilling_methods",
     required: false,
     standardizedCodes: null,
   },
   {
     id: 23,
-    description: "Naam boormeester",
+    description: "Boormeester",
     category: "personnel",
     required: false,
     standardizedCodes: null,
@@ -439,100 +436,120 @@ const boreMeasurementTextVariables = [
     description: "Boormethode boortraject 1",
     category: "drilling_methods",
     required: true,
-    standardizedCodes: Object.entries(DRILLING_METHOD_CODES).map(([code, description]) => ({
-      code,
-      description,
-    })),
+    standardizedCodes: Object.entries(DRILLING_METHOD_CODES).map(
+      ([code, description]) => ({
+        code,
+        description,
+      })
+    ),
   },
   {
     id: 32,
     description: "Boormethode boortraject 2",
     category: "drilling_methods",
     required: false,
-    standardizedCodes: Object.entries(DRILLING_METHOD_CODES).map(([code, description]) => ({
-      code,
-      description,
-    })),
+    standardizedCodes: Object.entries(DRILLING_METHOD_CODES).map(
+      ([code, description]) => ({
+        code,
+        description,
+      })
+    ),
   },
   {
     id: 33,
     description: "Boormethode boortraject 3",
     category: "drilling_methods",
     required: false,
-    standardizedCodes: Object.entries(DRILLING_METHOD_CODES).map(([code, description]) => ({
-      code,
-      description,
-    })),
+    standardizedCodes: Object.entries(DRILLING_METHOD_CODES).map(
+      ([code, description]) => ({
+        code,
+        description,
+      })
+    ),
   },
   {
     id: 34,
     description: "Boormethode boortraject 4",
     category: "drilling_methods",
     required: false,
-    standardizedCodes: Object.entries(DRILLING_METHOD_CODES).map(([code, description]) => ({
-      code,
-      description,
-    })),
+    standardizedCodes: Object.entries(DRILLING_METHOD_CODES).map(
+      ([code, description]) => ({
+        code,
+        description,
+      })
+    ),
   },
   {
     id: 35,
     description: "Boormethode boortraject 5",
     category: "drilling_methods",
     required: false,
-    standardizedCodes: Object.entries(DRILLING_METHOD_CODES).map(([code, description]) => ({
-      code,
-      description,
-    })),
+    standardizedCodes: Object.entries(DRILLING_METHOD_CODES).map(
+      ([code, description]) => ({
+        code,
+        description,
+      })
+    ),
   },
   {
     id: 36,
     description: "Boormethode boortraject 6",
     category: "drilling_methods",
     required: false,
-    standardizedCodes: Object.entries(DRILLING_METHOD_CODES).map(([code, description]) => ({
-      code,
-      description,
-    })),
+    standardizedCodes: Object.entries(DRILLING_METHOD_CODES).map(
+      ([code, description]) => ({
+        code,
+        description,
+      })
+    ),
   },
   {
     id: 37,
     description: "Boormethode boortraject 7",
     category: "drilling_methods",
     required: false,
-    standardizedCodes: Object.entries(DRILLING_METHOD_CODES).map(([code, description]) => ({
-      code,
-      description,
-    })),
+    standardizedCodes: Object.entries(DRILLING_METHOD_CODES).map(
+      ([code, description]) => ({
+        code,
+        description,
+      })
+    ),
   },
   {
     id: 38,
     description: "Boormethode boortraject 8",
     category: "drilling_methods",
     required: false,
-    standardizedCodes: Object.entries(DRILLING_METHOD_CODES).map(([code, description]) => ({
-      code,
-      description,
-    })),
+    standardizedCodes: Object.entries(DRILLING_METHOD_CODES).map(
+      ([code, description]) => ({
+        code,
+        description,
+      })
+    ),
   },
   {
     id: 39,
     description: "Boormethode boortraject 9",
     category: "drilling_methods",
     required: false,
-    standardizedCodes: Object.entries(DRILLING_METHOD_CODES).map(([code, description]) => ({
-      code,
-      description,
-    })),
+    standardizedCodes: Object.entries(DRILLING_METHOD_CODES).map(
+      ([code, description]) => ({
+        code,
+        description,
+      })
+    ),
   },
   {
     id: 40,
     description: "Boormethode boortraject 10",
     category: "drilling_methods",
     required: false,
-    standardizedCodes: Object.entries(DRILLING_METHOD_CODES).map(([code, description]) => ({
-      code,
-      description,
-    })),
+    standardizedCodes: Object.entries(DRILLING_METHOD_CODES).map(
+      ([code, description]) => ({
+        code,
+        description,
+      })
+    ),
   },
 ] as const;
 
@@ -540,24 +557,18 @@ export type BoreMeasurementVariable = (typeof boreMeasurementVariables)[number];
 export type BoreMeasurementTextVariable =
   (typeof boreMeasurementTextVariables)[number];
 
-/**
- * Find a BORE measurement variable by ID
- */
 export function findBoreMeasurementVariable(id: number) {
   return boreMeasurementVariables.find((v) => v.id === id);
 }
 
-/**
- * Find a BORE measurement text variable by ID
- */
-export function findBoreMeasurementTextVariable(id: number) {
+function findBoreMeasurementTextVariable(id: number) {
   return boreMeasurementTextVariables.find((v) => v.id === id);
 }
 
 /**
  * Decode a standardized code for a BORE measurement text variable
  */
-export function decodeBoreMeasurementText(id: number, text: string): string {
+function decodeBoreMeasurementText(id: number, text: string): string {
   const variable = findBoreMeasurementTextVariable(id);
   if (!variable?.standardizedCodes) {
     return text;
@@ -589,9 +600,14 @@ export function processBoreMetadata(
 
   // Process all MEASUREMENTVAR values using BORE-specific metadata
   const measurements: Record<string, ProcessedMeasurement> = {};
-  
+
   if (headers.MEASUREMENTVAR) {
     for (const mv of headers.MEASUREMENTVAR) {
+      const varInfo = boreMeasurementVariables.find((m) => m.id === mv.id);
+      if (!varInfo) {
+        continue;
+      }
+
       const translationKey = getMeasurementVarKey(
         mv.id,
         boreMeasurementVariables
@@ -602,6 +618,11 @@ export function processBoreMetadata(
           measurements[translationKey] = {
             value,
             unit: mv.unit,
+            metadata: {
+              id: varInfo.id,
+              category: varInfo.category,
+              description: varInfo.description,
+            },
           };
         }
       }
@@ -609,15 +630,30 @@ export function processBoreMetadata(
   }
 
   // Process all MEASUREMENTTEXT values using BORE-specific metadata
-  const texts: Record<string, string> = {};
+  const texts: Record<string, ProcessedText> = {};
   if (headers.MEASUREMENTTEXT) {
     for (const mt of headers.MEASUREMENTTEXT) {
+      const textInfo = boreMeasurementTextVariables.find((m) => m.id === mt.id);
+      if (!textInfo) {
+        continue;
+      }
+
       const translationKey = getMeasurementTextKey(
         mt.id,
         boreMeasurementTextVariables
       );
       if (translationKey) {
-        texts[translationKey] = mt.text;
+        const decoded = decodeBoreMeasurementText(mt.id, mt.text);
+        texts[translationKey] = {
+          value: mt.text,
+          decoded: decoded !== mt.text ? decoded : undefined,
+          metadata: {
+            id: textInfo.id,
+            category: textInfo.category,
+            description: textInfo.description,
+            required: textInfo.required,
+          },
+        };
       }
     }
   }
@@ -823,7 +859,7 @@ const specimenVarOffsets = {
 } as const;
 
 // Helper to calculate SPECIMENVAR ID for a given specimen number k
-export function getSpecimenVarId(
+function getSpecimenVarId(
   k: number,
   property: keyof typeof specimenVarOffsets
 ): number {
@@ -841,7 +877,7 @@ const specimentTextOffsets = {
 } as const;
 
 // Helper to calculate SPECIMENTEXT ID for a given specimen number k
-export function getSpecimenTextId(
+function getSpecimenTextId(
   k: number,
   property: keyof typeof specimentTextOffsets
 ): number {
@@ -977,17 +1013,25 @@ export function parseGefBoreSpecimens(
     // Get SPECIMENVAR values using helper function
     const depthTopVar = varMap.get(getSpecimenVarId(k, "depthTop"));
     const depthBottomVar = varMap.get(getSpecimenVarId(k, "depthBottom"));
-    const diameterMonsterVar = varMap.get(getSpecimenVarId(k, "diameterMonster"));
-    const diameterApparaatVar = varMap.get(getSpecimenVarId(k, "diameterMonstersteekapparaat"));
+    const diameterMonsterVar = varMap.get(
+      getSpecimenVarId(k, "diameterMonster")
+    );
+    const diameterApparaatVar = varMap.get(
+      getSpecimenVarId(k, "diameterMonstersteekapparaat")
+    );
 
     // Get SPECIMENTEXT values using helper function
     const monstercodeText = textMap.get(getSpecimenTextId(k, "monstercode"));
     const monsterdatumText = textMap.get(getSpecimenTextId(k, "monsterdatum"));
     const monstertijdText = textMap.get(getSpecimenTextId(k, "monstertijd"));
     const geroerdText = textMap.get(getSpecimenTextId(k, "geroerdOngeroerd"));
-    const monstersteekapparaatText = textMap.get(getSpecimenTextId(k, "monstersteekapparaat"));
+    const monstersteekapparaatText = textMap.get(
+      getSpecimenTextId(k, "monstersteekapparaat")
+    );
     const dikDunwandigText = textMap.get(getSpecimenTextId(k, "dikDunwandig"));
-    const monstermethodeText = textMap.get(getSpecimenTextId(k, "monstermethode"));
+    const monstermethodeText = textMap.get(
+      getSpecimenTextId(k, "monstermethode")
+    );
 
     const specimen: BoreSpecimen = {
       specimenNumber: k,
@@ -1011,13 +1055,10 @@ export function parseGefBoreSpecimens(
   return specimens;
 }
 
-
 // Generate BORE-specific warnings
 export function generateBoreWarnings(
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  filename: string,
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  headers: GefBoreHeaders
+  _filename: string,
+  _headers: GefBoreHeaders
 ): Array<string> {
   const warnings: Array<string> = [];
 

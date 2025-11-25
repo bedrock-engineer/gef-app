@@ -1,56 +1,41 @@
 import { useTranslation } from "react-i18next";
-import {
-  decodeMeasurementText,
-  findCptMeasurementTextVariable,
-  type GefExtension,
-  type ProcessedMetadata
-} from "../util/gef-cpt";
-import type { GefCptHeaders } from "../util/gef-schemas";
+import type { ProcessedMetadata } from "../util/gef-cpt";
 import {
   getLocalizedDescription,
   type HeaderItem
 } from "./common-header-items";
 import { CopyButton } from "./copy-button";
 
-// CPT-specific measurement text items
+// CPT-specific measurement text items - now uses processed data
 export function getCptMeasurementTextItems(
-  headers: GefCptHeaders,
+  processed: ProcessedMetadata,
   categories: Array<string>,
-  extension: GefExtension,
   locale = "en"
 ): Array<HeaderItem> {
   const items: Array<HeaderItem> = [];
-  const measurementTexts = headers.MEASUREMENTTEXT;
 
-  if (!measurementTexts) {
-    return items;
-  }
-
-  measurementTexts.forEach(({ id, text }) => {
-    const textInfo = findCptMeasurementTextVariable(id, extension);
-    if (!textInfo) {
-      return;
+  // Get text items matching the categories
+  for (const [_key, textItem] of Object.entries(processed.texts)) {
+    if (!categories.includes(textItem.metadata.category)) {
+      continue;
     }
 
-    if (!text || text === "-" || text === "0") {
-      return;
+    if (!textItem.value || textItem.value === "-" || textItem.value === "0") {
+      continue;
     }
 
-    if (textInfo.category === "reserved") {
-      return;
+    if (textItem.metadata.category === "reserved") {
+      continue;
     }
 
-    if (!categories.includes(textInfo.category)) {
-      return;
-    }
-
-    const displayValue = decodeMeasurementText(id, text, extension);
+    // Use decoded value if available, otherwise raw value
+    const displayValue = textItem.decoded ?? textItem.value;
 
     items.push({
-      label: getLocalizedDescription(textInfo, locale),
+      label: getLocalizedDescription(textItem.metadata, locale),
       value: displayValue,
     });
-  });
+  }
 
   return items;
 }

@@ -1,53 +1,41 @@
 import { useTranslation } from "react-i18next";
 import type { GefBoreData } from "../util/gef-bore";
-import {
-  decodeBoreMeasurementText,
-  findBoreMeasurementTextVariable,
-} from "../util/gef-bore";
-import type { GefBoreHeaders } from "../util/gef-schemas";
+import type { ProcessedMetadata } from "../util/gef-cpt";
 import {
   getLocalizedDescription,
   type HeaderItem,
 } from "./common-header-items";
 
-// BORE-specific measurement text items
+// BORE-specific measurement text items - now uses processed data
 export function getBoreMeasurementTextItems(
-  headers: GefBoreHeaders,
+  processed: ProcessedMetadata,
   categories: Array<string>,
-  locale = "en",
+  locale = "en"
 ): Array<HeaderItem> {
   const items: Array<HeaderItem> = [];
-  const measurementTexts = headers.MEASUREMENTTEXT;
 
-  if (!measurementTexts) {
-    return items;
-  }
-
-  measurementTexts.forEach(({ id, text }) => {
-    const textInfo = findBoreMeasurementTextVariable(id);
-    if (!textInfo) {
-      return;
+  // Get text items matching the categories
+  for (const [_key, textItem] of Object.entries(processed.texts)) {
+    if (!categories.includes(textItem.metadata.category)) {
+      continue;
     }
 
-    if (!text || text === "-" || text === "0") {
-      return;
+    if (!textItem.value || textItem.value === "-" || textItem.value === "0") {
+      continue;
     }
 
-    if (textInfo.category === "reserved") {
-      return;
+    if (textItem.metadata.category === "reserved") {
+      continue;
     }
 
-    if (!categories.includes(textInfo.category)) {
-      return;
-    }
-
-    const displayValue = decodeBoreMeasurementText(id, text);
+    // Use decoded value if available, otherwise raw value
+    const displayValue = textItem.decoded ?? textItem.value;
 
     items.push({
-      label: getLocalizedDescription(textInfo, locale),
+      label: getLocalizedDescription(textItem.metadata, locale),
       value: displayValue,
     });
-  });
+  }
 
   return items;
 }
@@ -57,9 +45,9 @@ export function BoreCompactInfo({ data }: { data: GefBoreData }) {
   const { t } = useTranslation();
   const { processed } = data;
 
-  const boringDate = processed.texts.datumBoring; // MEASUREMENTTEXT ID 16 = "Datum boring"
-  const placeName = processed.texts.plaatsnaam; // MEASUREMENTTEXT ID 3 = "Plaatsnaam"
-  const drillingCompany = processed.texts.boorbedrijf; // MEASUREMENTTEXT ID 13 = "Boorbedrijf"
+  const boringDate = processed.texts.datumBoring?.value; // MEASUREMENTTEXT ID 16 = "Datum boring"
+  const placeName = processed.texts.plaatsnaam?.value; // MEASUREMENTTEXT ID 3 = "Plaatsnaam"
+  const drillingCompany = processed.texts.boorbedrijf?.value; // MEASUREMENTTEXT ID 13 = "Boorbedrijf"
   const finalDepth = processed.measurements.einddiepte; // MEASUREMENTVAR ID 16 = "Einddiepte"
 
   if (!boringDate && !placeName && !drillingCompany && !finalDepth) {
