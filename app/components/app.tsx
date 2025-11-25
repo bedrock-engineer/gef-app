@@ -4,13 +4,13 @@ import { Button, FileTrigger } from "react-aria-components";
 import { useTranslation } from "react-i18next";
 import { Form } from "react-router";
 import { downloadGefDataAsCsv } from "~/util/csv-download";
-import { parseGefFile, type GefData } from "~/util/gef-cpt";
+import { parseGefFile, type GefData } from "~/util/gef-common";
 import { BorePlot } from "./bore-plot";
 import { Card } from "./card";
 import { CptPlots } from "./cpt-plot";
 import { DownloadGeoJSONButton } from "./download-geojson-button";
 import { FileTable } from "./file-table";
-import { CompactGefHeader, DetailedGefHeaders } from "./gef-header-display";
+import { CompactGefHeader, DetailedGefCptHeaders } from "./gef-header-display";
 import { GefMultiMap } from "./gef-map";
 import { PreExcavationPlot } from "./preexcavation-plot";
 import { SpecimenTable } from "./specimen-table";
@@ -48,7 +48,7 @@ export function App() {
 
     if (files.length > 0) {
       const results = await Promise.allSettled(
-        files.map((file) => parseGefFile(file))
+        files.map((file) => parseGefFile(file)),
       );
 
       const parsedGefFiles = results
@@ -60,7 +60,7 @@ export function App() {
         .map((result, i) => ({ result, file: files[i] }))
         .filter(
           (item): item is { result: PromiseRejectedResult; file: File } =>
-            item.result.status === "rejected"
+            item.result.status === "rejected",
         )
         .map(({ result, file }) => ({
           name: file.name,
@@ -205,7 +205,7 @@ export function App() {
               });
               if (selectedFileName === filename) {
                 const remaining = Object.keys(gefData).filter(
-                  (f) => f !== filename
+                  (f) => f !== filename,
                 );
                 setSelectedFileName(remaining[0] ?? "");
               }
@@ -315,7 +315,7 @@ export function App() {
               </>
             )}
 
-            <DetailedGefHeaders data={selectedFile} />
+            <DetailedGefCptHeaders data={selectedFile} />
           </div>
         ) : (
           <Card>
@@ -324,8 +324,8 @@ export function App() {
               <p className="mb-2">{t("freeToolByBedrock")}</p>
               <ul className="list-disc list-inside space-y-1 text-gray-500">
                 <li>{t("customWebApps")}</li>
-                <li>{t("pythonAutomation")}</li>
                 <li>{t("bimCadIntegrations")}</li>
+                <li>{t("pythonAutomation")}</li>
               </ul>
               <p className="mt-3">
                 {t("emptyStateContact")}{" "}
@@ -345,6 +345,10 @@ export function App() {
         <div className="text-sm text-center mb-6 max-w-md mx-auto border-b border-gray-300 pb-4">
           <p className="mb-2">{t("appDescription")}</p>
           <p className="">{t("privacyNote")}</p>
+        </div>
+
+        <div className="mb-6 max-w-2xl mx-auto px-4">
+          <p className="text-xs text-gray-600 italic">{t("disclaimer")}</p>
         </div>
 
         <p className="mb-3">

@@ -5,7 +5,6 @@ import { useTranslation } from "react-i18next";
 import type { BoreLayer, BoreSpecimen } from "~/util/gef-bore";
 import { getSoilColor } from "~/util/gef-bore";
 import { decodeBoreCode } from "~/util/gef-bore-codes";
-import { getMunsellColor } from "~/util/munsell-colors";
 import { PlotDownloadButtons } from "./plot-download-buttons";
 import { Card, CardTitle } from "./card";
 
@@ -76,9 +75,7 @@ export function BorePlot({
           y1: "depthTop",
           y2: "depthBottom",
           fill: (d: BoreLayer) => {
-            // Use Munsell color if available, otherwise fall back to soil type color
-            const munsell = getMunsellColor(d.additionalCodes);
-            return munsell?.hex ?? getSoilColor(d.soilCode);
+            return getSoilColor(d.soilCode);
           },
           stroke: "white",
           strokeWidth: 0.5,
@@ -103,11 +100,6 @@ export function BorePlot({
             }
             if (d.description) {
               tooltip += `\n${d.description}`;
-            }
-            // Add Munsell color info
-            const munsell = getMunsellColor(d.additionalCodes);
-            if (munsell) {
-              tooltip += `\nKleur: ${munsell.code}`;
             }
             return tooltip;
           },
@@ -136,7 +128,7 @@ export function BorePlot({
         ...(specimens.length > 0
           ? [
               Plot.dot(specimens, {
-                x: 0.9,
+                x: 1.1,
                 y: (d: BoreSpecimen) =>
                   d.depthTop + (d.depthBottom - d.depthTop) / 2,
                 fill: "#e11d48",

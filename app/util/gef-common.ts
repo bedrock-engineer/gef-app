@@ -1,141 +1,31 @@
+import z from "zod";
+import initGefFileToMap, { parse_gef_wasm } from "../pkg/gef_file_to_map.js";
+import {
+  generateBoreWarnings,
+  parseGefBoreData,
+  parseGefBoreSpecimens,
+  processBoreMetadata,
+  type GefBoreData,
+} from "./gef-bore";
+import {
+  detectChartAxes,
+  generateCptWarnings,
+  parseGefCptData,
+  parsePreExcavationLayers,
+  processCptMetadata,
+  type GefCptData,
+} from "./gef-cpt.js";
+import {
+  HEIGHT_SYSTEMS,
+  type GefBoreHeaders,
+  type GefCptHeaders,
+} from "./gef-schemas";
 
-export const placeDeterminationCodes = [
-  {
-    code: "LMET",
-    description: "Measured, surveying",
-    descriptionNl: "Gemeten, landmeting",
-  },
-  { code: "LGPS", description: "Measured, GPS", descriptionNl: "Gemeten, GPS" },
-  {
-    code: "LDGM",
-    description: "Measured, diff. GPS, > 5 m",
-    descriptionNl: "Gemeten, diff. GPS, > 5 m",
-  },
-  {
-    code: "LDGN",
-    description: "Measured, diff. GPS, between 1 and 5 m",
-    descriptionNl: "Gemeten, diff. GPS, 1 - < 5 m",
-  },
-  {
-    code: "LDGZ",
-    description: "Measured, diff. GPS, < 1m",
-    descriptionNl: "Gemeten, diff. GPS, < 1m",
-  },
-  {
-    code: "LGOV",
-    description: "Measured, other methods",
-    descriptionNl: "Gemeten, overige methoden",
-  },
-  {
-    code: "LT10",
-    description: "Estimated, Topographic map 1:10.000",
-    descriptionNl: "Geschat, Topografische Kaart 1:10.000",
-  },
-  {
-    code: "LT25",
-    description: "Estimated, Topographic map 1:25.000",
-    descriptionNl: "Geschat, Topografische Kaart 1:25.000",
-  },
-  {
-    code: "LT50",
-    description: "Estimated, Topographic map 1:50.000",
-    descriptionNl: "Geschat, Topografische Kaart 1:50.000",
-  },
-  {
-    code: "LD01",
-    description: "Estimated, detailed map 1:100",
-    descriptionNl: "Geschat, detailkaart 1:100",
-  },
-  {
-    code: "LD02",
-    description: "Estimated, detailed map 1:200",
-    descriptionNl: "Geschat, detailkaart 1:200",
-  },
-  {
-    code: "LD05",
-    description: "Estimated, detailed map 1:500",
-    descriptionNl: "Geschat, detailkaart 1:500",
-  },
-  {
-    code: "LD10",
-    description: "Estimated, detailed map 1:1000",
-    descriptionNl: "Geschat, detailkaart 1:1000",
-  },
-  {
-    code: "LD25",
-    description: "Estimated, detailed map 1:2500",
-    descriptionNl: "Geschat, detailkaart 1:2500",
-  },
-  {
-    code: "LSOV",
-    description: "Estimated, other methods",
-    descriptionNl: "Geschat, overige methoden",
-  },
-  {
-    code: "LONB",
-    description: "Estimated, method unknown",
-    descriptionNl: "Geschat, methode onbekend",
-  },
-];
-
-export const heightDeterminationCodes = [
-  {
-    code: "MMET",
-    description: "Measured, surveying",
-    descriptionNl: "Gemeten, landmeting",
-  },
-  {
-    code: "MDGP",
-    description: "Measured, differential GPS",
-    descriptionNl: "Gemeten, differentieel GPS",
-  },
-  {
-    code: "MGOV",
-    description: "Measured, other methods",
-    descriptionNl: "Gemeten, overige methoden",
-  },
-  {
-    code: "MH10",
-    description: "Estimated, contour map 1:10.000",
-    descriptionNl: "Geschat, Hoogtekaart 1:10.000",
-  },
-  {
-    code: "MT25",
-    description: "Estimated, Topographic map 1:25.000",
-    descriptionNl: "Geschat, Topografische Kaart 1:25.000",
-  },
-  {
-    code: "MT50",
-    description: "Estimated, Topographic map 1:50.000",
-    descriptionNl: "Geschat, Topografische Kaart 1:50.000",
-  },
-  {
-    code: "MAHN",
-    description: "Estimated, Actueel Hoogtebestand Nederland",
-    descriptionNl: "Geschat, Actueel Hoogtebestand Nederland",
-  },
-  {
-    code: "MSOV",
-    description: "Estimated, other methods",
-    descriptionNl: "Geschat, overige bepalingsmethoden",
-  },
-  {
-    code: "MONB",
-    description: "Estimated, unknown method",
-    descriptionNl: "Geschat, methode onbekend",
-  },
-  {
-    code: "MFIC",
-    description: "Fictive value",
-    descriptionNl: "Fictieve waarde",
-  },
-];
-
-// =============================================================================
-// EXTENSION DETECTION AND LOOKUP
-// =============================================================================
+export type GEFHeadersMap = Map<string, Array<Array<string>>>;
 
 export type GefFileType = "CPT" | "BORE";
+
+export type GefData = GefCptData | GefBoreData;
 
 /**
  * Get a measurement variable object by ID from parsed headers
@@ -160,4 +50,140 @@ export function getMeasurementVarValue(
   }
   const value = parseFloat(mv.value);
   return isNaN(value) ? undefined : value;
+}
+
+const gefToMapSchema = z.object({
+  data: z.string(),
+  headers: z.object({
+    headers: z.map(z.string(), z.array(z.array(z.string()))),
+  }),
+});
+
+function detectFileType(reportCode: string): GefFileType {
+  const lowercaseReportCode = reportCode.toLowerCase();
+
+  // Check for unsupported file types
+  if (lowercaseReportCode.includes("diss")) {
+    throw new Error(
+      "GEF-DISS-Report (dissipation test) files are not supported"
+    );
+  }
+  if (lowercaseReportCode.includes("siev")) {
+    throw new Error("GEF-SIEVE files are not supported");
+  }
+
+  if (lowercaseReportCode.includes("bore")) {
+    return "BORE";
+  }
+  return "CPT";
+}
+
+// Generate warnings common to both CPT and BORE files
+function generateCommonWarnings(
+  filename: string,
+  headers: GefCptHeaders | GefBoreHeaders,
+  headersMap: GEFHeadersMap
+): Array<string> {
+  const warnings: Array<string> = [];
+
+  // Check for missing or invalid ZID
+  const rawZid = headersMap.get("ZID")?.[0];
+
+  if (!rawZid || rawZid.length === 0) {
+    warnings.push(
+      `File '${filename}' missing ZID header (height reference system). Defaulting to 'Normaal Amsterdams Peil'. This may affect elevation calculations and vertical positioning of measurements.`
+    );
+  } else {
+    const heightCode = rawZid[0]?.trim();
+    if (heightCode && !(heightCode in HEIGHT_SYSTEMS)) {
+      warnings.push(
+        `File '${filename}' contains unknown height system code "${heightCode}". Defaulting to 'Normaal Amsterdams Peil'. This may cause incorrect elevation calculations.`
+      );
+    }
+    if (rawZid.length < 2) {
+      warnings.push(
+        `File '${filename}' has ZID header without height value. Defaulting surface elevation to 0m. This will affect depth-to-elevation conversions and may produce incorrect ground level readings.`
+      );
+    }
+  }
+
+  // Check for missing XYID (location)
+  if (!headers.XYID) {
+    warnings.push(
+      `File '${filename}' missing XYID header (coordinate information). Location is unknown - cannot display on map or convert to WGS84. This prevents spatial analysis and geographic visualization.`
+    );
+  }
+
+  // Check for COLUMNINFO missing quantityNumber (4th element per spec)
+  const rawColumnInfo = headersMap.get("COLUMNINFO");
+  if (rawColumnInfo) {
+    const missingQuantityNumbers = rawColumnInfo.filter(
+      (col) => col.length < 4
+    );
+    if (missingQuantityNumbers.length > 0) {
+      warnings.push(
+        `File '${filename}' has ${missingQuantityNumbers.length} COLUMNINFO ${missingQuantityNumbers.length === 1 ? "entry" : "entries"} missing quantity number (4th element per GEF spec). Defaulting to quantity 0 (unknown). This may cause data columns to be misinterpreted or not displayed correctly.`
+      );
+    }
+  }
+
+  return warnings;
+}
+
+export async function parseGefFile(file: File): Promise<GefData> {
+  await initGefFileToMap();
+
+  const gefContent = await file.text();
+  const gefMap = gefToMapSchema.parse(parse_gef_wasm(gefContent));
+
+  const reportCode =
+    gefMap.headers.headers.get("REPORTCODE")?.[0]?.[0] ?? "cpt";
+
+  const fileType = detectFileType(reportCode);
+
+  if (fileType === "BORE") {
+    const { layers, headers } = parseGefBoreData(
+      gefMap.data,
+      gefMap.headers.headers
+    );
+    const specimens = parseGefBoreSpecimens(headers);
+    const warnings = [
+      ...generateCommonWarnings(file.name, headers, gefMap.headers.headers),
+      ...generateBoreWarnings(file.name, headers),
+    ];
+    const processed = processBoreMetadata(file.name, headers);
+
+    return {
+      fileType,
+      layers,
+      specimens,
+      headers,
+      warnings,
+      processed,
+    };
+  }
+
+  const { data, columnInfo, headers } = parseGefCptData(
+    gefMap.data,
+    gefMap.headers.headers
+  );
+  const chartAxes = detectChartAxes(columnInfo, data, headers.ZID);
+
+  const preExcavationLayers = parsePreExcavationLayers(headers);
+
+  const warnings = [
+    ...generateCommonWarnings(file.name, headers, gefMap.headers.headers),
+    ...generateCptWarnings(file.name, headers, data),
+  ];
+  const processed = processCptMetadata(file.name, headers);
+
+  return {
+    fileType,
+    data,
+    headers,
+    chartAxes,
+    preExcavationLayers,
+    warnings,
+    processed,
+  };
 }

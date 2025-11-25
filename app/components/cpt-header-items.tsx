@@ -2,21 +2,19 @@ import { useTranslation } from "react-i18next";
 import {
   decodeMeasurementText,
   findCptMeasurementTextVariable,
-  findCptMeasurementVariable,
   type GefExtension,
-  type ProcessedMetadata,
+  type ProcessedMetadata
 } from "../util/gef-cpt";
-import type { GefHeaders } from "../util/gef-schemas";
-import { CopyButton } from "./copy-button";
+import type { GefCptHeaders } from "../util/gef-schemas";
 import {
-  formatNumericValue,
   getLocalizedDescription,
-  type HeaderItem,
+  type HeaderItem
 } from "./common-header-items";
+import { CopyButton } from "./copy-button";
 
 // CPT-specific measurement text items
 export function getCptMeasurementTextItems(
-  headers: GefHeaders,
+  headers: GefCptHeaders,
   categories: Array<string>,
   extension: GefExtension,
   locale = "en"
@@ -62,16 +60,12 @@ interface CptCompactInfoProps {
   lastScan: number | undefined;
 }
 
-export function CptCompactInfo({
-  processed,
-  lastScan,
-}: CptCompactInfoProps) {
+export function CptCompactInfo({ processed, lastScan }: CptCompactInfoProps) {
   const { t } = useTranslation();
 
-  // Try both possible keys for water level (ID 42 = orientationBetweenXAxisInclinationAndNorth in spec, but may be used for water level in practice)
-  // or ID 14 = groundwaterLevelWithRespectToDatumOfHeightSystemInZid
-  const waterLevel = processed.measurements.orientationBetweenXAxisInclinationAndNorth ??
-                      processed.measurements.groundwaterLevelWithRespectToDatumOfHeightSystemInZid;
+  const waterLevel =
+    processed.measurements
+      .groundwaterLevelWithRespectToDatumOfHeightSystemInZid;
   const waterLevelDisplay = waterLevel?.value.toFixed(2) ?? null;
 
   const finalDepth = processed.measurements.endDepthOfPenetrationTest;

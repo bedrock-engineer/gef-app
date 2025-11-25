@@ -3,7 +3,7 @@ import type { GefCptData } from "./gef-cpt";
 
 export function downloadGefDataAsCsv(
   gefData: GefCptData,
-  filename: string
+  filename: string,
 ): void {
   // Convert data to CSV format using d3-array
   const csvContent = csvFormat(gefData.data);

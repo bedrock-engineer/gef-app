@@ -22,7 +22,7 @@ export function formatNumericValue(value: string): string {
 
 export function getLocalizedDescription(
   varInfo: { description: string; descriptionNl?: string } | undefined,
-  locale: string
+  locale: string,
 ): string {
   if (!varInfo) {
     return "";

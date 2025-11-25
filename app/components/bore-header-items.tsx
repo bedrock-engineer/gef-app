@@ -1,22 +1,20 @@
 import { useTranslation } from "react-i18next";
+import type { GefBoreData } from "../util/gef-bore";
 import {
   decodeBoreMeasurementText,
   findBoreMeasurementTextVariable,
-  findBoreMeasurementVariable,
 } from "../util/gef-bore";
-import type { GefBoreData } from "../util/gef-cpt";
-import type { GefHeaders } from "../util/gef-schemas";
+import type { GefBoreHeaders } from "../util/gef-schemas";
 import {
-  formatNumericValue,
   getLocalizedDescription,
   type HeaderItem,
 } from "./common-header-items";
 
 // BORE-specific measurement text items
 export function getBoreMeasurementTextItems(
-  headers: GefHeaders,
+  headers: GefBoreHeaders,
   categories: Array<string>,
-  locale = "en"
+  locale = "en",
 ): Array<HeaderItem> {
   const items: Array<HeaderItem> = [];
   const measurementTexts = headers.MEASUREMENTTEXT;
@@ -59,15 +57,10 @@ export function BoreCompactInfo({ data }: { data: GefBoreData }) {
   const { t } = useTranslation();
   const { processed } = data;
 
-  // Get key BORE values from processed metadata
-  // MEASUREMENTTEXT ID 16 = "Datum boring"
-  // MEASUREMENTTEXT ID 3 = "Plaatsnaam"
-  // MEASUREMENTTEXT ID 13 = "Boorbedrijf"
-  // MEASUREMENTVAR ID 16 = "Einddiepte"
-  const boringDate = processed.texts.datumBoring;
-  const placeName = processed.texts.plaatsnaam;
-  const drillingCompany = processed.texts.boorbedrijf;
-  const finalDepth = processed.measurements.einddiepte;
+  const boringDate = processed.texts.datumBoring; // MEASUREMENTTEXT ID 16 = "Datum boring"
+  const placeName = processed.texts.plaatsnaam; // MEASUREMENTTEXT ID 3 = "Plaatsnaam"
+  const drillingCompany = processed.texts.boorbedrijf; // MEASUREMENTTEXT ID 13 = "Boorbedrijf"
+  const finalDepth = processed.measurements.einddiepte; // MEASUREMENTVAR ID 16 = "Einddiepte"
 
   if (!boringDate && !placeName && !drillingCompany && !finalDepth) {
     return null;

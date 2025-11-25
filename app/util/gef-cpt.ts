@@ -1,19 +1,6 @@
-import z from "zod";
-import initGefFileToMap, { parse_gef_wasm } from "../pkg/gef_file_to_map.js";
 import { convertToWGS84, type WGS84Coords } from "./coordinates";
 import { addComputedDepthColumns } from "./depth-correction";
-import {
-  boreMeasurementTextVariables,
-  boreMeasurementVariables,
-  parseGefBoreData,
-  parseGefBoreSpecimens,
-  type BoreLayer,
-  type BoreSpecimen,
-} from "./gef-bore";
-import {
-  heightDeterminationCodes,
-  placeDeterminationCodes
-} from "./gef-common";
+import { type GefFileType, type GEFHeadersMap } from "./gef-common";
 import {
   getMeasurementTextKey,
   getMeasurementVarKey,
@@ -22,11 +9,13 @@ import { formatGefDate, formatGefTime } from "./gef-metadata-processed";
 import {
   COORDINATE_SYSTEMS,
   HEIGHT_SYSTEMS,
-  parseGefHeaders,
+  parseGefCptHeaders,
   type ColumnInfo,
-  type GefHeaders,
+  type GefBoreHeaders,
+  type GefCptHeaders,
   type ZID,
 } from "./gef-schemas";
+import { heightDeterminationCodes, placeDeterminationCodes } from "./location-codes";
 
 export const DEPTH_KEYWORDS = [
   "penetration",
@@ -40,7 +29,7 @@ export type GefExtension = "standard" | "dutch" | "belgian";
 
 // CPT Column Quantity IDs - derived from columnQuantities in gef-metadata
 // These are the standard GEF quantity numbers for CPT data
-export const CPT_QUANTITY = {
+ const CPT_QUANTITY = {
   LENGTH: 1,
   CONE_RESISTANCE: 2,
   FRICTION_RESISTANCE: 3,
@@ -81,89 +70,13 @@ export function findColumnByQuantity(
   return columns.find((col) => col.quantityNumber === quantityNumber);
 }
 
-export type GEFHeadersMap = Map<string, Array<Array<string>>>;
-
-function parseGefData(dataString: string, headersMap: GEFHeadersMap) {
-  const headers = parseGefHeaders(headersMap);
-  const lines = dataString.trim().split("\n");
-  const columnSeparator = headers.COLUMNSEPARATOR ?? /\s+/;
-  const columnInfo = headers.COLUMNINFO ?? [];
-
-  const rows = lines.map((line) =>
-    line
-      .trim()
-      .split(columnSeparator)
-      .filter((val) => val.trim() !== "")
-      .map((val) => parseFloat(val.trim()))
-  );
-
-  // Create void values map from parsed COLUMNVOID
-  const voidValuesMap = new Map(
-    headers.COLUMNVOID?.map(({ columnNumber, voidValue }) => [
-      columnNumber,
-      voidValue,
-    ]) ?? []
-  );
-
-  // Replace void values with null
-  const rowsWithoutVoidValues = rows.map((row) =>
-    row.map((value, index) => {
-      const voidValue = voidValuesMap.get(index + 1);
-      return value === voidValue ? null : value;
-    })
-  );
-
-  // Create object rows with column names
-  const columnNames = columnInfo.map((col) => col.name);
-  const tidyRows = rowsWithoutVoidValues.map((row) => {
-    const entries = columnNames.map((name, i) => [name, row[i]]);
-    return Object.fromEntries(entries);
-  });
-
-  // Normalize depth values to absolute (some GEF files use negative depths)
-  const depthCol = columnInfo.find((col) => {
-    const nameLower = col.name.toLowerCase();
-    return (
-      col.unit === "m" && DEPTH_KEYWORDS.some((kw) => nameLower.includes(kw))
-    );
-  });
-
-  const normalizedRows: Array<Record<string, number>> = tidyRows.map((row) => {
-    if (!depthCol) {
-      return row;
-    }
-
-    const depthKey = depthCol.name;
-    const depthValue = row[depthKey];
-
-    if (typeof depthValue === "number") {
-      return { ...row, [depthKey]: Math.abs(depthValue) };
-    }
-    return row;
-  });
-
-  // Add computed depth columns (trueDepth, elevation)
-  const dataWithComputedColumns = addComputedDepthColumns(
-    normalizedRows,
-    columnInfo,
-    headers.ZID,
-    headers.MEASUREMENTVAR
-  );
-
-  return {
-    data: dataWithComputedColumns,
-    headers,
-    columnInfo,
-  };
-}
-
 interface ChartColumn {
   key: string;
   unit: string;
   name: string;
 }
 
-function detectChartAxes(
+export function detectChartAxes(
   columnInfo: Array<ColumnInfo>,
   data: Array<Record<string, number>>,
   zid: ZID | undefined
@@ -191,7 +104,6 @@ function detectChartAxes(
     findColumnByQuantity(xCandidates, CPT_QUANTITY.FRICTION_NUMBER) ??
     xCandidates[0];
 
-  // Build available Y-axis options
   const yAxisOptions: Array<ChartColumn> = [];
 
   // Add original penetration length
@@ -208,6 +120,7 @@ function detectChartAxes(
     columnInfo,
     CPT_QUANTITY.CORRECTED_DEPTH
   );
+
   if (correctedDepthCol && correctedDepthCol.colNum !== yColumn?.colNum) {
     yAxisOptions.push({
       key: correctedDepthCol.name,
@@ -255,8 +168,6 @@ function detectChartAxes(
     yAxisOptions,
   };
 }
-
-export type GefFileType = "CPT" | "BORE";
 
 // Processed measurement value with unit
 export interface ProcessedMeasurement {
@@ -316,23 +227,37 @@ export interface GefCptData {
   processed: ProcessedMetadata;
 }
 
-export interface GefBoreData {
-  fileType: "BORE";
-  layers: Array<BoreLayer>;
-  specimens: Array<BoreSpecimen>;
-  headers: GefHeaders;
-  warnings: Array<string>;
-  processed: ProcessedMetadata;
+interface CommonProcessedFields {
+  filename: string;
+  fileType: GefFileType;
+  wgs84: WGS84Coords | null;
+  projectId: string | undefined;
+  testId: string | undefined;
+  companyName: string | undefined;
+  startDate: string | undefined;
+  startTime: string | undefined;
+  coordinateSystem: {
+    code: string;
+    name: string;
+    nameEn: string;
+    epsg: string | null;
+  } | null;
+  originalX: number | undefined;
+  originalY: number | undefined;
+  heightSystem: {
+    code: string;
+    name: string;
+    nameEn: string;
+    epsg: string | null;
+  } | null;
+  surfaceElevation: number | undefined;
 }
 
-export type GefData = GefCptData | GefBoreData;
-
-// Process raw headers into display-ready metadata
-function processMetadata(
+export function processCommonFields(
   filename: string,
   fileType: GefFileType,
-  headers: GefHeaders
-): ProcessedMetadata {
+  headers: GefCptHeaders | GefBoreHeaders
+): CommonProcessedFields {
   const wgs84 = headers.XYID
     ? convertToWGS84({
         coordinateSystem: headers.XYID.coordinateSystem,
@@ -359,15 +284,49 @@ function processMetadata(
       }
     : null;
 
-  // Choose the correct metadata based on file type
-  const measurementVarMetadata = fileType === "BORE" ? boreMeasurementVariables : cptMeasurementVariables;
-  const measurementTextMetadata = fileType === "BORE" ? boreMeasurementTextVariables : cptMeasurementTextVariables;
+  return {
+    filename,
+    fileType,
+    wgs84,
+    projectId: headers.PROJECTID,
+    testId: headers.TESTID,
+    companyName: headers.COMPANYID?.name,
+    startDate: headers.STARTDATE ? formatGefDate(headers.STARTDATE) : undefined,
+    startTime: headers.STARTTIME ? formatGefTime(headers.STARTTIME) : undefined,
+    coordinateSystem,
+    originalX: headers.XYID?.x,
+    originalY: headers.XYID?.y,
+    heightSystem,
+    surfaceElevation: headers.ZID?.height,
+  };
+}
+
+export function processCptMetadata(
+  filename: string,
+  headers: GefCptHeaders
+): ProcessedMetadata {
+  const common = processCommonFields(filename, "CPT", headers);
+
+  // Detect if this is a Belgian (DOV) or Dutch (BRO/VOTB) extension
+  const extension = detectGefExtension(
+    headers.MEASUREMENTTEXT?.map((mt) => mt.id),
+    headers.MEASUREMENTVAR?.map((mv) => mv.id)
+  );
+
+  // Use extension-aware metadata
+  const measurementVarMetadata =
+    getCptMeasurementVariablesForExtension(extension);
+  const measurementTextMetadata =
+    getCptMeasurementTextVariablesForExtension(extension);
 
   // Process all MEASUREMENTVAR values into human-readable format
   const measurements: Record<string, ProcessedMeasurement> = {};
   if (headers.MEASUREMENTVAR) {
     for (const mv of headers.MEASUREMENTVAR) {
-      const translationKey = getMeasurementVarKey(mv.id, measurementVarMetadata);
+      const translationKey = getMeasurementVarKey(
+        mv.id,
+        measurementVarMetadata
+      );
       if (translationKey) {
         const value = parseFloat(mv.value);
         if (!isNaN(value)) {
@@ -384,7 +343,10 @@ function processMetadata(
   const texts: Record<string, string> = {};
   if (headers.MEASUREMENTTEXT) {
     for (const mt of headers.MEASUREMENTTEXT) {
-      const translationKey = getMeasurementTextKey(mt.id, measurementTextMetadata);
+      const translationKey = getMeasurementTextKey(
+        mt.id,
+        measurementTextMetadata
+      );
       if (translationKey) {
         texts[translationKey] = mt.text;
       }
@@ -392,166 +354,17 @@ function processMetadata(
   }
 
   return {
-    filename,
-    fileType,
-    wgs84,
-    projectId: headers.PROJECTID,
-    testId: headers.TESTID,
-    companyName: headers.COMPANYID?.name,
-    startDate: headers.STARTDATE ? formatGefDate(headers.STARTDATE) : undefined,
-    startTime: headers.STARTTIME ? formatGefTime(headers.STARTTIME) : undefined,
-    coordinateSystem,
-    originalX: headers.XYID?.x,
-    originalY: headers.XYID?.y,
-    heightSystem,
-    surfaceElevation: headers.ZID?.height,
+    ...common,
     measurements,
     texts,
   };
 }
 
-function generateWarnings(
-  headers: GefHeaders,
-  headersMap: GEFHeadersMap,
-  fileType: GefFileType = "CPT",
-  data?: Array<Record<string, number | null>>
-): Array<string> {
-  const warnings: Array<string> = [];
-
-  // Check for missing or invalid ZID
-  const rawZid = headersMap.get("ZID")?.[0];
-
-  if (!rawZid || rawZid.length === 0) {
-    warnings.push("Missing ZID (height reference system) - defaulting to NAP");
-  } else {
-    const heightCode = rawZid[0]?.trim();
-    if (heightCode && !(heightCode in HEIGHT_SYSTEMS)) {
-      warnings.push(
-        `Unknown height system code "${heightCode}" - defaulting to NAP`
-      );
-    }
-    if (rawZid.length < 2) {
-      warnings.push("ZID missing height value - defaulting to 0");
-    }
-  }
-
-  // Check for missing XYID (location)
-  if (!headers.XYID) {
-    warnings.push("Missing XYID (coordinates) - location unknown");
-  }
-
-  // Check for COLUMNINFO missing quantityNumber (4th element per spec)
-  const rawColumnInfo = headersMap.get("COLUMNINFO");
-  if (rawColumnInfo) {
-    const missingQuantityNumbers = rawColumnInfo.filter(
-      (col) => col.length < 4
-    );
-    if (missingQuantityNumbers.length > 0) {
-      warnings.push(
-        `${missingQuantityNumbers.length} COLUMNINFO entries missing quantity number - defaulting to 0`
-      );
-    }
-  }
-
-  // CPT-specific validations
-  if (fileType === "CPT" && headers.COLUMNINFO) {
-    const columnInfo = headers.COLUMNINFO;
-
-    // Check for duplicate quantity numbers
-    const quantityMap = new Map<number, Array<number>>();
-    for (const col of columnInfo) {
-      if (col.quantityNumber > 0) {
-        const existing = quantityMap.get(col.quantityNumber) ?? [];
-        existing.push(col.colNum);
-        quantityMap.set(col.quantityNumber, existing);
-      }
-    }
-
-    for (const [quantityNum, colNums] of quantityMap) {
-      if (colNums.length > 1) {
-        const quantityInfo = cptColumnQuantities.find(
-          (q) => q.id === quantityNum
-        );
-        const quantityName = quantityInfo?.name ?? `Quantity ${quantityNum}`;
-        warnings.push(
-          `Duplicate quantity number: ${quantityName} (${quantityNum}) assigned to columns ${colNums.join(", ")}`
-        );
-      }
-    }
-
-    // Check for required parameters (per GEF-CPT spec)
-    const hasLength = columnInfo.some(
-      (col) => col.quantityNumber === CPT_QUANTITY.LENGTH
-    );
-    const hasConeResistance = columnInfo.some(
-      (col) => col.quantityNumber === CPT_QUANTITY.CONE_RESISTANCE
-    );
-
-    if (!hasLength) {
-      warnings.push(
-        "Missing required parameter: Penetration length (quantity 1)"
-      );
-    }
-    if (!hasConeResistance) {
-      warnings.push("Missing required parameter: Cone resistance (quantity 2)");
-    }
-
-    // Validate COLUMNMINMAX bounds if present
-    const columnMinMax = headers.COLUMNMINMAX;
-    if (columnMinMax && data && data.length > 0) {
-      for (const { columnNumber, min, max } of columnMinMax) {
-        const colInfo = columnInfo.find((c) => c.colNum === columnNumber);
-        if (!colInfo) {
-          continue;
-        }
-
-        const values = data
-          .map((row) => row[colInfo.name])
-          .filter((v): v is number => v !== null && v !== undefined);
-
-        if (values.length === 0) {
-          continue;
-        }
-
-        const actualMin = Math.min(...values);
-        const actualMax = Math.max(...values);
-
-        if (actualMin < min || actualMax > max) {
-          warnings.push(
-            `Column ${columnNumber} (${colInfo.name}): actual range [${actualMin.toFixed(3)}, ${actualMax.toFixed(3)}] exceeds declared range [${min}, ${max}]`
-          );
-        }
-      }
-    }
-  }
-
-  return warnings;
-}
-
-function detectFileType(headers: GefHeaders): GefFileType {
-  const reportCode = headers.REPORTCODE?.code?.toLowerCase() ?? "";
-
-  // Check for unsupported file types
-  if (reportCode.includes("diss")) {
-    throw new Error(
-      "GEF-DISS-Report (dissipation test) files are not supported"
-    );
-  }
-  if (reportCode.includes("siev")) {
-    throw new Error("GEF-SIEVE files are not supported");
-  }
-
-  if (reportCode.includes("bore")) {
-    return "BORE";
-  }
-  return "CPT";
-}
-
 // Parse pre-excavation layers from SPECIMENVAR in CPT files
 // Per spec: value is bottom depth, description is soil type
 // Layers are ordered by ID (1, 2, 3...) with each value being the cumulative depth
-function parsePreExcavationLayers(
-  headers: GefHeaders
+export function parsePreExcavationLayers(
+  headers: GefCptHeaders
 ): Array<PreExcavationLayer> {
   const specimenVars = headers.SPECIMENVAR ?? [];
 
@@ -577,59 +390,7 @@ function parsePreExcavationLayers(
   return layers;
 }
 
-const gefToMapSchema = z.object({
-  data: z.string(),
-  headers: z.object({
-    headers: z.map(z.string(), z.array(z.array(z.string()))),
-  }),
-});
-
-export async function parseGefFile(file: File): Promise<GefData> {
-  await initGefFileToMap();
-
-  const gefContent = await file.text();
-  const gefMap: unknown = parse_gef_wasm(gefContent);
-
-  const a = gefToMapSchema.parse(gefMap);
-
-  // First parse headers to detect file type
-  const headersForDetection = parseGefHeaders(a.headers.headers);
-  const fileType = detectFileType(headersForDetection);
-
-  if (fileType === "BORE") {
-    const { layers, headers } = parseGefBoreData(a.data, a.headers.headers);
-    const specimens = parseGefBoreSpecimens(headers);
-    const warnings = generateWarnings(headers, a.headers.headers, "BORE");
-    const processed = processMetadata(file.name, "BORE", headers);
-    return {
-      fileType: "BORE",
-      layers,
-      specimens,
-      headers,
-      warnings,
-      processed,
-    };
-  }
-
-  // CPT file
-  const { data, columnInfo, headers } = parseGefData(a.data, a.headers.headers);
-  const chartAxes = detectChartAxes(columnInfo, data, headers.ZID);
-  const preExcavationLayers = parsePreExcavationLayers(headers);
-  const warnings = generateWarnings(headers, a.headers.headers, "CPT", data);
-  const processed = processMetadata(file.name, "CPT", headers);
-
-  return {
-    fileType: "CPT",
-    data,
-    headers,
-    chartAxes,
-    preExcavationLayers,
-    warnings,
-    processed,
-  };
-}
-
-export const cptColumnQuantities = [
+const cptColumnQuantities = [
   {
     id: 1,
     name: "Penetration length",
@@ -1051,7 +812,7 @@ export const cptColumnQuantities = [
   },
 ] as const;
 
-export const cptMeasurementVariables = [
+const cptMeasurementVariables = [
   {
     id: 1,
     defaultValue: 1000,
@@ -1409,7 +1170,7 @@ export const cptMeasurementVariables = [
   },
 ] as const;
 
-export const cptMeasurementTextVariables = [
+const cptMeasurementTextVariables = [
   {
     id: 1,
     description: "Client",
@@ -2648,7 +2409,7 @@ export function detectGefExtension(
 /**
  * Get CPT measurement text variables for a given extension
  */
-export function getCptMeasurementTextVariablesForExtension(
+function getCptMeasurementTextVariablesForExtension(
   extension: GefExtension
 ) {
   const base = [...cptMeasurementTextVariables];
@@ -2666,7 +2427,7 @@ export function getCptMeasurementTextVariablesForExtension(
 /**
  * Get CPT measurement variables for a given extension
  */
-export function getCptMeasurementVariablesForExtension(
+function getCptMeasurementVariablesForExtension(
   extension: GefExtension
 ) {
   const base = [...cptMeasurementVariables];
@@ -2730,4 +2491,165 @@ export function decodeMeasurementText(
   }
 
   return text;
+}
+
+export function parseGefCptData(dataString: string, headersMap: GEFHeadersMap) {
+  const headers = parseGefCptHeaders(headersMap);
+
+  const lines = dataString.trim().split("\n");
+  const columnSeparator = headers.COLUMNSEPARATOR ?? /\s+/;
+  const columnInfo = headers.COLUMNINFO ?? [];
+
+  const rows = lines.map((line) =>
+    line
+      .trim()
+      .split(columnSeparator)
+      .filter((val) => val.trim() !== "")
+      .map((val) => parseFloat(val.trim()))
+  );
+
+  // Create void values map from parsed COLUMNVOID
+  const voidValuesMap = new Map(
+    headers.COLUMNVOID?.map(({ columnNumber, voidValue }) => [
+      columnNumber,
+      voidValue,
+    ]) ?? []
+  );
+
+  // Replace void values with null
+  const rowsWithoutVoidValues = rows.map((row) =>
+    row.map((value, index) => {
+      const voidValue = voidValuesMap.get(index + 1);
+      return value === voidValue ? null : value;
+    })
+  );
+
+  // Create object rows with column names
+  const columnNames = columnInfo.map((col) => col.name);
+  const tidyRows = rowsWithoutVoidValues.map((row) => {
+    const entries = columnNames.map((name, i) => [name, row[i]]);
+    return Object.fromEntries(entries);
+  });
+
+  // Normalize depth values to absolute (some GEF files use negative depths)
+  const depthCol = columnInfo.find((col) => {
+    const nameLower = col.name.toLowerCase();
+    return (
+      col.unit === "m" && DEPTH_KEYWORDS.some((kw) => nameLower.includes(kw))
+    );
+  });
+
+  const normalizedRows: Array<Record<string, number>> = tidyRows.map((row) => {
+    if (!depthCol) {
+      return row;
+    }
+
+    const depthKey = depthCol.name;
+    const depthValue = row[depthKey];
+
+    if (typeof depthValue === "number") {
+      return { ...row, [depthKey]: Math.abs(depthValue) };
+    }
+    return row;
+  });
+
+  // only necessary for cpt right?
+  // Add computed depth columns (trueDepth, elevation)
+  const dataWithComputedColumns = addComputedDepthColumns(
+    normalizedRows,
+    columnInfo,
+    headers.ZID,
+    headers.MEASUREMENTVAR
+  );
+
+  return {
+    data: dataWithComputedColumns,
+    headers,
+    columnInfo,
+  };
+}
+
+export function generateCptWarnings(
+  filename: string,
+  headers: GefCptHeaders,
+  data?: Array<Record<string, number | null>>
+): Array<string> {
+  const warnings: Array<string> = [];
+
+  if (!headers.COLUMNINFO) {
+    return warnings;
+  }
+
+  const columnInfo = headers.COLUMNINFO;
+
+  // Check for duplicate quantity numbers
+  const quantityMap = new Map<number, Array<number>>();
+  for (const col of columnInfo) {
+    if (col.quantityNumber > 0) {
+      const existing = quantityMap.get(col.quantityNumber) ?? [];
+      existing.push(col.colNum);
+      quantityMap.set(col.quantityNumber, existing);
+    }
+  }
+
+  for (const [quantityNum, colNums] of quantityMap) {
+    if (colNums.length > 1) {
+      const quantityInfo = cptColumnQuantities.find(
+        (q) => q.id === quantityNum
+      );
+      const quantityName = quantityInfo?.name ?? `Quantity ${quantityNum}`;
+      warnings.push(
+        `File '${filename}' has duplicate quantity number ${quantityNum} (${quantityName}) assigned to columns ${colNums.join(", ")}. Per GEF-CPT specification, each quantity should appear only once. This may cause ambiguous data interpretation and incorrect chart rendering.`
+      );
+    }
+  }
+
+  // Check for required parameters (per GEF-CPT spec)
+  const hasLength = columnInfo.some(
+    (col) => col.quantityNumber === CPT_QUANTITY.LENGTH
+  );
+  const hasConeResistance = columnInfo.some(
+    (col) => col.quantityNumber === CPT_QUANTITY.CONE_RESISTANCE
+  );
+
+  if (!hasLength) {
+    warnings.push(
+      `File '${filename}' missing required COLUMNINFO for Penetration length (quantity 1). Per GEF-CPT specification, penetration length is mandatory. Charts and depth calculations may not display correctly without this data.`
+    );
+  }
+  if (!hasConeResistance) {
+    warnings.push(
+      `File '${filename}' missing required COLUMNINFO for Cone resistance (quantity 2). Per GEF-CPT specification, cone resistance (qc) is mandatory for CPT tests. Primary soil strength analysis cannot be performed without this parameter.`
+    );
+  }
+
+  // Validate COLUMNMINMAX bounds if present
+  const columnMinMax = headers.COLUMNMINMAX;
+  if (columnMinMax && data && data.length > 0) {
+    for (const { columnNumber, min, max } of columnMinMax) {
+      const colInfo = columnInfo.find((c) => c.colNum === columnNumber);
+      if (!colInfo) {
+        continue;
+      }
+
+      const values = data
+        .map((row) => row[colInfo.name])
+        .filter((v): v is number => v !== null && v !== undefined);
+
+      if (values.length === 0) {
+        continue;
+      }
+
+      const actualMin = Math.min(...values);
+      const actualMax = Math.max(...values);
+
+      if (actualMin < min || actualMax > max) {
+        warnings.push(
+          `File '${filename}' column ${columnNumber} (${colInfo.name}): actual data range [${actualMin.toFixed(3)}, ${actualMax.toFixed(3)}] exceeds declared COLUMNMINMAX range [${min}, ${max}]. This indicates the COLUMNMINMAX header does not match the actual data, which may suggest data quality issues or incorrect metadata.`
+        );
+      }
+    }
+  }
+
+  return warnings;
 }

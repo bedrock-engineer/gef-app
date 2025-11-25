@@ -157,10 +157,13 @@ export default {
     // Empty state CTA
     freeToolByBedrock: "Free tool by Bedrock. We build:",
     customWebApps: "Custom web apps for geotechnical workflows",
-    pythonAutomation:
-      "Geotechnical workflow automation using Python and Marimo notebooks",
+    pythonAutomation: "Geotechnical workflow automation using Python",
     bimCadIntegrations:
-      "Geotechnical data integration into BIM software like Civil3D, Revit, and Rhino3D",
+      "Geotechnical data integration into BIM software like Civil3D, Revit, Rhino3D, and Grasshopper",
     emptyStateContact: "Interested?",
+
+    // Disclaimer
+    disclaimer:
+      "This tool is provided for informational purposes only. All geotechnical data should be verified by a qualified geotechnical professional. No rights can be derived from the use of this tool.",
   },
 } as const;

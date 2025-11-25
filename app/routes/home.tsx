@@ -2,6 +2,7 @@ import { redirect } from "react-router";
 import type { Route } from "./+types/home";
 import { App } from "../components/app";
 import { localeCookie } from "~/middleware/i18next";
+import { documentHeaders } from "~/utils/cache";
 
 const siteUrl = "https://gef.bedrock.engineer";
 
@@ -17,6 +18,10 @@ const translations = {
       "Gratis online GEF bestandsviewer. Visualisatie van sondeergegevens eenvoudig in uw browser. Bekijk CPT-gegevens en boorgrafieken direct.",
   },
 };
+
+export function headers() {
+  return documentHeaders();
+}
 
 export async function action({ request }: Route.ActionArgs) {
   const formData = await request.formData();

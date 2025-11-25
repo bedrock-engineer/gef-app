@@ -5,7 +5,7 @@ import { findColumnByQuantity } from "./gef-cpt";
 /**
  * GEF Quantity Numbers for depth-related columns
  */
-export const QUANTITY_NUMBERS = {
+const QUANTITY_NUMBERS = {
   PENETRATION_LENGTH: 1,
   INCLINATION_RESULTANT: 8,
   INCLINATION_NS: 9,
@@ -23,7 +23,7 @@ const PRE_EXCAVATED_DEPTH_MEASUREMNTVAR_ID = 13;
  * - If inclination exists, calculate: depth = cumsum(cos(inclination) * delta_penetration)
  * - Otherwise, depth = penetration length (no correction)
  */
-export function calculateTrueDepth(
+function calculateTrueDepth(
   data: Array<Record<string, number>>,
   columnInfo: Array<ColumnInfo>,
 ): Array<Record<string, number>> {
@@ -110,7 +110,7 @@ export function calculateTrueDepth(
  * - ZID.height = elevation of the reference level (e.g., ground level at +5.0m NAP)
  * - trueDepth = inclination-corrected depth
  */
-export function calculateElevation(
+function calculateElevation(
   data: Array<Record<string, number>>,
   zid: ZID | undefined,
 ): Array<Record<string, number>> {

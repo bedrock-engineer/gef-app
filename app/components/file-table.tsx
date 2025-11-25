@@ -74,12 +74,12 @@ export function FileTable({
         testDate = data.processed.texts.datumBoring ?? null;
         // Get end depth from processed measurements (MEASUREMENTVAR ID 16 = "Einddiepte")
         finalDepth = data.processed.measurements.einddiepte?.value ?? null;
-        // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
       } else if (data.fileType === "CPT") {
         // For CPT files, use processed startDate
         testDate = data.processed.startDate ?? null;
         // Get end depth from processed measurements (MEASUREMENTVAR ID 16)
-        finalDepth = data.processed.measurements.endDepthOfPenetrationTest?.value ?? null;
+        finalDepth =
+          data.processed.measurements.endDepthOfPenetrationTest?.value ?? null;
       }
 
       return {
@@ -138,7 +138,7 @@ export function FileTable({
 
   const handleDrop = async (e: { items: ReadonlyArray<{ kind: string }> }) => {
     const fileItems = e.items.filter(
-      (item): item is FileDropItem => item.kind === "file"
+      (item): item is FileDropItem => item.kind === "file",
     );
     const files = await Promise.all(fileItems.map((item) => item.getFile()));
     onFileDrop(files);

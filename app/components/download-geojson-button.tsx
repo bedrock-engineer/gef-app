@@ -1,23 +1,25 @@
 import { DownloadIcon } from "lucide-react";
 import { Button } from "react-aria-components";
-import type { GefData, ProcessedMetadata } from "~/util/gef-cpt";
+import type { ProcessedMetadata } from "~/util/gef-cpt";
 import type { Feature, FeatureCollection } from "geojson";
 import { useTranslation } from "react-i18next";
+import type { GefData } from "~/util/gef-common";
 
 function createGeoJSON(gefData: Record<string, GefData>): FeatureCollection {
   const features: Array<Feature> = Object.values(gefData)
     .filter(
       (
-        data
+        data,
       ): data is GefData & {
         processed: ProcessedMetadata & {
           wgs84: NonNullable<ProcessedMetadata["wgs84"]>;
         };
-      } => data.processed.wgs84 !== null
+      } => data.processed.wgs84 !== null,
     )
     .map((data) => {
       const meta = data.processed;
-      const finalDepth = meta.measurements.endDepthOfPenetrationTest?.value ?? null;
+      const finalDepth =
+        meta.measurements.endDepthOfPenetrationTest?.value ?? null;
 
       return {
         type: "Feature" as const,

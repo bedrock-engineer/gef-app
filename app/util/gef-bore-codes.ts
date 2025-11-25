@@ -405,15 +405,6 @@ const ALL_CODES: Record<string, string> = {
 };
 
 /**
- * Decode a GEF-BORE code to its Dutch description
- * Returns the original code if not found
- */
-export function decodeBoreCode(code: string): string {
-  const upperCode = code.trim().toUpperCase();
-  return ALL_CODES[upperCode] ?? ALL_CODES[code] ?? code;
-}
-
-/**
  * Get soil code from a Dutch description by keyword matching
  * Returns the main soil type code (G, K, L, V, Z) or "NBE" if not found
  */
@@ -442,75 +433,17 @@ export function getSoilCodeFromDescription(description: string): string {
 }
 
 /**
+ * Decode a GEF-BORE code to its Dutch description
+ * Returns the original code if not found
+ */
+export function decodeBoreCode(code: string): string {
+  const upperCode = code.trim().toUpperCase();
+  return ALL_CODES[upperCode] ?? ALL_CODES[code] ?? code;
+}
+
+/**
  * Decode multiple codes and join them
  */
 export function decodeAllBoreCodes(codes: Array<string>): string {
   return codes.map(decodeBoreCode).join(", ");
-}
-
-/**
- * Get category for a code (for grouping/display)
- */
-export function getCodeCategory(code: string): string | undefined {
-  const upperCode = code.trim().toUpperCase();
-
-  if (NEN5104_SOIL_CODES[upperCode]) {
-    return "NEN 5104";
-  }
-  if (NON_STANDARD_SOIL_CODES[upperCode]) {
-    return "Grondsoort";
-  }
-  if (ADDITIONAL_SOIL_CODES[upperCode]) {
-    return "Bijzondere grondsoort";
-  }
-  if (SECONDARY_COLORS[upperCode] || MAIN_COLORS[upperCode]) {
-    return "Kleur";
-  }
-  if (SAND_MEDIAN_CLASSES[upperCode]) {
-    return "Zandmediaan";
-  }
-  if (SAND_SPREAD[upperCode]) {
-    return "Zandspreiding";
-  }
-  if (GRAIN_SHAPE[upperCode]) {
-    return "Korrelvorm";
-  }
-  if (GRAVEL_MEDIAN_CLASSES[upperCode] || GRAVEL_FRACTIONS[upperCode]) {
-    return "Grind";
-  }
-  if (PEAT_AMORPHOSITY[upperCode] || PEAT_TYPES[upperCode]) {
-    return "Veen";
-  }
-  if (CONSISTENCY[upperCode]) {
-    return "Consistentie";
-  }
-  if (SAND_COMPACTION[upperCode]) {
-    return "Zandcompactie";
-  }
-  if (ROCK_HARDNESS[upperCode]) {
-    return "Gesteentehardheid";
-  }
-  if (SHELL_CONTENT[upperCode]) {
-    return "Schelpmateriaal";
-  }
-  if (CALCIUM_CONTENT[upperCode]) {
-    return "Kalkgehalte";
-  }
-  if (GLAUCONITE_CONTENT[upperCode]) {
-    return "Glauconiet";
-  }
-  if (ANTHROPOGENIC_ADMIXTURES[upperCode]) {
-    return "Antropogeen";
-  }
-  if (LAYERING[upperCode]) {
-    return "Gelaagdheid";
-  }
-  if (GEOLOGICAL_INTERPRETATION[upperCode]) {
-    return "Geologie";
-  }
-  if (STRATIGRAPHIC_UNITS[upperCode]) {
-    return "Stratigrafie";
-  }
-
-  return undefined;
 }

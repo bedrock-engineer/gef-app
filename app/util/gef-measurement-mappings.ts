@@ -5,7 +5,7 @@
 function descriptionToKey(description: string): string {
   return description
     .split(/[\s,()/-]+/) // Split on spaces, commas, parentheses, slashes, hyphens
-    .filter(word => word.length > 0)
+    .filter((word) => word.length > 0)
     .map((word, index) => {
       // Lowercase first word, capitalize rest
       if (index === 0) {
@@ -13,7 +13,7 @@ function descriptionToKey(description: string): string {
       }
       return word.charAt(0).toUpperCase() + word.slice(1).toLowerCase();
     })
-    .join('');
+    .join("");
 }
 
 /**
@@ -22,10 +22,12 @@ function descriptionToKey(description: string): string {
  */
 export function getMeasurementVarKey(
   id: number,
-  metadata: ReadonlyArray<{ id: number; description: string }>
+  metadata: ReadonlyArray<{ id: number; description: string }>,
 ): string | null {
-  const item = metadata.find(m => m.id === id);
-  if (!item) return null;
+  const item = metadata.find((m) => m.id === id);
+  if (!item) {
+    return null;
+  }
   return descriptionToKey(item.description);
 }
 
@@ -35,9 +37,11 @@ export function getMeasurementVarKey(
  */
 export function getMeasurementTextKey(
   id: number,
-  metadata: ReadonlyArray<{ id: number; description: string }>
+  metadata: ReadonlyArray<{ id: number; description: string }>,
 ): string | null {
-  const item = metadata.find(m => m.id === id);
-  if (!item) return null;
+  const item = metadata.find((m) => m.id === id);
+  if (!item) {
+    return null;
+  }
   return descriptionToKey(item.description);
 }

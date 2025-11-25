@@ -1,16 +1,31 @@
+import { type GEFHeadersMap } from "./gef-common";
+import type { ProcessedMetadata, ProcessedMeasurement } from "./gef-cpt";
+import { processCommonFields } from "./gef-cpt";
 import {
-  heightDeterminationCodes,
-  placeDeterminationCodes,
-} from "./gef-common";
-import type { GEFHeadersMap } from "./gef-cpt";
+  getMeasurementTextKey,
+  getMeasurementVarKey,
+} from "./gef-measurement-mappings";
 import {
-  parseGefHeaders,
-  type GefHeaders,
+  parseGefBoreHeaders,
+  type GefBoreHeaders,
   type SpecimenText,
   type SpecimenVar,
 } from "./gef-schemas";
+import {
+  heightDeterminationCodes,
+  placeDeterminationCodes,
+} from "./location-codes";
 
-export const boreMeasurementVariables = [
+export interface GefBoreData {
+  fileType: "BORE";
+  layers: Array<BoreLayer>;
+  specimens: Array<BoreSpecimen>;
+  headers: GefBoreHeaders;
+  warnings: Array<string>;
+  processed: ProcessedMetadata;
+}
+
+const boreMeasurementVariables = [
   // Borehole depth and geometry
   {
     id: 13,
@@ -193,7 +208,59 @@ export const boreMeasurementVariables = [
   },
 ] as const;
 
-export const boreMeasurementTextVariables = [
+// Drilling method codes for GEF-BORE files (NEN 5104)
+const DRILLING_METHOD_CODES = {
+  ACK: "Ackermann-steekboring",
+  AVE: "Avegaarboring",
+  AVH: "Holle avegaarboring",
+  AVS: "Avegaar-steekboring",
+  BES: "Begemann-steekboring",
+  BEI: "Beitel",
+  BSA: "Beeker-sampler",
+  BEV: "Bevriezen",
+  CFL: "Counter-flushboring",
+  DRC: "Dropcorer",
+  EDM: "Edelmanboring",
+  GD1: "Geodoff 1 boring",
+  GD2: "Geodoff 2 boring",
+  GD3: "Geodoff 3 boring",
+  GUT: "Guts",
+  GRA: "Graven",
+  HAH: "Hamon happer",
+  HAN: "Handboring",
+  HAP: "Hapmonster",
+  KER: "Kernboring",
+  LEP: "Lepelboring",
+  LUC: "Luchtliftboring",
+  LUH: "Luchthamer",
+  ONT: "Ontsluiting",
+  OSC: "Oscorer",
+  PIS: "Pistoncorer",
+  PUL: "Pulsboring",
+  PUH: "Handpuls",
+  PUK: "Pulsboring (lichte stelling)",
+  PUM: "Pulsboring (mechanisch)",
+  RAM: "Ramguts",
+  RFL: "Ro-flushboring",
+  RIV: "Riverside boring",
+  SFC: "Straight-flushboring met core sampling",
+  SFL: "Straight-flushboring",
+  SLB: "Slibsteker",
+  SPI: "Spiraalboring",
+  SPO: "Spoelboring",
+  SPS: "Spoelboring met steekmonsters",
+  SPU: "Spuitboring",
+  STE: "Steekboring",
+  TRF: "Trilflipboring",
+  TRI: "Trilboring",
+  VDS: "Van der Staay boring",
+  VVH: "Van Veen happer",
+  VIB: "Vibrocorer",
+  ZEN: "Zenkovitchboring",
+  ZUI: "Zuigboring",
+} as const;
+
+const boreMeasurementTextVariables = [
   {
     id: 1,
     description: "Opdrachtgever",
@@ -366,75 +433,106 @@ export const boreMeasurementTextVariables = [
   },
 
   // Drilling methods for segments 1-10 (measurementtext 31-40)
+  // Uses standardized codes from NEN 5104
   {
     id: 31,
     description: "Boormethode boortraject 1",
     category: "drilling_methods",
     required: true,
-    standardizedCodes: null,
+    standardizedCodes: Object.entries(DRILLING_METHOD_CODES).map(([code, description]) => ({
+      code,
+      description,
+    })),
   },
   {
     id: 32,
     description: "Boormethode boortraject 2",
     category: "drilling_methods",
     required: false,
-    standardizedCodes: null,
+    standardizedCodes: Object.entries(DRILLING_METHOD_CODES).map(([code, description]) => ({
+      code,
+      description,
+    })),
   },
   {
     id: 33,
     description: "Boormethode boortraject 3",
     category: "drilling_methods",
     required: false,
-    standardizedCodes: null,
+    standardizedCodes: Object.entries(DRILLING_METHOD_CODES).map(([code, description]) => ({
+      code,
+      description,
+    })),
   },
   {
     id: 34,
     description: "Boormethode boortraject 4",
     category: "drilling_methods",
     required: false,
-    standardizedCodes: null,
+    standardizedCodes: Object.entries(DRILLING_METHOD_CODES).map(([code, description]) => ({
+      code,
+      description,
+    })),
   },
   {
     id: 35,
     description: "Boormethode boortraject 5",
     category: "drilling_methods",
     required: false,
-    standardizedCodes: null,
+    standardizedCodes: Object.entries(DRILLING_METHOD_CODES).map(([code, description]) => ({
+      code,
+      description,
+    })),
   },
   {
     id: 36,
     description: "Boormethode boortraject 6",
     category: "drilling_methods",
     required: false,
-    standardizedCodes: null,
+    standardizedCodes: Object.entries(DRILLING_METHOD_CODES).map(([code, description]) => ({
+      code,
+      description,
+    })),
   },
   {
     id: 37,
     description: "Boormethode boortraject 7",
     category: "drilling_methods",
     required: false,
-    standardizedCodes: null,
+    standardizedCodes: Object.entries(DRILLING_METHOD_CODES).map(([code, description]) => ({
+      code,
+      description,
+    })),
   },
   {
     id: 38,
     description: "Boormethode boortraject 8",
     category: "drilling_methods",
     required: false,
-    standardizedCodes: null,
+    standardizedCodes: Object.entries(DRILLING_METHOD_CODES).map(([code, description]) => ({
+      code,
+      description,
+    })),
   },
   {
     id: 39,
     description: "Boormethode boortraject 9",
     category: "drilling_methods",
     required: false,
-    standardizedCodes: null,
+    standardizedCodes: Object.entries(DRILLING_METHOD_CODES).map(([code, description]) => ({
+      code,
+      description,
+    })),
   },
   {
     id: 40,
     description: "Boormethode boortraject 10",
     category: "drilling_methods",
     required: false,
-    standardizedCodes: null,
+    standardizedCodes: Object.entries(DRILLING_METHOD_CODES).map(([code, description]) => ({
+      code,
+      description,
+    })),
   },
 ] as const;
 
@@ -473,6 +571,62 @@ export function decodeBoreMeasurementText(id: number, text: string): string {
   }
 
   return text;
+}
+
+// =============================================================================
+// BORE Metadata Processing
+// =============================================================================
+
+/**
+ * Process BORE-specific metadata (MEASUREMENTVAR, MEASUREMENTTEXT)
+ * BORE files use different ID schemes than CPT files
+ */
+export function processBoreMetadata(
+  filename: string,
+  headers: GefBoreHeaders
+): ProcessedMetadata {
+  const common = processCommonFields(filename, "BORE", headers);
+
+  // Process all MEASUREMENTVAR values using BORE-specific metadata
+  const measurements: Record<string, ProcessedMeasurement> = {};
+  
+  if (headers.MEASUREMENTVAR) {
+    for (const mv of headers.MEASUREMENTVAR) {
+      const translationKey = getMeasurementVarKey(
+        mv.id,
+        boreMeasurementVariables
+      );
+      if (translationKey) {
+        const value = parseFloat(mv.value);
+        if (!isNaN(value)) {
+          measurements[translationKey] = {
+            value,
+            unit: mv.unit,
+          };
+        }
+      }
+    }
+  }
+
+  // Process all MEASUREMENTTEXT values using BORE-specific metadata
+  const texts: Record<string, string> = {};
+  if (headers.MEASUREMENTTEXT) {
+    for (const mt of headers.MEASUREMENTTEXT) {
+      const translationKey = getMeasurementTextKey(
+        mt.id,
+        boreMeasurementTextVariables
+      );
+      if (translationKey) {
+        texts[translationKey] = mt.text;
+      }
+    }
+  }
+
+  return {
+    ...common,
+    measurements,
+    texts,
+  };
 }
 
 // =============================================================================
@@ -591,7 +745,6 @@ export function getSoilColor(code: string): string {
   return SOIL_COLORS.default ?? "#CCCCCC";
 }
 
-// Main soil type names for legend
 export const SOIL_TYPE_NAMES: Record<string, string> = {
   G: "Grind (Gravel)",
   Z: "Zand (Sand)",
@@ -600,10 +753,6 @@ export const SOIL_TYPE_NAMES: Record<string, string> = {
   V: "Veen (Peat)",
   NBE: "Niet beschreven (Not described)",
 };
-
-// =============================================================================
-// Bore Layer and Specimen Types
-// =============================================================================
 
 // Bore layer data structure
 export interface BoreLayer {
@@ -702,13 +851,12 @@ export function getSpecimenTextId(
 export function parseGefBoreData(
   dataString: string,
   headersMap: GEFHeadersMap
-): { layers: Array<BoreLayer>; headers: GefHeaders } {
-  const headers = parseGefHeaders(headersMap);
+): { layers: Array<BoreLayer>; headers: GefBoreHeaders } {
+  const headers = parseGefBoreHeaders(headersMap);
   const columnSeparator = headers.COLUMNSEPARATOR ?? ";";
   const columnInfo = headers.COLUMNINFO ?? [];
 
-  // Split by record separator and filter empty lines
-  const recordSeparator = "!";
+  const recordSeparator = headers.RECORDSEPARATOR ?? "!";
   const records = dataString
     .split(recordSeparator)
     .map((r) => r.trim())
@@ -779,12 +927,9 @@ export function parseGefBoreData(
       soilCode,
       additionalCodes,
       description,
-
       sandMedian: numericValues[2] ?? null,
       gravelMedian: numericValues[3] ?? null,
-
       sandPercent: numericValues[6] ?? null,
-
       organicPercent: numericValues[8] ?? null,
     };
   });
@@ -792,7 +937,9 @@ export function parseGefBoreData(
   return { layers, headers };
 }
 
-export function parseGefBoreSpecimens(headers: GefHeaders): Array<BoreSpecimen> {
+export function parseGefBoreSpecimens(
+  headers: GefBoreHeaders
+): Array<BoreSpecimen> {
   const specimenVars = headers.SPECIMENVAR ?? [];
   const specimenTexts = headers.SPECIMENTEXT ?? [];
 
@@ -827,20 +974,20 @@ export function parseGefBoreSpecimens(headers: GefHeaders): Array<BoreSpecimen> 
   const specimens: Array<BoreSpecimen> = [];
 
   for (let k = 1; k <= specimenCount; k++) {
-    // Get SPECIMENVAR values using formula: 4 + 7k, 5 + 7k, etc.
-    const depthTopVar = varMap.get(4 + 7 * k);
-    const depthBottomVar = varMap.get(5 + 7 * k);
-    const diameterMonsterVar = varMap.get(6 + 7 * k);
-    const diameterApparaatVar = varMap.get(7 + 7 * k);
+    // Get SPECIMENVAR values using helper function
+    const depthTopVar = varMap.get(getSpecimenVarId(k, "depthTop"));
+    const depthBottomVar = varMap.get(getSpecimenVarId(k, "depthBottom"));
+    const diameterMonsterVar = varMap.get(getSpecimenVarId(k, "diameterMonster"));
+    const diameterApparaatVar = varMap.get(getSpecimenVarId(k, "diameterMonstersteekapparaat"));
 
-    // Get SPECIMENTEXT values using formula: 4 + 7k, 5 + 7k, etc.
-    const monstercodeText = textMap.get(4 + 7 * k);
-    const monsterdatumText = textMap.get(5 + 7 * k);
-    const monstertijdText = textMap.get(6 + 7 * k);
-    const geroerdText = textMap.get(7 + 7 * k);
-    const monstersteekapparaatText = textMap.get(8 + 7 * k);
-    const dikDunwandigText = textMap.get(9 + 7 * k);
-    const monstermethodeText = textMap.get(10 + 7 * k);
+    // Get SPECIMENTEXT values using helper function
+    const monstercodeText = textMap.get(getSpecimenTextId(k, "monstercode"));
+    const monsterdatumText = textMap.get(getSpecimenTextId(k, "monsterdatum"));
+    const monstertijdText = textMap.get(getSpecimenTextId(k, "monstertijd"));
+    const geroerdText = textMap.get(getSpecimenTextId(k, "geroerdOngeroerd"));
+    const monstersteekapparaatText = textMap.get(getSpecimenTextId(k, "monstersteekapparaat"));
+    const dikDunwandigText = textMap.get(getSpecimenTextId(k, "dikDunwandig"));
+    const monstermethodeText = textMap.get(getSpecimenTextId(k, "monstermethode"));
 
     const specimen: BoreSpecimen = {
       specimenNumber: k,
@@ -864,69 +1011,18 @@ export function parseGefBoreSpecimens(headers: GefHeaders): Array<BoreSpecimen> 
   return specimens;
 }
 
-// Drilling method codes for GEF-BORE files (NEN 5104)
-export const DRILLING_METHOD_CODES = {
-  ACK: "Ackermann-steekboring",
-  AVE: "Avegaarboring",
-  AVH: "Holle avegaarboring",
-  AVS: "Avegaar-steekboring",
-  BES: "Begemann-steekboring",
-  BEI: "Beitel",
-  BSA: "Beeker-sampler",
-  BEV: "Bevriezen",
-  CFL: "Counter-flushboring",
-  DRC: "Dropcorer",
-  EDM: "Edelmanboring",
-  GD1: "Geodoff 1 boring",
-  GD2: "Geodoff 2 boring",
-  GD3: "Geodoff 3 boring",
-  GUT: "Guts",
-  GRA: "Graven",
-  HAH: "Hamon happer",
-  HAN: "Handboring",
-  HAP: "Hapmonster",
-  KER: "Kernboring",
-  LEP: "Lepelboring",
-  LUC: "Luchtliftboring",
-  LUH: "Luchthamer",
-  ONT: "Ontsluiting",
-  OSC: "Oscorer",
-  PIS: "Pistoncorer",
-  PUL: "Pulsboring",
-  PUH: "Handpuls",
-  PUK: "Pulsboring (lichte stelling)",
-  PUM: "Pulsboring (mechanisch)",
-  RAM: "Ramguts",
-  RFL: "Ro-flushboring",
-  RIV: "Riverside boring",
-  SFC: "Straight-flushboring met core sampling",
-  SFL: "Straight-flushboring",
-  SLB: "Slibsteker",
-  SPI: "Spiraalboring",
-  SPO: "Spoelboring",
-  SPS: "Spoelboring met steekmonsters",
-  SPU: "Spuitboring",
-  STE: "Steekboring",
-  TRF: "Trilflipboring",
-  TRI: "Trilboring",
-  VDS: "Van der Staay boring",
-  VVH: "Van Veen happer",
-  VIB: "Vibrocorer",
-  ZEN: "Zenkovitchboring",
-  ZUI: "Zuigboring",
-} as const;
 
-type DrillingCode = keyof typeof DRILLING_METHOD_CODES;
+// Generate BORE-specific warnings
+export function generateBoreWarnings(
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  filename: string,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  headers: GefBoreHeaders
+): Array<string> {
+  const warnings: Array<string> = [];
 
-/**
- * Decode a drilling method code
- * Returns formatted string like "Pulsboring (PUL)" or the original code if not found
- */
-export function decodeDrillingMethod(code: string): string {
-  const upperCode = code.trim().toUpperCase() as DrillingCode; // TODO better check
-  const description = DRILLING_METHOD_CODES[upperCode];
-  if (description) {
-    return `${description} (${upperCode})`;
-  }
-  return code;
+  // BORE-specific validations can be added here
+  // For now, no specific validations beyond common ones
+
+  return warnings;
 }

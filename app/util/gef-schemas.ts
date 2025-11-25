@@ -1,6 +1,8 @@
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
 import { z } from "zod";
-import type { GEFHeadersMap } from "./gef-cpt";
+import type { GEFHeadersMap } from "./gef-common";
+import type { ZodIssue } from "zod/v3";
+import type { $ZodIssue } from "zod/v4/core";
 
 const stringArray = z.array(z.string().trim());
 
@@ -129,7 +131,7 @@ export type HeightSystemCode = z.infer<typeof heightSystemCodeSchema>;
 // Coordinate System (parses from string tuple, validates as numbers)
 // Default to RD (31000) if coordinate system is invalid or unrecognized
 // Handle empty arrays or missing values gracefully some GEF files have empty XYID
-export const xyidSchema = z
+const xyidSchema = z
   .array(z.string())
   .transform((arr) => {
     // If array is empty or has less than 3 elements (missing coords), return null
@@ -161,14 +163,14 @@ export const xyidSchema = z
           message: "Y uncertainty (deltaY) must be a non-negative number",
         }),
       })
-      .nullable(),
+      .nullable()
   );
 
 export type XYID = z.infer<typeof xyidSchema>;
 
 // Height Reference System
 // Default to NAP (31000) if coordinate system is invalid or unrecognized
-export const zidSchema = z
+const zidSchema = z
   .array(z.string())
   .min(1, {
     message:
@@ -188,7 +190,7 @@ export const zidSchema = z
       deltaZ: z.number().nonnegative({
         message: "Height uncertainty (deltaZ) must be a non-negative number",
       }),
-    }),
+    })
   );
 
 export type ZID = z.infer<typeof zidSchema>;
@@ -197,7 +199,7 @@ export type ZID = z.infer<typeof zidSchema>;
 // VERSIONING
 // ============================================================================
 
-export const gefIdSchema = z
+const gefIdSchema = z
   .tuple([z.string(), z.string(), z.string()], {
     message: "#GEFID must have 3 values: major, minor, patch (e.g., 1, 1, 0)",
   })
@@ -211,13 +213,12 @@ export const gefIdSchema = z
       major: z.number().int().min(0),
       minor: z.number().int().min(0),
       patch: z.number().int().min(0),
-    }),
+    })
   );
 
 export type GefId = z.infer<typeof gefIdSchema>;
 
-// Report Code
-export const reportCodeSchema = z
+const reportCodeSchema = z
   .array(z.string())
   .min(4)
   .transform((arr) => ({
@@ -234,7 +235,7 @@ export const reportCodeSchema = z
       minor: z.number().int().min(0),
       patch: z.number().int().min(0),
       extra: z.array(z.string()),
-    }),
+    })
   );
 
 export type ReportCode = z.infer<typeof reportCodeSchema>;
@@ -243,7 +244,7 @@ export type ReportCode = z.infer<typeof reportCodeSchema>;
 // DATE & TIME
 // ============================================================================
 
-export const dateSchema = z
+const dateSchema = z
   .tuple([z.string(), z.string(), z.string()], {
     message: "Date must have 3 values: year, month, day (e.g., 2024, 1, 15)",
   })
@@ -265,12 +266,12 @@ export const dateSchema = z
         .int()
         .min(1, { message: "Day must be between 1 and 31" })
         .max(31, { message: "Day must be between 1 and 31" }),
-    }),
+    })
   );
 
 export type GefDate = z.infer<typeof dateSchema>;
 
-export const timeSchema = z
+const timeSchema = z
   .tuple([z.string(), z.string(), z.string()], {
     message: "Time must have 3 values: hour, minute, second (e.g., 14, 30, 0)",
   })
@@ -304,12 +305,12 @@ export const timeSchema = z
           .min(0, { message: "Second must be between 0 and 59" })
           .max(59, { message: "Second must be between 0 and 59" }),
       })
-      .nullable(),
+      .nullable()
   );
 
 export type GefTime = z.infer<typeof timeSchema>;
 
-export const companyIdSchema = z
+const companyIdSchema = z
   .tuple([
     z.string().trim(),
     z.string().trim().optional(),
@@ -323,7 +324,7 @@ export const companyIdSchema = z
 
 export type CompanyId = z.infer<typeof companyIdSchema>;
 
-export const columnInfoSchema = z
+const columnInfoSchema = z
   .array(z.string().trim())
   .min(3, {
     message:
@@ -344,12 +345,12 @@ export const columnInfoSchema = z
       unit: z.string(),
       name: z.string(),
       quantityNumber: z.number().int().min(0),
-    }),
+    })
   );
 
 export type ColumnInfo = z.infer<typeof columnInfoSchema>;
 
-export const measurementVarSchema = z
+const measurementVarSchema = z
   .tuple([
     z.string().trim(),
     z.string().trim(),
@@ -368,12 +369,12 @@ export const measurementVarSchema = z
       value: z.string(),
       unit: z.string(),
       description: z.string(),
-    }),
+    })
   );
 
 export type MeasurementVar = z.infer<typeof measurementVarSchema>;
 
-export const measurementTextSchema = z
+const measurementTextSchema = z
   .array(z.string().trim())
   .min(2)
   .transform((arr) => ({
@@ -386,13 +387,13 @@ export const measurementTextSchema = z
       id: z.number().int().min(1),
       text: z.string().max(256),
       extra: z.array(z.string()),
-    }),
+    })
   );
 
 export type MeasurementText = z.infer<typeof measurementTextSchema>;
 
 // SPECIMENVAR schema - same structure as MEASUREMENTVAR
-export const specimenVarSchema = z
+const specimenVarSchema = z
   .array(z.string().trim())
   .min(2)
   .transform((arr) => ({
@@ -407,13 +408,13 @@ export const specimenVarSchema = z
       value: z.number(),
       unit: z.string(),
       description: z.string(),
-    }),
+    })
   );
 
 export type SpecimenVar = z.infer<typeof specimenVarSchema>;
 
 // SPECIMENTEXT schema - same structure as MEASUREMENTTEXT
-export const specimenTextSchema = z
+const specimenTextSchema = z
   .array(z.string().trim())
   .min(2)
   .transform((arr) => ({
@@ -426,7 +427,7 @@ export const specimenTextSchema = z
       id: z.number().int().min(1).max(1410),
       text: z.string(),
       extra: z.array(z.string()),
-    }),
+    })
   );
 
 export type SpecimenText = z.infer<typeof specimenTextSchema>;
@@ -504,6 +505,10 @@ const gefBaseHeadersSchema = z.object({
     .array(stringArray)
     .optional()
     .transform((arr) => arr?.[0]?.[0]?.trim()),
+  RECORDSEPARATOR: z
+    .array(stringArray)
+    .optional()
+    .transform((arr) => arr?.[0]?.[0]?.trim()),
   COLUMNINFO: z
     .array(z.array(z.string()).min(3))
     .optional()
@@ -512,13 +517,7 @@ const gefBaseHeadersSchema = z.object({
     .array(z.tuple([z.coerce.number(), z.coerce.number()]))
     .optional()
     .transform((arr) =>
-      arr?.map(([columnNumber, voidValue]) => ({ columnNumber, voidValue })),
-    ),
-  COLUMNMINMAX: z
-    .array(z.tuple([z.coerce.number(), z.coerce.number(), z.coerce.number()]))
-    .optional()
-    .transform((arr) =>
-      arr?.map(([columnNumber, min, max]) => ({ columnNumber, min, max })),
+      arr?.map(([columnNumber, voidValue]) => ({ columnNumber, voidValue }))
     ),
 
   // Measurement Data
@@ -529,7 +528,7 @@ const gefBaseHeadersSchema = z.object({
         z.string(),
         z.string().optional(),
         z.string().optional(),
-      ]),
+      ])
     )
     .optional()
     .transform((arr) => arr?.map((mv) => measurementVarSchema.parse(mv))),
@@ -547,7 +546,7 @@ const gefBaseHeadersSchema = z.object({
     .array(z.array(z.string()).min(4))
     .optional()
     .transform((arr) =>
-      arr?.[0] ? reportCodeSchema.parse(arr[0]) : undefined,
+      arr?.[0] ? reportCodeSchema.parse(arr[0]) : undefined
     ),
   FILEOWNER: z
     .array(stringArray)
@@ -558,33 +557,33 @@ const gefBaseHeadersSchema = z.object({
     .optional()
     .transform((arr) => arr?.[0]?.[0]),
 
+  SPECIMENVAR: z
+    .array(z.array(z.string()).min(2))
+    .optional()
+    .transform((arr) => arr?.map((sv) => specimenVarSchema.parse(sv))),
+
   // Unofficial but common - free-form comments
   COMMENT: z
     .array(stringArray)
     .optional()
     .transform((arr) =>
-      arr?.map((c) => c.join(", ")).filter((c) => c.length > 0),
+      arr?.map((c) => c.join(", ")).filter((c) => c.length > 0)
     ),
 });
 
-// =============================================================================
-// CPT-SPECIFIC SCHEMA
-// =============================================================================
-
-export const gefCptHeadersSchema = gefBaseHeadersSchema;
+const gefCptHeadersSchema = gefBaseHeadersSchema.extend({
+  COLUMNMINMAX: z
+    .array(z.tuple([z.coerce.number(), z.coerce.number(), z.coerce.number()]))
+    .optional()
+    .transform((arr) =>
+      arr?.map(([columnNumber, min, max]) => ({ columnNumber, min, max }))
+    ),
+});
 
 export type GefCptHeaders = z.infer<typeof gefCptHeadersSchema>;
 
-// =============================================================================
-// BORE-SPECIFIC SCHEMA
-// =============================================================================
-
-export const gefBoreHeadersSchema = gefBaseHeadersSchema.extend({
+const gefBoreHeadersSchema = gefBaseHeadersSchema.extend({
   // Specimen Data (BORE-specific)
-  SPECIMENVAR: z
-    .array(z.array(z.string()).min(2))
-    .optional()
-    .transform((arr) => arr?.map((sv) => specimenVarSchema.parse(sv))),
   SPECIMENTEXT: z
     .array(z.array(z.string()).min(2))
     .optional()
@@ -593,24 +592,32 @@ export const gefBoreHeadersSchema = gefBaseHeadersSchema.extend({
 
 export type GefBoreHeaders = z.infer<typeof gefBoreHeadersSchema>;
 
-// =============================================================================
-// COMBINED SCHEMA (for backward compatibility)
-// =============================================================================
+/**  Format Zod errors into user-friendly messages */
+const formatIssue = (issue: $ZodIssue) => {
+  const path = issue.path.length > 0 ? `#${issue.path.join(".")}: ` : "";
 
-export const gefHeadersSchema = gefBoreHeadersSchema;
+  return `${path}${issue.message}`;
+};
 
-export type GefHeaders = z.infer<typeof gefHeadersSchema>;
-
-export function parseGefHeaders(headersMap: GEFHeadersMap): GefHeaders {
+export function parseGefCptHeaders(headersMap: GEFHeadersMap): GefCptHeaders {
   const headersObj = Object.fromEntries(headersMap);
-  const result = gefHeadersSchema.safeParse(headersObj);
+  const result = gefCptHeadersSchema.safeParse(headersObj);
 
   if (!result.success) {
     // Format Zod errors into user-friendly messages
-    const errors = result.error.issues.map((issue) => {
-      const path = issue.path.length > 0 ? `#${issue.path.join(".")}: ` : "";
-      return `${path}${issue.message}`;
-    });
+    const errors = result.error.issues.map((issue) => formatIssue(issue));
+    throw new Error(errors.join("\n"));
+  }
+
+  return result.data;
+}
+
+export function parseGefBoreHeaders(headersMap: GEFHeadersMap): GefBoreHeaders {
+  const headersObj = Object.fromEntries(headersMap);
+  const result = gefBoreHeadersSchema.safeParse(headersObj);
+
+  if (!result.success) {
+    const errors = result.error.issues.map((issue) => formatIssue(issue));
     throw new Error(errors.join("\n"));
   }
 

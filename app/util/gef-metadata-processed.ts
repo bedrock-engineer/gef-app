@@ -20,14 +20,3 @@ export function formatGefTime(time: {
   }
   return parts.join(":");
 }
-
-export function formatGefDateTime(
-  date: { year: number; month: number; day: number },
-  time?: { hour: number; minute: number; second?: number }
-): string {
-  const dateStr = formatGefDate(date);
-  if (!time) {
-    return dateStr;
-  }
-  return `${dateStr} ${formatGefTime(time)}`;
-}
