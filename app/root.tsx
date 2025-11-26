@@ -39,9 +39,25 @@ export const links: Route.LinksFunction = () => [
     href: "https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:ital,wght@0,100..700;1,100..700&family=IBM+Plex+Sans:ital,wght@0,100..700;1,100..700&display=swap",
     rel: "stylesheet",
   },
+  // Light
   { rel: "icon", href: "/favicon.ico", sizes: "32x32" },
   { rel: "icon", href: "/favicon.svg", type: "image/svg+xml" },
+  // Dark
+  {
+    rel: "icon",
+    href: "/favicon-dark.ico",
+    sizes: "32x32",
+    media: "(prefers-color-scheme: dark)",
+  },
+  {
+    rel: "icon",
+    href: "/favicon-dark.svg",
+    type: "image/svg+xml",
+    media: "(prefers-color-scheme: dark)",
+  },
+  // Other icons
   { rel: "apple-touch-icon", href: "/favicon-180x180.png" },
+
   { rel: "manifest", href: `${import.meta.env.BASE_URL}manifest.json` },
   { rel: "canonical", href: "https://gef.bedrock.engineer/" },
 ];
@@ -51,10 +67,7 @@ interface LayoutProps {
   loaderData?: Route.ComponentProps["loaderData"];
 }
 
-export function Layout({
-  children,
-  loaderData,
-}: LayoutProps) {
+export function Layout({ children, loaderData }: LayoutProps) {
   const { i18n } = useTranslation();
   const locale = loaderData?.locale ?? i18n.language ?? "nl";
 
