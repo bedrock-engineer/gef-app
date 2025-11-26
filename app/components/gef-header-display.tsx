@@ -36,7 +36,6 @@ import {
 import { CopyButton } from "./copy-button";
 import { CptCompactInfo, getCptMeasurementTextItems } from "./cpt-header-items";
 
-// Unified lookup functions that consider file type
 function findMeasurementVariableByFileType(
   id: number,
   fileType: GefFileType,
@@ -95,9 +94,7 @@ export function CompactGefHeader({
             )}
           </div>
 
-          <p className="text-gray-600 ">
-          {filename}
-          </p>
+          <p className="text-gray-600 ">{filename}</p>
 
           {processed.projectId && (
             <p className="text-gray-600 flex items-center gap-1">
@@ -501,7 +498,6 @@ function getCoordinatesInfo(
       value: processed.heightSystem.name,
     });
 
-    // Use raw headers for delta values
     const zid = headers.ZID;
     if (zid) {
       items.push({

@@ -6,7 +6,6 @@ import {
   type HeaderItem,
 } from "./common-header-items";
 
-// BORE-specific measurement text items - now uses processed data
 export function getBoreMeasurementTextItems(
   processed: ProcessedMetadata,
   categories: Array<string>,

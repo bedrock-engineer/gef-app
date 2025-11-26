@@ -4,8 +4,8 @@ import { Suspense, useState, useTransition } from "react";
 import { Button, FileTrigger } from "react-aria-components";
 import { useTranslation } from "react-i18next";
 import { Form } from "react-router";
-import { downloadGefDataAsCsv } from "~/util/csv-download";
 import { parseGefFile, type GefData } from "~/gef/gef-common";
+import { downloadGefDataAsCsv } from "~/util/csv-download";
 import { BorePlot } from "./bore-plot";
 import { Card } from "./card";
 import { CptPlots } from "./cpt-plot";
@@ -137,9 +137,10 @@ export function App() {
           style={{ maxWidth: "clamp(360px, 100%, 1800px)" }}
           className=" mx-auto flex justify-between items-center"
         >
-          <h1 className="text-2xl flex gap-4 text-center items-center">
+          <h1 className="text-2xl flex gap-2 items-center">
             <img src="bedrock.svg" width={30} /> {t("appTitle")}
           </h1>
+          
           <Form method="post">
             <input
               type="hidden"
@@ -207,7 +208,7 @@ export function App() {
             <div className="text-xs mt-1 text-center">
               <span className=" text-gray-500">{t("or")} </span>
               <Button
-                className=" text-blue-600 hover:text-blue-800 underline"
+                className=" text-blue-500 hover:text-blue-800 underline"
                 onPress={() => {
                   loadSampleFiles().catch((error: unknown) => {
                     console.error(error);
@@ -380,9 +381,9 @@ export function App() {
                 {t("emptyStateContact")}{" "}
                 <a
                   href="mailto:info@bedrock.engineer"
-                  className="text-blue-600 hover:underline font-medium"
+                  className="text-blue-500 hover:underline font-medium"
                 >
-                  {t("contactUs")}
+                  {t("contactUs")} info@bedrock.engineer
                 </a>
               </p>
             </div>
@@ -407,9 +408,15 @@ export function App() {
           {t("needSimilarApp")}{" "}
           <a
             href="mailto:info@bedrock.engineer"
-            className="text-blue-600 hover:underline font-medium"
+            className="text-blue-500 hover:underline font-medium"
           >
-            {t("contactUs")}
+            {t("contactUs")}{" "}
+            <a
+              href="mailto:info@bedrock.engineer"
+              className="text-blue-500 hover:underline"
+            >
+              info@bedrock.engineer
+            </a>
           </a>
         </p>
 
@@ -417,7 +424,7 @@ export function App() {
           {t("feedbackOrRequests")}{" "}
           <a
             href="mailto:jules@bedrock.engineer"
-            className="text-blue-600 hover:underline"
+            className="text-blue-500 hover:underline"
           >
             jules.blom@bedrock.engineer
           </a>
