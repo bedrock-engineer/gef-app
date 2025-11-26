@@ -22,7 +22,7 @@ const id = "boreplot";
 export function BorePlot({
   layers,
   specimens = [],
-  width = 150,
+  width = 350,
   height = 800,
   baseFilename,
 }: BorePlotProps) {
@@ -56,7 +56,7 @@ export function BorePlot({
       width,
       height,
       marginLeft: 50,
-      marginRight: 20,
+      marginRight: 220,
       marginBottom: 20,
       x: {
         axis: null,

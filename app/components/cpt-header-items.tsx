@@ -2,7 +2,7 @@ import { useTranslation } from "react-i18next";
 import type { ProcessedMetadata } from "../util/gef-cpt";
 import {
   getLocalizedDescription,
-  type HeaderItem
+  type HeaderItem,
 } from "./common-header-items";
 import { CopyButton } from "./copy-button";
 
@@ -10,12 +10,12 @@ import { CopyButton } from "./copy-button";
 export function getCptMeasurementTextItems(
   processed: ProcessedMetadata,
   categories: Array<string>,
-  locale = "en"
+  locale = "nl"
 ): Array<HeaderItem> {
   const items: Array<HeaderItem> = [];
 
   // Get text items matching the categories
-  for (const [_key, textItem] of Object.entries(processed.texts)) {
+  for (const textItem of Object.values(processed.texts)) {
     if (!categories.includes(textItem.metadata.category)) {
       continue;
     }

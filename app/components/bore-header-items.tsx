@@ -10,7 +10,7 @@ import {
 export function getBoreMeasurementTextItems(
   processed: ProcessedMetadata,
   categories: Array<string>,
-  locale = "en"
+  locale = "nl"
 ): Array<HeaderItem> {
   const items: Array<HeaderItem> = [];
 
@@ -46,8 +46,8 @@ export function BoreCompactInfo({ data }: { data: GefBoreData }) {
   const { processed } = data;
 
   const boringDate = processed.texts.datumBoring?.value; // MEASUREMENTTEXT ID 16 = "Datum boring"
-  const placeName = processed.texts.plaatsnaam?.value; // MEASUREMENTTEXT ID 3 = "Plaatsnaam"
-  const drillingCompany = processed.texts.boorbedrijf?.value; // MEASUREMENTTEXT ID 13 = "Boorbedrijf"
+  const placeName = processed.texts.plaatsUitvoering?.value; // MEASUREMENTTEXT ID 3 = "Plaats uitvoering"
+  const drillingCompany = processed.texts.boorfirma?.value; // MEASUREMENTTEXT ID 13 = "Boorfirma"
   const finalDepth = processed.measurements.einddiepte; // MEASUREMENTVAR ID 16 = "Einddiepte"
 
   if (!boringDate && !placeName && !drillingCompany && !finalDepth) {

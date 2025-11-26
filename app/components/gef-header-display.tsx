@@ -51,7 +51,7 @@ function findMeasurementVariableByFileType(
 function getMeasurementTextItems(
   processed: ProcessedMetadata,
   categories: Array<string>,
-  locale = "en"
+  locale = "nl"
 ): Array<HeaderItem> {
   if (processed.fileType === "BORE") {
     return getBoreMeasurementTextItems(processed, categories, locale);
@@ -94,13 +94,18 @@ export function CompactGefHeader({
               <CopyButton value={processed.testId} label={t("copyTestId")} />
             )}
           </div>
+
+          <p className="text-gray-600 ">
+          {filename}
+          </p>
+
           {processed.projectId && (
-            <div className="text-gray-600 flex items-center gap-1">
+            <p className="text-gray-600 flex items-center gap-1">
               {processed.projectId}
-            </div>
+            </p>
           )}
           {processed.companyName && (
-            <div className="text-gray-600">{processed.companyName}</div>
+            <p className="text-gray-600">{processed.companyName}</p>
           )}
 
           {fileType == "CPT" ? (
@@ -501,7 +506,7 @@ function getCoordinatesInfo(
     if (zid) {
       items.push({
         label: t("surfaceLevel"),
-        value: `${zid.height.toFixed()} m ± ${zid.deltaZ.toFixed()} m`,
+        value: `${zid.height.toFixed()} m ± ${zid.deltaZ.toFixed()}`,
       });
     }
   }
@@ -568,7 +573,10 @@ function getEquipmentInfo(
   return items;
 }
 
-function getDataStructure(headers: GefBoreHeaders | GefCptHeaders, t: TFunction) {
+function getDataStructure(
+  headers: GefBoreHeaders | GefCptHeaders,
+  t: TFunction
+) {
   const items: Array<{ label: string; value: ReactNode }> = [];
 
   if (headers.COLUMN) {
@@ -586,6 +594,7 @@ function getDataStructure(headers: GefBoreHeaders | GefCptHeaders, t: TFunction)
   if (headers.COLUMNINFO) {
     // Create a map of column number to min/max values
     const minMaxMap = new Map<number, { min: number; max: number }>();
+
     headers.COLUMNMINMAX?.forEach(({ columnNumber, min, max }) => {
       minMaxMap.set(columnNumber, { min, max });
     });
@@ -593,22 +602,54 @@ function getDataStructure(headers: GefBoreHeaders | GefCptHeaders, t: TFunction)
     items.push({
       label: t("dataColumns"),
       value: (
-        <ul className="list list-disc list-inside">
+        <table>
+          <thead>
+            <tr>
+              <th className="border border-gray-300 px-2 py-1 text-left">
+                Name
+              </th>
+              <th className="border border-gray-300 px-2 py-1 text-left">
+                Unit
+              </th>
+              {minMaxMap.size > 0 && (
+                <>
+                  <th className="border border-gray-300 px-2 py-1 text-left">
+                    Min
+                  </th>
+                  <th className="border border-gray-300 px-2 py-1 text-left">
+                    Max
+                  </th>
+                </>
+              )}
+            </tr>
+          </thead>
           {headers.COLUMNINFO.map((col, index) => {
             const colNum = index + 1;
             const minMax = minMaxMap.get(colNum);
             return (
-              <li key={col.name}>
-                {col.name} ({col.unit})
+              <tr key={col.name}>
+                <td className="border border-gray-300 px-2 py-1">{col.name}</td>
+                <td className="border border-gray-300 px-2 py-1">{col.unit}</td>
                 {minMax && (
-                  <span className="text-gray-500 ml-1">
-                    [{minMax.min} – {minMax.max}]
-                  </span>
+                  <>
+                    <td
+                      className="border border-gray-300 px-2 py-1 text-right"
+                      style={{ fontVariantNumeric: "tabular-nums" }}
+                    >
+                      {minMax.min}
+                    </td>
+                    <td
+                      className="border border-gray-300 px-2 py-1 text-right"
+                      style={{ fontVariantNumeric: "tabular-nums" }}
+                    >
+                      {minMax.max}
+                    </td>
+                  </>
                 )}
-              </li>
+              </tr>
             );
           })}
-        </ul>
+        </table>
       ),
     });
   }
@@ -655,6 +696,21 @@ function getFileMetadata(headers: GefBoreHeaders, t: TFunction) {
     });
   }
 
+  if (headers.MEASUREMENTCODE) {
+    // If it has version info, show it; otherwise just show the code
+    const hasVersion =
+      headers.MEASUREMENTCODE.major > 0 ||
+      headers.MEASUREMENTCODE.minor > 0 ||
+      headers.MEASUREMENTCODE.patch > 0;
+    const value = hasVersion
+      ? `${headers.MEASUREMENTCODE.code} v${headers.MEASUREMENTCODE.major}.${headers.MEASUREMENTCODE.minor}.${headers.MEASUREMENTCODE.patch}`
+      : headers.MEASUREMENTCODE.code;
+    items.push({
+      label: t("measurementCode"),
+      value,
+    });
+  }
+
   if (headers.FILEDATE) {
     items.push({
       label: t("fileDate"),
@@ -672,10 +728,7 @@ function getFileMetadata(headers: GefBoreHeaders, t: TFunction) {
   return items;
 }
 
-function getConditionsInfo(
-  processed: ProcessedMetadata,
-  locale: string
-) {
+function getConditionsInfo(processed: ProcessedMetadata, locale: string) {
   return getMeasurementTextItems(
     processed,
     [
@@ -690,26 +743,12 @@ function getConditionsInfo(
   );
 }
 
-function getProcessingInfo(
-  processed: ProcessedMetadata,
-  locale: string
-) {
-  return getMeasurementTextItems(
-    processed,
-    ["processing"],
-    locale
-  );
+function getProcessingInfo(processed: ProcessedMetadata, locale: string) {
+  return getMeasurementTextItems(processed, ["processing"], locale);
 }
 
-function getCalculationsInfo(
-  processed: ProcessedMetadata,
-  locale: string
-) {
-  return getMeasurementTextItems(
-    processed,
-    ["calculations"],
-    locale
-  );
+function getCalculationsInfo(processed: ProcessedMetadata, locale: string) {
+  return getMeasurementTextItems(processed, ["calculations"], locale);
 }
 
 function getComments(headers: GefBoreHeaders | GefCptHeaders, t: TFunction) {

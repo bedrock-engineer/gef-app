@@ -137,12 +137,18 @@ const xyidSchema = z
     if (arr.length < 3 || arr.every((s) => s.trim() === "")) {
       return null;
     }
+
+    // Parse delta values with proper handling of empty/missing values
+    const deltaXRaw = arr[3]?.trim() ? parseFloat(arr[3]) : NaN;
+    const deltaYRaw = arr[4]?.trim() ? parseFloat(arr[4]) : NaN;
+
     return {
       coordinateSystem: arr[0]!.trim(),
       x: parseFloat(arr[1]!),
       y: parseFloat(arr[2]!),
-      deltaX: arr[3] ? parseFloat(arr[3]) : 0.01,
-      deltaY: arr[4] ? parseFloat(arr[4]) : 0.01,
+      // Default to 0.01 if missing or invalid
+      deltaX: isNaN(deltaXRaw) ? 0.01 : deltaXRaw,
+      deltaY: isNaN(deltaYRaw) ? 0.01 : deltaYRaw,
     };
   })
   .pipe(
@@ -175,11 +181,19 @@ const zidSchema = z
     message:
       "#ZID must have at least 1 value: height system code (e.g., 31000, -3.75)",
   })
-  .transform((arr) => ({
-    code: arr[0]!.trim(),
-    height: arr[1] ? parseFloat(arr[1]) : 0,
-    deltaZ: arr[2] ? parseFloat(arr[2]) : 0.01,
-  }))
+  .transform((arr) => {
+    // Parse height and deltaZ with proper handling of empty/missing values
+    const heightRaw = arr[1]?.trim() ? parseFloat(arr[1]) : NaN;
+    const deltaZRaw = arr[2]?.trim() ? parseFloat(arr[2]) : NaN;
+
+    return {
+      code: arr[0]!.trim(),
+      // Default to 0 if missing or invalid
+      height: isNaN(heightRaw) ? 0 : heightRaw,
+      // Default to 0.01 if missing or invalid
+      deltaZ: isNaN(deltaZRaw) ? 0.01 : deltaZRaw,
+    };
+  })
   .pipe(
     z.object({
       code: heightSystemCodeSchema.catch("31000"),
@@ -547,6 +561,30 @@ const gefBaseHeadersSchema = z.object({
     .transform((arr) =>
       arr?.[0] ? reportCodeSchema.parse(arr[0]) : undefined
     ),
+  MEASUREMENTCODE: z
+    .array(z.array(z.string()).min(1))
+    .optional()
+    .transform((arr) => {
+      if (!arr?.[0]) {
+        return undefined;
+      }
+      // If it has 4+ elements, parse as structured code (like REPORTCODE)
+      if (arr[0].length >= 4) {
+        try {
+          return reportCodeSchema.parse(arr[0]);
+        } catch {
+          // If parsing fails, fall through to simple string
+        }
+      }
+      // Otherwise treat as simple string (e.g., "Onbekend", "Unknown")
+      return {
+        code: arr[0][0] ?? "",
+        major: 0,
+        minor: 0,
+        patch: 0,
+        extra: arr[0].slice(1),
+      };
+    }),
   FILEOWNER: z
     .array(stringArray)
     .optional()

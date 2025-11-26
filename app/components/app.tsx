@@ -1,3 +1,4 @@
+import type { TFunction } from "i18next";
 import { TrashIcon, UploadIcon } from "lucide-react";
 import { Suspense, useState, useTransition } from "react";
 import { Button, FileTrigger } from "react-aria-components";
@@ -14,6 +15,50 @@ import { CompactGefHeader, DetailedGefCptHeaders } from "./gef-header-display";
 import { GefMultiMap } from "./gef-map";
 import { PreExcavationPlot } from "./preexcavation-plot";
 import { SpecimenTable } from "./specimen-table";
+
+function translateWarning(warning: string, t: TFunction): string {
+  const parts = warning.split(":");
+  const key = parts[0];
+
+  switch (key) {
+    case "missingZidHeader":
+      return t("missingZidHeader", { filename: parts[1] });
+    case "unknownHeightSystem":
+      return t("unknownHeightSystem", {
+        filename: parts[1],
+        heightCode: parts[2],
+      });
+    case "zidWithoutHeight":
+      return t("zidWithoutHeight", { filename: parts[1] });
+    case "missingXyidHeader":
+      return t("missingXyidHeader", { filename: parts[1] });
+    case "missingColumnInfoQuantity": {
+      const count = parseInt(parts[2] || "0");
+      const entry = t(
+        count === 1
+          ? "missingColumnInfoQuantity_entry"
+          : "missingColumnInfoQuantity_entry_plural"
+      );
+      return t("missingColumnInfoQuantity", {
+        filename: parts[1],
+        count,
+        entry,
+      });
+    }
+    default:
+      return warning;
+  }
+}
+
+function translateError(error: string, t: TFunction): string {
+  if (error === "dissipationTestNotSupported") {
+    return t("dissipationTestNotSupported");
+  }
+  if (error === "sieveTestNotSupported") {
+    return t("sieveTestNotSupported");
+  }
+  return error;
+}
 
 export function App() {
   const { t, i18n } = useTranslation();
@@ -182,7 +227,8 @@ export function App() {
               <ul className="space-y-1">
                 {failedFiles.map(({ name, error }) => (
                   <li key={name} className="text-sm text-red-700">
-                    <span className="font-medium">{name}</span>: {error}
+                    <span className="font-medium">{name}</span>:{" "}
+                    {translateError(error, t)}
                   </li>
                 ))}
               </ul>
@@ -263,7 +309,7 @@ export function App() {
                 <ul className="space-y-1">
                   {selectedFile.warnings.map((warning, i) => (
                     <li key={i} className="text-sm text-amber-700">
-                      {warning}
+                      {translateWarning(warning, t)}
                     </li>
                   ))}
                 </ul>
@@ -319,14 +365,17 @@ export function App() {
           </div>
         ) : (
           <Card>
-            <p className="text-gray-400 mb-4">{t("uploadGefFile")}</p>
-            <div className="text-sm text-gray-600">
+            <p className="text-gray-600 mb-4">{t("uploadGefFile")}</p>
+
+            <div className="text-sm text-gray-500">
               <p className="mb-2">{t("freeToolByBedrock")}</p>
-              <ul className="list-disc list-inside space-y-1 text-gray-500">
+
+              <ul className="list-disc list-inside space-y-1 ">
                 <li>{t("customWebApps")}</li>
                 <li>{t("bimCadIntegrations")}</li>
                 <li>{t("pythonAutomation")}</li>
               </ul>
+
               <p className="mt-3">
                 {t("emptyStateContact")}{" "}
                 <a
@@ -342,9 +391,15 @@ export function App() {
       </main>
 
       <footer className="mt-8 py-8 border-t border-gray-300 text-center text-sm text-gray-500">
-        <div className="text-sm text-center mb-6 max-w-md mx-auto border-b border-gray-300 pb-4">
-          <p className="mb-2">{t("appDescription")}</p>
-          <p className="">{t("privacyNote")}</p>
+        <div className="text-sm text-center mb-6 max-w-md mx-auto border-b border-gray-300 pb-4 space-y-2">
+          <p>{t("appDescription")}</p>
+          <p>{t("privacyNote")}</p>
+          <a
+            className="text-blue-600 hover:underline flex gap-1"
+            href="https://bedrock.engineer"
+          >
+            Bedrock.engineer <img src="/bedrock.svg" width="1em" />
+          </a>
         </div>
 
         <p className="mb-3">
@@ -357,14 +412,6 @@ export function App() {
           </a>
         </p>
 
-        <p>
-          <a
-            className="text-blue-600 hover:underline"
-            href="https://bedrock.engineer"
-          >
-            Bedrock.engineer
-          </a>
-        </p>
         <p>
           {t("feedbackOrRequests")}{" "}
           <a

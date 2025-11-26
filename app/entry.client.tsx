@@ -13,7 +13,7 @@ async function main() {
     .init({
       resources,
       supportedLngs: ["nl", "en"],
-      fallbackLng: "en",
+      fallbackLng: "nl",
       defaultNS: "translation",
       detection: {
         order: ["cookie", "navigator"],

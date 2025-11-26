@@ -22,6 +22,17 @@ export default {
     warning: "{{count}} waarschuwing:",
     warning_plural: "{{count}} waarschuwingen:",
 
+    // Header validation warnings
+    missingZidHeader: "Bestand '{{filename}}' mist ZID header (hoogtestelsel). Standaard ingesteld op 'Normaal Amsterdams Peil'. Dit kan de hoogte berekeningen en verticale positionering van metingen beïnvloeden.",
+    unknownHeightSystem: "Bestand '{{filename}}' bevat onbekende hoogtestelsel code \"{{heightCode}}\". Standaard ingesteld op 'Normaal Amsterdams Peil'. Dit kan leiden tot onjuiste hoogte berekeningen.",
+    zidWithoutHeight: "Bestand '{{filename}}' heeft een ZID header zonder hoogtewaarde. Maaiveldniveau standaard ingesteld op 0m. Dit beïnvloedt diepte-naar-hoogte conversies en kan leiden tot onjuiste maaiveldmetingen.",
+    missingXyidHeader: "Bestand '{{filename}}' mist XYID header (coördinaat informatie). Locatie is onbekend, kan niet op de kaart weergeven of converteren naar WGS84.",
+    missingColumnInfoQuantity: "Bestand '{{filename}}' heeft {{count}} COLUMNINFO {{entry}} die het quantity nummer missen (4e element volgens GEF spec). Standaard ingesteld op quantity 0 (onbekend). Dit kan ervoor zorgen dat data kolommen verkeerd worden geïnterpreteerd of niet correct worden weergegeven.",
+    missingColumnInfoQuantity_entry: "item",
+    missingColumnInfoQuantity_entry_plural: "items",
+    dissipationTestNotSupported: "GEF-DISS-Report (dissipatie test) bestanden worden niet ondersteund",
+    sieveTestNotSupported: "GEF-SIEVE bestanden worden niet ondersteund",
+
     // Location
     location: "Locatie",
     allLocations: "Alle Locaties",
@@ -86,6 +97,7 @@ export default {
     dataColumns: "Gegevenskolommen",
     gefVersion: "GEF Versie",
     reportCode: "Rapportcode",
+    measurementCode: "Beschrijfmethode",
     fileDate: "Bestandsdatum",
     fileOwner: "Bestandseigenaar",
     operatingSystem: "Besturingssysteem",
@@ -116,10 +128,12 @@ export default {
     number: "Nr",
     code: "Code",
     depthM_table: "Diepte (m)",
-    diameterMm: "Diameter (mm)",
+    diameterSampleMm: "Ø Monster (mm)",
+    diameterApparatusMm: "Ø Apparaat (mm)",
     dateTime: "Datum/Tijd",
-    type: "Type",
-    method: "Methode",
+    sampleCondition: "Toestand",
+    apparatusType: "Apparaat",
+    wallMethod: "Wand/Methode",
 
     // Pre-excavation
     preExcavation: "Voorontgraving",
@@ -150,7 +164,7 @@ export default {
     downloadLocationsGeoJson: "Download locaties als GeoJSON",
 
     // Footer
-    feedbackOrRequests: "Feedback of verzoeken?",
+    feedbackOrRequests: "Bugs, feedback of verzoeken?",
     needSimilarApp:
       "Heeft u een vergelijkbare app nodig voor uw geotechnische workflow?",
     contactUs: "Neem contact op",

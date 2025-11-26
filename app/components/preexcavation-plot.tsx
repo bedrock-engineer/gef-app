@@ -34,7 +34,9 @@ export function PreExcavationPlot({
 
       // Calculate the depth range and pixels per meter
       const maxDepth = max(layers.map((l) => l.depthBottom)) ?? 1;
-      const plotHeight = height - 30 - 40; // subtract margins
+      const marginTop = 20;
+      const marginBottom = 15;
+      const plotHeight = height - marginTop - marginBottom; // subtract margins
       const pixelsPerMeter = plotHeight / maxDepth;
 
       // Filter layers that are tall enough in pixels to show labels
@@ -53,8 +55,8 @@ export function PreExcavationPlot({
         height,
         marginLeft: 50,
         marginRight: 20,
-        marginTop: 30,
-        marginBottom: 50,
+        marginTop,
+        marginBottom,
         x: {
           axis: null,
           domain: [0, 1],
@@ -103,7 +105,7 @@ export function PreExcavationPlot({
           Plot.text(["Made with Bedrock GEF Viewer"], {
             frameAnchor: "bottom",
             dx: -5,
-            dy: 5,
+            dy: 10,
             fill: "gray",
             fontSize: 8,
           }),
@@ -117,7 +119,7 @@ export function PreExcavationPlot({
         plot.remove();
       };
     },
-    [layers, width, height],
+    [layers, width, height]
   );
 
   if (layers.length === 0) {

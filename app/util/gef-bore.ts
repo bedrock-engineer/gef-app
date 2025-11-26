@@ -782,12 +782,12 @@ export function getSoilColor(code: string): string {
 }
 
 export const SOIL_TYPE_NAMES: Record<string, string> = {
-  G: "Grind (Gravel)",
-  Z: "Zand (Sand)",
-  L: "Leem (Silt)",
-  K: "Klei (Clay)",
-  V: "Veen (Peat)",
-  NBE: "Niet beschreven (Not described)",
+  G: "Grind",
+  Z: "Zand",
+  L: "Leem",
+  K: "Klei",
+  V: "Veen",
+  NBE: "Niet beschreven",
 };
 
 // Bore layer data structure
@@ -970,7 +970,22 @@ export function parseGefBoreData(
     };
   });
 
-  return { layers, headers };
+  // Filter out invalid layers (defensive against malformed data)
+  const validLayers = layers.filter((layer) => {
+    if (isNaN(layer.depthTop) || isNaN(layer.depthBottom)) {
+      return false;
+    }
+
+    if (layer.depthBottom < layer.depthTop) {
+      return false;
+    }
+    // if (!layer.soilCode || layer.soilCode.trim().length === 0) {
+    //   return false;
+    // }
+    return true;
+  });
+
+  return { layers: validLayers, headers };
 }
 
 export function parseGefBoreSpecimens(

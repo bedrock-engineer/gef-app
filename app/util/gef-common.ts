@@ -64,12 +64,10 @@ function detectFileType(reportCode: string): GefFileType {
 
   // Check for unsupported file types
   if (lowercaseReportCode.includes("diss")) {
-    throw new Error(
-      "GEF-DISS-Report (dissipation test) files are not supported"
-    );
+    throw new Error("dissipationTestNotSupported");
   }
   if (lowercaseReportCode.includes("siev")) {
-    throw new Error("GEF-SIEVE files are not supported");
+    throw new Error("sieveTestNotSupported");
   }
 
   if (lowercaseReportCode.includes("bore")) {
@@ -90,28 +88,20 @@ function generateCommonWarnings(
   const rawZid = headersMap.get("ZID")?.[0];
 
   if (!rawZid || rawZid.length === 0) {
-    warnings.push(
-      `File '${filename}' missing ZID header (height reference system). Defaulting to 'Normaal Amsterdams Peil'. This may affect elevation calculations and vertical positioning of measurements.`
-    );
+    warnings.push(`missingZidHeader:${filename}`);
   } else {
     const heightCode = rawZid[0]?.trim();
     if (heightCode && !(heightCode in HEIGHT_SYSTEMS)) {
-      warnings.push(
-        `File '${filename}' contains unknown height system code "${heightCode}". Defaulting to 'Normaal Amsterdams Peil'. This may cause incorrect elevation calculations.`
-      );
+      warnings.push(`unknownHeightSystem:${filename}:${heightCode}`);
     }
     if (rawZid.length < 2) {
-      warnings.push(
-        `File '${filename}' has ZID header without height value. Defaulting surface elevation to 0m. This will affect depth-to-elevation conversions and may produce incorrect ground level readings.`
-      );
+      warnings.push(`zidWithoutHeight:${filename}`);
     }
   }
 
   // Check for missing XYID (location)
   if (!headers.XYID) {
-    warnings.push(
-      `File '${filename}' missing XYID header (coordinate information). Location is unknown - cannot display on map or convert to WGS84. This prevents spatial analysis and geographic visualization.`
-    );
+    warnings.push(`missingXyidHeader:${filename}`);
   }
 
   // Check for COLUMNINFO missing quantityNumber (4th element per spec)
@@ -121,9 +111,8 @@ function generateCommonWarnings(
       (col) => col.length < 4
     );
     if (missingQuantityNumbers.length > 0) {
-      warnings.push(
-        `File '${filename}' has ${missingQuantityNumbers.length} COLUMNINFO ${missingQuantityNumbers.length === 1 ? "entry" : "entries"} missing quantity number (4th element per GEF spec). Defaulting to quantity 0 (unknown). This may cause data columns to be misinterpreted or not displayed correctly.`
-      );
+      const count = missingQuantityNumbers.length;
+      warnings.push(`missingColumnInfoQuantity:${filename}:${count}`);
     }
   }
 

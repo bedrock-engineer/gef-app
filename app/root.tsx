@@ -39,25 +39,10 @@ export const links: Route.LinksFunction = () => [
     rel: "stylesheet",
     href: "https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap",
   },
-  // TODO favicons - uncomment when created
-  // {
-  //   rel: "icon",
-  //   type: "image/png",
-  //   sizes: "32x32",
-  //   href: `${import.meta.env.BASE_URL}favicons/favicon-32.png`,
-  // },
-  // {
-  //   rel: "apple-touch-icon",
-  //   type: "image/png",
-  //   sizes: "180x180",
-  //   href: `${import.meta.env.BASE_URL}favicons/favicon-180.png`,
-  // },
-  // {
-  //   rel: "icon",
-  //   type: "image/png",
-  //   sizes: "192x192",
-  //   href: `${import.meta.env.BASE_URL}favicons/favicon-192.png`,
-  // },
+  // Modern favicon approach (2021+)
+  { rel: "icon", href: "/favicon.ico", sizes: "32x32" },
+  { rel: "icon", href: "/favicon.svg", type: "image/svg+xml" },
+  { rel: "apple-touch-icon", href: "/favicon-180x180.png" },
   { rel: "manifest", href: `${import.meta.env.BASE_URL}manifest.json` },
   { rel: "canonical", href: "https://gef.bedrock.engineer/" },
 ];
@@ -70,13 +55,14 @@ export function Layout({
   loaderData?: Route.ComponentProps["loaderData"];
 }) {
   const { i18n } = useTranslation();
-  const locale = loaderData?.locale ?? i18n.language ?? "en";
+  const locale = loaderData?.locale ?? i18n.language ?? "nl";
 
   return (
     <html lang={locale}>
       <head>
         <meta charSet="utf-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <meta name="format-detection" content="telephone=no" />
         <meta name="theme-color" content="hsl(111, 15%, 43%)" />
         <Meta />
         <Links />

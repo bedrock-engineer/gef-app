@@ -22,6 +22,17 @@ export default {
     warning: "{{count}} warning:",
     warning_plural: "{{count}} warnings:",
 
+    // Header validation warnings
+    missingZidHeader: "File '{{filename}}' missing ZID header (height reference system). Defaulting to 'Normaal Amsterdams Peil'. This may affect elevation calculations and vertical positioning of measurements.",
+    unknownHeightSystem: "File '{{filename}}' contains unknown height system code \"{{heightCode}}\". Defaulting to 'Normaal Amsterdams Peil'. This may cause incorrect elevation calculations.",
+    zidWithoutHeight: "File '{{filename}}' has ZID header without height value. Defaulting surface elevation to 0m. This will affect depth-to-elevation conversions and may produce incorrect ground level readings.",
+    missingXyidHeader: "File '{{filename}}' missing XYID header (coordinate information). Location is unknown, cannot display on map or convert to WGS84.",
+    missingColumnInfoQuantity: "File '{{filename}}' has {{count}} COLUMNINFO {{entry}} missing quantity number (4th element per GEF spec). Defaulting to quantity 0 (unknown). This may cause data columns to be misinterpreted or not displayed correctly.",
+    missingColumnInfoQuantity_entry: "entry",
+    missingColumnInfoQuantity_entry_plural: "entries",
+    dissipationTestNotSupported: "GEF-DISS-Report (dissipation test) files are not supported",
+    sieveTestNotSupported: "GEF-SIEVE files are not supported",
+
     // Location
     location: "Location",
     allLocations: "All Locations",
@@ -86,6 +97,7 @@ export default {
     dataColumns: "Data Columns",
     gefVersion: "GEF Version",
     reportCode: "Report Code",
+    measurementCode: "Measurement Code",
     fileDate: "File Date",
     fileOwner: "File Owner",
     operatingSystem: "Operating System",
@@ -116,10 +128,12 @@ export default {
     number: "#",
     code: "Code",
     depthM_table: "Depth (m)",
-    diameterMm: "Diameter (mm)",
+    diameterSampleMm: "Ø Sample (mm)",
+    diameterApparatusMm: "Ø Apparatus (mm)",
     dateTime: "Date/Time",
-    type: "Type",
-    method: "Method",
+    sampleCondition: "Condition",
+    apparatusType: "Apparatus",
+    wallMethod: "Wall/Method",
 
     // Pre-excavation
     preExcavation: "Pre-excavation",
@@ -150,7 +164,7 @@ export default {
     downloadLocationsGeoJson: "Download locations as GeoJSON",
 
     // Footer
-    feedbackOrRequests: "Feedback or requests?",
+    feedbackOrRequests: "Bugs, feedback or requests?",
     needSimilarApp: "Need a similar app for your geotechnical workflow?",
     contactUs: "Contact us",
 

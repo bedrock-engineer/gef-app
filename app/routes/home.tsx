@@ -6,7 +6,7 @@ import { documentHeaders } from "~/utils/cache";
 
 const siteUrl = "https://gef.bedrock.engineer";
 
-const translations = {
+const metaDataTranslations = {
   en: {
     title: "Bedrock GEF File Viewer",
     description:
@@ -37,34 +37,35 @@ export async function action({ request }: Route.ActionArgs) {
 export function meta({ matches }: Route.MetaArgs) {
   const rootMatch = matches.find((m) => m?.id === "root");
   const locale =
-    (rootMatch?.loaderData as { locale?: string } | undefined)?.locale || "en";
-  const t = translations[locale] || translations.en;
+    (rootMatch?.loaderData as { locale?: string } | undefined)?.locale || "nl";
+  const metadata =
+    metaDataTranslations[locale as "nl" | "en"] || metaDataTranslations.en;
   const ogLocale = locale === "nl" ? "nl_NL" : "en_US";
   const altLocale = locale === "nl" ? "en_US" : "nl_NL";
 
   return [
-    { title: t.title },
-    { name: "description", content: t.description },
+    { title: metadata.title },
+    { name: "description", content: metadata.description },
     // Open Graph
     { property: "og:url", content: siteUrl },
     { property: "og:type", content: "website" },
-    { property: "og:title", content: t.title },
-    { property: "og:description", content: t.description },
+    { property: "og:title", content: metadata.title },
+    { property: "og:description", content: metadata.description },
     { property: "og:locale", content: ogLocale },
     { property: "og:locale:alternate", content: altLocale },
     {
       property: "og:image",
-      content: `${siteUrl}/og-image.png`, // TODO: Create OG image
+      content: `${siteUrl}/og-image.png`,
     },
     // Twitter
     { name: "twitter:card", content: "summary_large_image" },
     { property: "twitter:domain", content: "gef.bedrock.engineer" },
     { property: "twitter:url", content: siteUrl },
-    { name: "twitter:title", content: t.title },
-    { name: "twitter:description", content: t.description },
+    { name: "twitter:title", content: metadata.title },
+    { name: "twitter:description", content: metadata.description },
     {
       name: "twitter:image",
-      content: `${siteUrl}/og-image.png`, // TODO: Create OG image
+      content: `${siteUrl}/og-image.png`,
     },
   ];
 }
