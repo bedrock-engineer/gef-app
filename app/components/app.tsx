@@ -395,10 +395,11 @@ export function App() {
           <p>{t("appDescription")}</p>
           <p>{t("privacyNote")}</p>
           <a
-            className="text-blue-600 hover:underline flex gap-1"
+            className="text-green-900 hover:underline inline-flex gap-1 mx-auto text-2xl"
             href="https://bedrock.engineer"
           >
-            Bedrock.engineer <img src="/bedrock.svg" width="1em" />
+            Bedrock.engineer{" "}
+            <img src="/bedrock.svg" width="18px" height="18px" />
           </a>
         </div>
 

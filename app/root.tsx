@@ -36,10 +36,9 @@ export const links: Route.LinksFunction = () => [
     crossOrigin: "anonymous",
   },
   {
+    href: "https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:ital,wght@0,100..700;1,100..700&family=IBM+Plex+Sans:ital,wght@0,100..700;1,100..700&display=swap",
     rel: "stylesheet",
-    href: "https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap",
   },
-  // Modern favicon approach (2021+)
   { rel: "icon", href: "/favicon.ico", sizes: "32x32" },
   { rel: "icon", href: "/favicon.svg", type: "image/svg+xml" },
   { rel: "apple-touch-icon", href: "/favicon-180x180.png" },
@@ -47,13 +46,15 @@ export const links: Route.LinksFunction = () => [
   { rel: "canonical", href: "https://gef.bedrock.engineer/" },
 ];
 
+interface LayoutProps {
+  children: React.ReactNode;
+  loaderData?: Route.ComponentProps["loaderData"];
+}
+
 export function Layout({
   children,
   loaderData,
-}: {
-  children: React.ReactNode;
-  loaderData?: Route.ComponentProps["loaderData"];
-}) {
+}: LayoutProps) {
   const { i18n } = useTranslation();
   const locale = loaderData?.locale ?? i18n.language ?? "nl";
 

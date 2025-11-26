@@ -5,7 +5,7 @@ export interface HeaderItem {
   value: React.ReactNode;
 }
 
-export const formatNumber = format(".3~f");
+const formatNumber = format(".3~f");
 
 /**
  * Format a numeric value string, removing unnecessary trailing zeros
@@ -21,7 +21,7 @@ export function formatNumericValue(value: string): string {
 
 export function getLocalizedDescription(
   varInfo: { description: string; descriptionNl?: string } | undefined,
-  locale: string,
+  locale: string
 ): string {
   if (!varInfo) {
     return "";

@@ -441,9 +441,3 @@ export function decodeBoreCode(code: string): string {
   return ALL_CODES[upperCode] ?? ALL_CODES[code] ?? code;
 }
 
-/**
- * Decode multiple codes and join them
- */
-export function decodeAllBoreCodes(codes: Array<string>): string {
-  return codes.map(decodeBoreCode).join(", ");
-}
