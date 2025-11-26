@@ -2,9 +2,9 @@ import * as Plot from "@observablehq/plot";
 import { max, min } from "d3-array";
 import { useEffect, useRef } from "react";
 import { useTranslation } from "react-i18next";
-import type { BoreLayer, BoreSpecimen } from "~/util/gef-bore";
-import { getSoilColor } from "~/util/gef-bore";
-import { decodeBoreCode } from "~/util/gef-bore-codes";
+import type { BoreLayer, BoreSpecimen } from "~/gef/gef-bore";
+import { getSoilColor } from "~/gef/gef-bore";
+import { decodeBoreCode } from "~/gef/gef-bore-codes";
 import { PlotDownloadButtons } from "./plot-download-buttons";
 import { Card, CardTitle } from "./card";
 

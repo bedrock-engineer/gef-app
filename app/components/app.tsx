@@ -5,7 +5,7 @@ import { Button, FileTrigger } from "react-aria-components";
 import { useTranslation } from "react-i18next";
 import { Form } from "react-router";
 import { downloadGefDataAsCsv } from "~/util/csv-download";
-import { parseGefFile, type GefData } from "~/util/gef-common";
+import { parseGefFile, type GefData } from "~/gef/gef-common";
 import { BorePlot } from "./bore-plot";
 import { Card } from "./card";
 import { CptPlots } from "./cpt-plot";

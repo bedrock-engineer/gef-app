@@ -1,9 +1,9 @@
 import { DownloadIcon } from "lucide-react";
 import { Button } from "react-aria-components";
-import type { ProcessedMetadata } from "~/util/gef-cpt";
+import type { ProcessedMetadata } from "~/gef/gef-cpt";
 import type { Feature, FeatureCollection } from "geojson";
 import { useTranslation } from "react-i18next";
-import type { GefData } from "~/util/gef-common";
+import type { GefData } from "~/gef/gef-common";
 
 function createGeoJSON(gefData: Record<string, GefData>): FeatureCollection {
   const features: Array<Feature> = Object.values(gefData)

@@ -24,7 +24,7 @@ export async function loader({ context }: Route.LoaderArgs) {
   const locale = getLocale(context);
   return data(
     { locale },
-    { headers: { "Set-Cookie": await localeCookie.serialize(locale) } },
+    { headers: { "Set-Cookie": await localeCookie.serialize(locale) } }
   );
 }
 
@@ -61,7 +61,16 @@ export function Layout({
     <html lang={locale}>
       <head>
         <meta charSet="utf-8" />
+        <meta name="author" content="Jules Blom @ Bedrock" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <meta
+          name="description"
+          content="View and visualize GEF (Geotechnical Exchange Format) files in your browser. Analyze CPT data and Bore charts instantly."
+        />
+        <meta
+          name="keywords"
+          content="GEF, geotechnical, CPT, bore, soil data, viewer, sondeergegevens, sondeerdata, Geotechnical Exchange Format"
+        />
         <meta name="format-detection" content="telephone=no" />
         <meta name="theme-color" content="hsl(111, 15%, 43%)" />
         <Meta />
@@ -106,7 +115,7 @@ export default function App({ loaderData: { locale } }: Route.ComponentProps) {
         void i18n.changeLanguage(locale);
       }
     },
-    [locale, i18n],
+    [locale, i18n]
   );
 
   return (

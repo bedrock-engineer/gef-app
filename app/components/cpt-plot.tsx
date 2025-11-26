@@ -13,7 +13,7 @@ import {
 } from "react-aria-components";
 import { useTranslation } from "react-i18next";
 import { PlotDownloadButtons } from "./plot-download-buttons";
-import { DEPTH_KEYWORDS } from "~/util/gef-cpt";
+import { DEPTH_KEYWORDS } from "~/gef/gef-cpt";
 import { Card, CardTitle } from "./card";
 
 interface Column {

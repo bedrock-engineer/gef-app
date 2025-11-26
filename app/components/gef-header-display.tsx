@@ -8,10 +8,10 @@ import {
   Heading,
 } from "react-aria-components";
 import { useTranslation } from "react-i18next";
-import type { GefData, GefFileType } from "~/util/gef-common";
-import type { GefBoreHeaders, GefCptHeaders } from "~/util/gef-schemas";
-import { findBoreMeasurementVariable } from "../util/gef-bore";
-import type { ProcessedMetadata } from "../util/gef-cpt";
+import type { GefData, GefFileType } from "~/gef/gef-common";
+import type { GefBoreHeaders, GefCptHeaders } from "~/gef/gef-schemas";
+import { findBoreMeasurementVariable } from "../gef/gef-bore";
+import type { ProcessedMetadata } from "../gef/gef-cpt";
 import {
   belgianMeasurementTextVariables,
   belgianMeasurementVariables,
@@ -20,8 +20,8 @@ import {
   dutchMeasurementVariables,
   findCptMeasurementVariable,
   type GefExtension,
-} from "../util/gef-cpt";
-import { formatGefDate } from "../util/gef-metadata-processed";
+} from "../gef/gef-cpt";
+import { formatGefDate } from "../gef/gef-metadata-processed";
 import {
   BoreCompactInfo,
   getBoreMeasurementTextItems,

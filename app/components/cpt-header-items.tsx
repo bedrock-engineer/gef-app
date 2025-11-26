@@ -1,5 +1,5 @@
 import { useTranslation } from "react-i18next";
-import type { ProcessedMetadata } from "../util/gef-cpt";
+import type { ProcessedMetadata } from "../gef/gef-cpt";
 import {
   getLocalizedDescription,
   type HeaderItem,

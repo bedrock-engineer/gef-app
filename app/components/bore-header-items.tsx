@@ -1,6 +1,6 @@
 import { useTranslation } from "react-i18next";
-import type { GefBoreData } from "../util/gef-bore";
-import type { ProcessedMetadata } from "../util/gef-cpt";
+import type { GefBoreData } from "../gef/gef-bore";
+import type { ProcessedMetadata } from "../gef/gef-cpt";
 import {
   getLocalizedDescription,
   type HeaderItem,
@@ -15,7 +15,7 @@ export function getBoreMeasurementTextItems(
   const items: Array<HeaderItem> = [];
 
   // Get text items matching the categories
-  for (const [_key, textItem] of Object.entries(processed.texts)) {
+  for (const textItem of Object.values(processed.texts)) {
     if (!categories.includes(textItem.metadata.category)) {
       continue;
     }

@@ -1,6 +1,6 @@
 import { useTranslation } from "react-i18next";
-import type { BoreSpecimen } from "~/util/gef-bore";
-import { SPECIMEN_CODES } from "~/util/gef-bore";
+import type { BoreSpecimen } from "~/gef/gef-bore";
+import { SPECIMEN_CODES } from "~/gef/gef-bore";
 import { CardTitle } from "./card";
 
 function formatCode(

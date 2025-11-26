@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
-import type { GefData, ProcessedMetadata } from "~/util/gef-cpt";
+import type { GefData, ProcessedMetadata } from "~/gef/gef-cpt";
 
 interface GefMultiMapProps {
   gefData: Record<string, GefData>;

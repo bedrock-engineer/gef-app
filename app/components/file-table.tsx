@@ -16,7 +16,7 @@ import {
   TableHeader,
 } from "react-aria-components";
 import { useTranslation } from "react-i18next";
-import type { GefData, GefFileType } from "~/util/gef-cpt";
+import type { GefData, GefFileType } from "~/gef/gef-cpt";
 
 function SortIndicator({
   column,
