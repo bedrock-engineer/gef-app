@@ -1,9 +1,10 @@
+import type { Feature, FeatureCollection } from "geojson";
 import { DownloadIcon } from "lucide-react";
 import { Button } from "react-aria-components";
-import type { ProcessedMetadata } from "~/gef/gef-cpt";
-import type { Feature, FeatureCollection } from "geojson";
 import { useTranslation } from "react-i18next";
 import type { GefData } from "~/gef/gef-common";
+import type { ProcessedMetadata } from "~/gef/gef-cpt";
+import { downloadFile } from "~/util/download";
 
 function createGeoJSON(gefData: Record<string, GefData>): FeatureCollection {
   const features: Array<Feature> = Object.values(gefData)
@@ -55,15 +56,8 @@ function createGeoJSON(gefData: Record<string, GefData>): FeatureCollection {
 
 function downloadAsGeoJSON(gefData: Record<string, GefData>) {
   const geojson = createGeoJSON(gefData);
-  const blob = new Blob([JSON.stringify(geojson, null, 2)], {
-    type: "application/geo+json",
-  });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement("a");
-  a.href = url;
-  a.download = "gef-locations.geojson";
-  a.click();
-  URL.revokeObjectURL(url);
+  const geojsonString = JSON.stringify(geojson, null, 2);
+  downloadFile(geojsonString, "gef-locations.geojson", "application/geo+json");
 }
 
 interface DownloadGeoJSONButtonProps {

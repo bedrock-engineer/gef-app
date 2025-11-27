@@ -1,28 +1,34 @@
 import { csvFormat } from "d3-dsv";
-import type { GefCptData } from "./gef-cpt";
+import type { GefData } from "~/gef/gef-common";
+import { downloadFile } from "./download";
 
-export function downloadGefDataAsCsv(
-  gefData: GefCptData,
-  filename: string,
-): void {
-  // Convert data to CSV format using d3-array
-  const csvContent = csvFormat(gefData.data);
+export function downloadGefDataAsCsv(gefData: GefData, filename: string): void {
+  let csvContent: string;
 
-  // Create blob and download
-  const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
-  const link = document.createElement("a");
+  if (gefData.fileType === "CPT") {
+    csvContent = csvFormat(gefData.data);
+  } else {
+    // Convert BORE layers to CSV format
+    const boreData = gefData;
+    const layersForCsv = boreData.layers.map((layer) => ({
+      depthTop: layer.depthTop,
+      depthBottom: layer.depthBottom,
+      soilCode: layer.soilCode,
+      additionalCodes: layer.additionalCodes.join(", "),
+      description: layer.description ?? "",
+      sandMedian: layer.sandMedian ?? "",
+      gravelMedian: layer.gravelMedian ?? "",
+      clayPercent: layer.clayPercent ?? "",
+      siltPercent: layer.siltPercent ?? "",
+      sandPercent: layer.sandPercent ?? "",
+      gravelPercent: layer.gravelPercent ?? "",
+      organicMatterPercent: layer.organicPercent ?? "",
+    }));
+    csvContent = csvFormat(layersForCsv);
+  }
 
   // Generate filename (replace .gef/.GEF extension with .csv)
   const csvFilename = filename.replace(/\.gef$/i, ".csv");
 
-  link.href = URL.createObjectURL(blob);
-  link.download = csvFilename;
-  link.style.display = "none";
-
-  document.body.appendChild(link);
-  link.click();
-  document.body.removeChild(link);
-
-  // Clean up the URL object
-  URL.revokeObjectURL(link.href);
+  downloadFile(csvContent, csvFilename, "text/csv;charset=utf-8;");
 }

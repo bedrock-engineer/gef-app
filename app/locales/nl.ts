@@ -50,6 +50,9 @@ export default {
     depth: "Diepte:",
     scanNumber: "Scan #:",
     downloadCsv: "Download CSV",
+    downloadJson: "Download JSON",
+    downloadCsvTooltip: "Download alleen data als CSV",
+    downloadJsonTooltip: "Download data en metadata als JSON",
 
     // Copy buttons
     copyTestId: "Test ID kopiëren",
@@ -164,6 +167,8 @@ export default {
     downloadLocationsGeoJson: "Download locaties als GeoJSON",
 
     // Footer
+    about: "Over",
+    contact: "Contact",
     feedbackOrRequests: "Bugs, feedback of verzoeken?",
     needSimilarApp:
       "Heeft u een vergelijkbare app nodig voor uw geotechnische workflow?",

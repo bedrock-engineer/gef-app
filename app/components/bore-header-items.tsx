@@ -57,25 +57,25 @@ export function BoreCompactInfo({ data }: { data: GefBoreData }) {
     <>
       {boringDate && (
         <>
-          <dt className="font-medium text-gray-500">{t("boringDate")}</dt>
+          <dt className="text-gray-500">{t("boringDate")}</dt>
           <dd>{boringDate}</dd>
         </>
       )}
       {placeName && (
         <>
-          <dt className="font-medium text-gray-500">{t("placeName")}</dt>
+          <dt className="text-gray-500">{t("placeName")}</dt>
           <dd>{placeName}</dd>
         </>
       )}
       {drillingCompany && (
         <>
-          <dt className="font-medium text-gray-500">{t("drillingCompany")}</dt>
+          <dt className="text-gray-500">{t("drillingCompany")}</dt>
           <dd>{drillingCompany}</dd>
         </>
       )}
       {finalDepth && (
         <>
-          <dt className="font-medium text-gray-500">{t("depth")}</dt>
+          <dt className="text-gray-500">{t("depth")}</dt>
           <dd>{finalDepth.value.toFixed(2)}m</dd>
         </>
       )}

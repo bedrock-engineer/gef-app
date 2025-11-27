@@ -6,12 +6,16 @@ import {
   Disclosure,
   DisclosurePanel,
   Heading,
+  Tooltip,
+  TooltipTrigger,
 } from "react-aria-components";
 import { useTranslation } from "react-i18next";
 import type { GefData, GefFileType } from "~/gef/gef-common";
 import type { GefBoreHeaders, GefCptHeaders } from "~/gef/gef-schemas";
 import { findBoreMeasurementVariable } from "../gef/gef-bore";
 import type { ProcessedMetadata } from "../gef/gef-cpt";
+import { downloadGefDataAsCsv } from "~/util/csv-download";
+import { downloadGefDataAsJson } from "~/util/json-download";
 import {
   belgianMeasurementTextVariables,
   belgianMeasurementVariables,
@@ -61,14 +65,9 @@ function getMeasurementTextItems(
 interface CompactHeaderProps {
   filename: string;
   data: GefData;
-  onDownload: () => void;
 }
 
-export function CompactGefHeader({
-  filename,
-  data,
-  onDownload,
-}: CompactHeaderProps) {
+export function CompactGefHeader({ filename, data }: CompactHeaderProps) {
   const { t } = useTranslation();
 
   const { processed, headers, fileType } = data;
@@ -105,9 +104,22 @@ export function CompactGefHeader({
             <p className="text-gray-600">{processed.companyName}</p>
           )}
 
-          {fileType == "CPT" ? (
-            <DownloadCSVButton onDownload={onDownload} />
-          ) : null}
+          <div className="flex gap-2 mt-4">
+            <DownloadButton
+              onPress={() => {
+                downloadGefDataAsCsv(data, filename);
+              }}
+              label={t("downloadCsv")}
+              tooltip={t("downloadCsvTooltip")}
+            />
+            <DownloadButton
+              onPress={() => {
+                downloadGefDataAsJson(data, filename);
+              }}
+              label={t("downloadJson")}
+              tooltip={t("downloadJsonTooltip")}
+            />
+          </div>
         </div>
 
         <dl
@@ -196,18 +208,24 @@ export function CompactGefHeader({
   );
 }
 
-function DownloadCSVButton({ onDownload }: { onDownload: () => void }) {
-  const { t } = useTranslation();
-
+function DownloadButton({
+  onPress,
+  label,
+  tooltip,
+}: {
+  onPress: () => void;
+  label: string;
+  tooltip: string;
+}) {
   return (
-    <Button
-      onPress={() => {
-        onDownload();
-      }}
-      className="button transition-colors mt-4"
-    >
-      {t("downloadCsv")} <DownloadIcon size={14} />
-    </Button>
+    <TooltipTrigger delay={0}>
+      <Button onPress={onPress} className="button text-sm transition-colors">
+        {label} <DownloadIcon size={14} />
+      </Button>
+      <Tooltip className="bg-gray-800 text-white text-xs px-2 py-1 rounded shadow-lg">
+        {tooltip}
+      </Tooltip>
+    </TooltipTrigger>
   );
 }
 

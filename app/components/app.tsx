@@ -5,7 +5,6 @@ import { Button, FileTrigger } from "react-aria-components";
 import { useTranslation } from "react-i18next";
 import { Form } from "react-router";
 import { parseGefFile, type GefData } from "~/gef/gef-common";
-import { downloadGefDataAsCsv } from "~/util/csv-download";
 import { BorePlot } from "./bore-plot";
 import { Card } from "./card";
 import { CptPlots } from "./cpt-plot";
@@ -140,7 +139,7 @@ export function App() {
           <h1 className="text-2xl flex gap-2 items-center">
             <img src="bedrock.svg" width={30} /> {t("appTitle")}
           </h1>
-          
+
           <Form method="post">
             <input
               type="hidden"
@@ -151,7 +150,7 @@ export function App() {
               type="submit"
               className="px-3 py-1 text-sm border border-gray-300 rounded hover:bg-gray-100 transition-colors"
             >
-              {i18n.language === "nl" ? "EN" : "NL"}
+              {i18n.language === "nl" ? "English" : "Nederlands"}
             </button>
           </Form>
         </div>
@@ -317,15 +316,7 @@ export function App() {
               </div>
             )}
 
-            <CompactGefHeader
-              filename={selectedFileName}
-              data={selectedFile}
-              onDownload={() => {
-                if (selectedFile.fileType === "CPT") {
-                  downloadGefDataAsCsv(selectedFile, selectedFileName);
-                }
-              }}
-            />
+            <CompactGefHeader filename={selectedFileName} data={selectedFile} />
 
             {selectedFile.fileType === "CPT" && (
               <>
@@ -391,47 +382,57 @@ export function App() {
         )}
       </main>
 
-      <footer className="mt-8 py-8 border-t border-gray-300 text-center text-sm text-gray-500">
-        <div className="text-sm text-center mb-6 max-w-md mx-auto border-b border-gray-300 pb-4 space-y-2">
-          <p>{t("appDescription")}</p>
-          <p>{t("privacyNote")}</p>
-          <a
-            className="text-green-900 hover:underline inline-flex gap-1 mx-auto text-2xl"
-            href="https://bedrock.engineer"
-          >
-            Bedrock.engineer{" "}
-            <img src="/bedrock.svg" width="18px" height="18px" />
-          </a>
-        </div>
+      <footer className="mt-8 py-8 border-t border-gray-300 text-sm text-gray-500">
+        <div className="max-w-6xl mx-auto px-4">
+          <div className="grid md:grid-cols-2 gap-8 mb-8">
+            <div className="space-y-3">
+              <h3 className="font-semibold text-gray-700 mb-3">{t("about")}</h3>
+              <p className="text-sm">{t("appDescription")}</p>
+              <p className="text-sm">{t("privacyNote")}</p>
+              <a
+                className="text-green-900 hover:underline inline-flex gap-1 items-center text-lg font-medium mt-2"
+                href="https://bedrock.engineer"
+              >
+                Bedrock.engineer
+                <img
+                  src="/bedrock.svg"
+                  width="18px"
+                  height="18px"
+                  alt="Bedrock logo"
+                />
+              </a>
+            </div>
 
-        <p className="mb-3">
-          {t("needSimilarApp")}{" "}
-          <a
-            href="mailto:info@bedrock.engineer"
-            className="text-blue-500 hover:underline font-medium"
-          >
-            {t("contactUs")}{" "}
-            <a
-              href="mailto:info@bedrock.engineer"
-              className="text-blue-500 hover:underline"
-            >
-              info@bedrock.engineer
-            </a>
-          </a>
-        </p>
+            <div className="space-y-4">
+              <h3 className="font-semibold text-gray-700 mb-3">
+                {t("contact")}
+              </h3>
+              <div>
+                <p className="text-sm mb-1">{t("needSimilarApp")}</p>
+                <a
+                  href="mailto:info@bedrock.engineer"
+                  className="text-blue-500 hover:underline font-medium"
+                >
+                  info@bedrock.engineer
+                </a>
+              </div>
+              <div>
+                <p className="text-sm mb-1">{t("feedbackOrRequests")}</p>
+                <a
+                  href="mailto:jules.blom@bedrock.engineer"
+                  className="text-blue-500 hover:underline font-medium"
+                >
+                  jules.blom@bedrock.engineer
+                </a>
+              </div>
+            </div>
+          </div>
 
-        <p>
-          {t("feedbackOrRequests")}{" "}
-          <a
-            href="mailto:jules@bedrock.engineer"
-            className="text-blue-500 hover:underline"
-          >
-            jules.blom@bedrock.engineer
-          </a>
-        </p>
-
-        <div className="mt-6 max-w-2xl mx-auto px-4">
-          <p className="text-gray-400 ">{t("disclaimer")}</p>
+          <div className="pt-6 border-t border-gray-300">
+            <p className="text-gray-400 text-xs text-center">
+              {t("disclaimer")}
+            </p>
+          </div>
         </div>
       </footer>
     </div>
