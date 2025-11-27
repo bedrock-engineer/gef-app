@@ -13,12 +13,15 @@ GEF files are ubiquitous in geotechnical engineering in the Netherlands and Flan
 ### Supported GEF Types
 
 - GEF-CPT
-    - Basisregistratie Ondergrond Additions
-    - Databank Ondergrond Vlaanderen Additions
+  - [Basisregistratie Ondergrond Additions](https://www.cptdata.nl/downloads/gef113Releasenotes.pdf)
+  - [Databank Ondergrond Vlaanderen Additions](https://www.milieuinfo.be/confluence/display/DDOV/Toelichting+DOV-GEF+formaat)
 - GEF-BORE
+
+GEF-SIEVE and GEF-DISS are not supported.
 
 ## Technology Stack
 
+- **GEF Parsing**: [gef-file-to-map](https://github.com/cemsbv/gef-file-to-map) and [Zod](https://zod.dev/)
 - **Framework**: [React Router v7](https://reactrouter.com/) with Server-Side Rendering
 - **Build Tool**: [Vite](https://vite.dev/)
 - **Language**: TypeScript (strict mode)
@@ -27,7 +30,6 @@ GEF files are ubiquitous in geotechnical engineering in the Netherlands and Flan
 - **Maps**: [Leaflet](https://leafletjs.com/)
 - **UI Components**: [React Aria Components](https://react-spectrum.adobe.com/react-aria/)
 - **Internationalization**: [i18next](https://www.i18next.com/)
-- **Schema Validation**: [Zod](https://zod.dev/)
 
 ## Getting Started
 
@@ -65,19 +67,19 @@ npm run format     # Format code with Prettier
 ```
 gef-webapp/
 ├── app/
-│   ├── components/        # React components
+│   ├── components/       # React components
 │   ├── gef/              # GEF file parsing and schemas
 │   ├── locales/          # Translation files
 │   ├── middleware/       # Request middleware
-│   ├── routes/           # Route components
+│   ├── routes/           # React-router route components
 │   └── util/             # Utility functions
 ├── public/               # Static assets
-└── workers/              # Web workers
+└── workers/              # Cloudflare Workers
 ```
 
 ## Deployment
 
-This application can be deployed to various platforms. See [React Router](https://reactrouter.com/start/framework/deploying).
+This application can be deployed to various platforms. See [React Router docs on deploying](https://reactrouter.com/start/framework/deploying).
 
 ## Contributing
 
@@ -96,5 +98,7 @@ This project is licensed under the Apache License 2.0 - see the [LICENSE](LICENS
 
 ## Support
 
-- **Issues**: Report bugs or request features via [GitHub Issues](https://github.com/yourusername/gef-webapp/issues)
+- **Issues**: Report bugs or request features via [GitHub Issues](https://github.com/bedrock-engineer/gef-webapp/issues) 
 - **Live App**: Try it at [gef.bedrock.engineer](https://gef.bedrock.engineer)
+
+[Bedrock](https://www.bedrock.engineer)
