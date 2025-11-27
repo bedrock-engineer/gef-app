@@ -1,0 +1,21 @@
+.DS_Store
+/node_modules/
+
+# React Router
+/.react-router/
+/build/
+
+TODO.md
+
+# Test GEF files
+/gefs/
+
+# Cloudflare
+.mf
+.wrangler
+.dev.vars*
+worker-configuration.d.ts
+
+
+!.dev.vars.example
+!.env.example

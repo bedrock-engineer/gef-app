@@ -1,0 +1,96 @@
+
+
+#GEFID = 1, 0, 0
+#FILEOWNER= Lws
+#FILEDATE= 2001,07,21
+#PROJECTID= CO, 377500, 300
+#TESTID = BORING 'V.1'
+#COLUMN = 4
+#COLUMNINFO = 1, m, diepte bovenkant laag, 1
+#COLUMNINFO = 2, m, diepte onderkant laag, 2
+#COLUMNINFO = 3, mm, zandmediaan, 8
+#COLUMNINFO = 4, %, silt percentage, 4
+#COLUMNVOID = 3, 0.0
+#COLUMNTEXT = 1, verplicht
+#RECORDSEPARATOR = !
+#COLUMNSEPARATOR = ;
+#COMPANYID = GeoDelft, 8000.97.476.B.01, 31
+#LASTSCAN = 13
+#MEASUREMENTCODE = NEN5104, 1, 0, 0, NNI 1989
+#REPORTCODE = GEF-BORE-Report, 1, 0, 0, GEF-BORE-Report2.doc.doc
+#XYID = 31000, 65345.23, 436789.481, 0.1, 0.05
+#ZID = 31000, -0.35, 0.0
+#MEASUREMENTTEXT = 1, Waterschap Voorne-Putten, opdrachtgever
+#MEASUREMENTTEXT = 2, Studie naar de veiligheid, doel onderzoek
+#MEASUREMENTTEXT = 3, Oostvoorne, plaatsnaam
+#MEASUREMENTTEXT = 5, 2001-07-15, datum boorbeschrijving
+#MEASUREMENTTEXT = 6, B. E. Schrijvers, beschrijver lagen
+#MEASUREMENTTEXT = 9, maaiveld, horizontaal referentievlak
+#MEASUREMENTTEXT = 11, MMET, maaiveldhoogtebepaling
+#MEASUREMENTTEXT = 12, LGPS, plaatsbepaling methode
+#MEASUREMENTTEXT = 13, GeoDelft, boorbedrijf
+#MEASUREMENTTEXT = 14, Ja, vertrouwelijk
+#MEASUREMENTTEXT = 15, 2006-11-11, einddatum geheimhouding
+#MEASUREMENTTEXT = 16, 2001-07-14, datum boring
+#MEASUREMENTTEXT = 19, 2001-07-16, einddatum boring
+#MEASUREMENTTEXT = 20, S345, bij sondering
+#MEASUREMENTTEXT = 21, Ja, Boor- en steunvloeistof
+#MEASUREMENTTEXT = 22, Smud-11, omschrijving boor- en steunvloeistof
+#MEASUREMENTTEXT = 23, Jan Smid, boormeester
+#MEASUREMENTTEXT = 31, AVH, boormethode
+#MEASUREMENTTEXT = 32, PUL, boormethode
+#MEASUREMENTVAR = 16, 8.6, m, einddiepte
+#MEASUREMENTVAR = 17, 500, l, verbruik boor- en steunvloeistof
+#MEASUREMENTVAR = 18, 2.50, m, grondwaterstand tijdens boren
+#MEASUREMENTVAR = 19, 2, - , aantal peilbuizen
+#MEASUREMENTVAR = 31, 3.45, m, diepte onderkant boortraject
+#MEASUREMENTVAR = 32, 300, mm, boorbuisdiameter
+#MEASUREMENTVAR = 33, 8.6, m, diepte onderkant boortraject
+#MEASUREMENTVAR = 34, 250, mm, boorbuisdiameter
+#SPECIMENVAR = 1, 3, -, aantal monsters
+#SPECIMENVAR = 11, 0.81, m, bovenkant eerste monster
+#SPECIMENVAR = 12, 0.98, m, onderkant eerste monster
+#SPECIMENVAR = 13, 66.0, mm, diameter eerste monster
+#SPECIMENVAR = 14, 66.0, mm, diameter monstersteekapparaat eerste monster
+#SPECIMENVAR = 18, 1.25, m, bovenkant tweede monster
+#SPECIMENVAR = 19, 1.45, m, onderkant tweede monster
+#SPECIMENVAR = 21, 50.0, mm, diameter monstersteekapparaat tweede monster
+#SPECIMENVAR = 25, 2.56, m, bovenkant derde monster
+#SPECIMENVAR = 26, 2.85, m, onderkant derde monster
+#SPECIMENVAR = 27, 50.0, mm, diameter derde monster
+#SPECIMENVAR = 28, 50.0, mm, diameter monstersteekapparaat derde monster
+#SPECIMENTEXT = 11, K9, monstercode eerste monster
+#SPECIMENTEXT = 12, 2001-11-14, datum eerste monster
+#SPECIMENTEXT = 13, 12:45, tijd eerste monster
+#SPECIMENTEXT = 14, O, (on)geroerd eerste monster
+#SPECIMENTEXT = 15, OMS, monstersteekapparaat eerste monster
+#SPECIMENTEXT = 16, DUN, dik of dunwandig eerste monster
+#SPECIMENTEXT = 17, D, monstermethode eerste monster
+#SPECIMENTEXT = 18, B52, monstercode tweede monster
+#SPECIMENTEXT = 19, 2001-11-14, datum tweede monster
+#SPECIMENTEXT = 20, 13:15, tijd tweede monster
+#SPECIMENTEXT = 21, O, (on)geroerd tweede monster
+#SPECIMENTEXT = 22, ZMS, monstersteekapparaat tweede monster
+#SPECIMENTEXT = 23, DIK, dik of dunwandig tweede monster
+#SPECIMENTEXT = 24, D, monstermethode tweede monster
+#SPECIMENTEXT = 25, T4, monstercode derde monster
+#SPECIMENTEXT = 26, 2001-11-14, datum derde monster
+#SPECIMENTEXT = 27, 13:30, tijd derde monster
+#SPECIMENTEXT = 28, G, (on)geroerd derde monster
+#SPECIMENTEXT = 29, ZMS, monstersteekapparaat derde monster
+#SPECIMENTEXT = 30, DIK, dik of dunwandig derde monster
+#SPECIMENTEXT = 31, H, monstermethode derde monster
+#EOH=
+0.0;0.55;0.0;60;'Ks2h1 SLB';'BST1 NA';!
+0.55;1.98;0.0;70;'Ks3';'NA';!
+1.98;2.85;0.0;60;'Ks2';'STZL SCH2 NA';'Veen van NAP -2.90 tot NAP -3.00 m';!
+2.85;3.97;0.0;60;'Ks2';'NA';!
+3.97;4.55;0.0;0;'Vm';'STKL RIV NI';!
+4.55;5.7;0.0;20;'Ks1h3';'NA';'veel veenbrokjes';!
+5.7;5.92;0.0;70;'Ks3';'KZST NA';!
+5.92;6.12;0.0;70;'Ks3';'STZL NA';!
+6.12;7.05;0.105;60;'Zs2';'GE2 NA';!
+7.05;7.25;0.125;20;'Zs1';'NA';'In deze laag bevinden zich Romeinse munten';!
+7.25;7.55;0.105;20;'Zs1g1';'STKL SZK ZAF KR';'spoor plantenresten';!
+7.55;7.77;0.105;20;'Zs1g2';'GFN STVL KR';!
+7.77;8.6;0.105;20;'Zs1 GCZ';'STKL TBR GR GC2 KR';!
