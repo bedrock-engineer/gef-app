@@ -1,5 +1,22 @@
 {
-  "name": "gef-webapp",
+  "name": "bedrock-gef-webapp",
+  "description": "Web Application for viewing Geotechnical Exchange Format (GEF) File",
+  "homepage": "https://github.com/bedrock-engineer",
+  "version": "1.0.0",
+  "author": {
+    "name": "Jules Blom",
+    "url": "htts://bedrock.engineer",
+    "email": "jules.blom@bedrock.engineer"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/bedrock-engineer/gef-app.git"
+  },
+  "bugs": {
+    "url": "https://github.com/bedrock-engineer/gef-app/issues",
+    "email": "jules.blom@bedrock.engineer"
+  },
+  "license": "Apache-2.0",
   "private": true,
   "type": "module",
   "scripts": {
@@ -8,7 +25,8 @@
     "start": "react-router-serve ./build/server/index.js",
     "typecheck": "react-router typegen && tsc",
     "lint": "eslint app",
-    "format": "prettier -w app"
+    "format": "prettier -w app",
+    "knip": "knip"
   },
   "dependencies": {
     "@observablehq/plot": "^0.6.17",
