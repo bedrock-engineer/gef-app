@@ -18,7 +18,7 @@ export interface CoordinateInput {
  */
 export function convertToWGS84(input: CoordinateInput): WGS84Coords | null {
   const coordSysConfig = COORDINATE_SYSTEMS[input.coordinateSystem];
-  if (!coordSysConfig?.epsg) {
+  if (!coordSysConfig.epsg) {
     return null;
   }
 

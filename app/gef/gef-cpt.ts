@@ -2514,9 +2514,7 @@ function decodeMeasurementText(
   }
 
   const standardizedCodes = variable.standardizedCodes;
-  if (!standardizedCodes) {
-    return text;
-  }
+
   const code = standardizedCodes.find(
     (c: { code: string; description: string }) =>
       c.code === text.trim().toUpperCase()
@@ -2654,7 +2652,7 @@ export function generateCptWarnings(
   }
   if (!hasConeResistance) {
     warnings.push(
-      `File '${filename}' missing required COLUMNINFO for Cone resistance (quantity 2). Per GEF-CPT specification, cone resistance (qc) is mandatory for CPT tests. Primary soil strength analysis cannot be performed without this parameter.`
+      `File '${filename}' missing required COLUMNINFO for Cone resistance (quantity 2). Per GEF-CPT specification, cone resistance (qc) is mandatory for CPT tests.`
     );
   }
 

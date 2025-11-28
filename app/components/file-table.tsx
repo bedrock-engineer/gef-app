@@ -16,7 +16,7 @@ import {
   TableHeader,
 } from "react-aria-components";
 import { useTranslation } from "react-i18next";
-import type { GefData, GefFileType } from "~/gef/gef-cpt";
+import type { GefData, GefFileType } from "~/gef/gef-common";
 
 function SortIndicator({
   column,
@@ -74,6 +74,7 @@ export function FileTable({
         testDate = data.processed.texts.datumBoring?.value ?? null;
         // Get end depth from processed measurements (MEASUREMENTVAR ID 16 = "Einddiepte")
         finalDepth = data.processed.measurements.einddiepte?.value ?? null;
+      // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
       } else if (data.fileType === "CPT") {
         // For CPT files, use processed startDate
         testDate = data.processed.startDate ?? null;
@@ -109,15 +110,14 @@ export function FileTable({
         return -1;
       }
 
-      // Compare values
-      let cmp: number;
+      let compare: number;
       if (typeof aVal === "number" && typeof bVal === "number") {
-        cmp = aVal - bVal;
+        compare = aVal - bVal;
       } else {
-        cmp = String(aVal).localeCompare(String(bVal));
+        compare = String(aVal).localeCompare(String(bVal));
       }
 
-      return sortDescriptor.direction === "descending" ? -cmp : cmp;
+      return sortDescriptor.direction === "descending" ? -compare : compare;
     });
     return sorted;
   }, [rows, sortDescriptor]);
@@ -138,7 +138,7 @@ export function FileTable({
 
   const handleDrop = async (e: { items: ReadonlyArray<{ kind: string }> }) => {
     const fileItems = e.items.filter(
-      (item): item is FileDropItem => item.kind === "file",
+      (item): item is FileDropItem => item.kind === "file"
     );
     const files = await Promise.all(fileItems.map((item) => item.getFile()));
     onFileDrop(files);

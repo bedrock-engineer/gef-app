@@ -1,11 +1,10 @@
 import z from "zod";
 import initGefFileToMap, { parse_gef_wasm } from "../pkg/gef_file_to_map.js";
 import {
-  generateBoreWarnings,
   parseGefBoreData,
   parseGefBoreSpecimens,
   processBoreMetadata,
-  type GefBoreData,
+  type GefBoreData
 } from "./gef-bore";
 import {
   detectChartAxes,
@@ -32,7 +31,7 @@ export type GefData = GefCptData | GefBoreData;
  */
 function getMeasurementVar(
   measurementVars: Array<{ id: number; value: string; unit: string }>,
-  id: number
+  id: number,
 ) {
   return measurementVars.find((v) => v.id === id);
 }
@@ -42,7 +41,7 @@ function getMeasurementVar(
  */
 export function getMeasurementVarValue(
   measurementVars: Array<{ id: number; value: string; unit: string }>,
-  id: number
+  id: number,
 ): number | undefined {
   const mv = getMeasurementVar(measurementVars, id);
   if (!mv) {
@@ -80,7 +79,7 @@ function detectFileType(reportCode: string): GefFileType {
 function generateCommonWarnings(
   filename: string,
   headers: GefCptHeaders | GefBoreHeaders,
-  headersMap: GEFHeadersMap
+  headersMap: GEFHeadersMap,
 ): Array<string> {
   const warnings: Array<string> = [];
 
@@ -108,7 +107,7 @@ function generateCommonWarnings(
   const rawColumnInfo = headersMap.get("COLUMNINFO");
   if (rawColumnInfo) {
     const missingQuantityNumbers = rawColumnInfo.filter(
-      (col) => col.length < 4
+      (col) => col.length < 4,
     );
     if (missingQuantityNumbers.length > 0) {
       const count = missingQuantityNumbers.length;
@@ -133,13 +132,14 @@ export async function parseGefFile(file: File): Promise<GefData> {
   if (fileType === "BORE") {
     const { layers, headers } = parseGefBoreData(
       gefMap.data,
-      gefMap.headers.headers
+      gefMap.headers.headers,
     );
     const specimens = parseGefBoreSpecimens(headers);
-    const warnings = [
-      ...generateCommonWarnings(file.name, headers, gefMap.headers.headers),
-      ...generateBoreWarnings(file.name, headers),
-    ];
+    const warnings = generateCommonWarnings(
+      file.name,
+      headers,
+      gefMap.headers.headers,
+    );
     const processed = processBoreMetadata(file.name, headers);
 
     return {
@@ -154,7 +154,7 @@ export async function parseGefFile(file: File): Promise<GefData> {
 
   const { data, columnInfo, headers } = parseGefCptData(
     gefMap.data,
-    gefMap.headers.headers
+    gefMap.headers.headers,
   );
   const chartAxes = detectChartAxes(columnInfo, data, headers.ZID);
 

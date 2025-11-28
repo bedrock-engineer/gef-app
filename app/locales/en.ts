@@ -23,15 +23,23 @@ export default {
     warning_plural: "{{count}} warnings:",
 
     // Header validation warnings
-    missingZidHeader: "File '{{filename}}' missing ZID header (height reference system). Defaulting to 'Normaal Amsterdams Peil'. This may affect elevation calculations and vertical positioning of measurements.",
-    unknownHeightSystem: "File '{{filename}}' contains unknown height system code \"{{heightCode}}\". Defaulting to 'Normaal Amsterdams Peil'. This may cause incorrect elevation calculations.",
-    zidWithoutHeight: "File '{{filename}}' has ZID header without height value. Defaulting surface elevation to 0m. This will affect depth-to-elevation conversions and may produce incorrect ground level readings.",
-    missingXyidHeader: "File '{{filename}}' missing XYID header (coordinate information). Location is unknown, cannot display on map or convert to WGS84.",
-    missingColumnInfoQuantity: "File '{{filename}}' has {{count}} COLUMNINFO {{entry}} missing quantity number (4th element per GEF spec). Defaulting to quantity 0 (unknown). This may cause data columns to be misinterpreted or not displayed correctly.",
+    missingZidHeader:
+      "File '{{filename}}' missing ZID header (height reference system). Defaulting to 'Normaal Amsterdams Peil'. This may affect elevation calculations and vertical positioning of measurements.",
+    unknownHeightSystem:
+      "File '{{filename}}' contains unknown height system code \"{{heightCode}}\". Defaulting to 'Normaal Amsterdams Peil'. This may cause incorrect elevation calculations.",
+    zidWithoutHeight:
+      "File '{{filename}}' has ZID header without height value. Defaulting surface elevation to 0m. This will affect depth-to-elevation conversions and may produce incorrect ground level readings.",
+    missingXyidHeader:
+      "File '{{filename}}' missing XYID header (coordinate information). Location is unknown, cannot display on map or convert to WGS84.",
+    missingColumnInfoQuantity:
+      "File '{{filename}}' has {{count}} COLUMNINFO {{entry}} missing quantity number (4th element per GEF spec). Defaulting to quantity 0 (unknown). This may cause data columns to be misinterpreted or not displayed correctly.",
     missingColumnInfoQuantity_entry: "entry",
     missingColumnInfoQuantity_entry_plural: "entries",
-    dissipationTestNotSupported: "GEF-DISS-Report (dissipation test) files are not supported",
+    dissipationTestNotSupported:
+      "GEF-DISS-Report (dissipation test) files are not supported",
     sieveTestNotSupported: "GEF-SIEVE files are not supported",
+    name: "Name",
+    unit: "Unit",
 
     // Location
     location: "Location",
@@ -111,6 +119,7 @@ export default {
     columns: "Columns",
     yAxisVertical: "Y-Axis (Vertical)",
     boreLog: "Borehole Log",
+    graphs: "Graphs",
     legend: "Legend",
     depthM: "Depth (m)",
     downloadSvg: "Download SVG",

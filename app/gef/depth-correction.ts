@@ -74,6 +74,7 @@ function calculateTrueDepth(
   let cumulativeDepth = 0;
 
   for (let i = 0; i < data.length; i++) {
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     const row = data[i]!;
     const penetration = row[penetrationKey] ?? 0;
     const inclinationDeg = row[inclinationKey] ?? 0;
@@ -82,7 +83,7 @@ function calculateTrueDepth(
       // First row: depth = penetration length
       cumulativeDepth = Math.abs(penetration);
     } else {
-      const prevPenetration = data[i - 1]![penetrationKey] ?? 0;
+      const prevPenetration = data[i - 1]?.[penetrationKey] ?? 0;
       const deltaPenetration = Math.abs(penetration - prevPenetration);
 
       // Convert degrees to radians and apply cosine correction
@@ -136,7 +137,7 @@ function calculateElevation(
 
 export type Row = Record<string, number> & {
   preExcavatedDepth: number;
-  isVoid: boolean;
+  // isVoid: boolean;
 };
 
 /**
@@ -155,7 +156,6 @@ export function addComputedDepthColumns(
   zid: ZID | undefined,
   measurementVars: Array<MeasurementVar> | undefined,
 ): Array<Record<string, number>> {
-  // Get pre-excavated depth if present
   const preExcavatedDepth = measurementVars
     ? (getMeasurementVarValue(
         measurementVars,
@@ -172,7 +172,6 @@ export function addComputedDepthColumns(
   result = calculateElevation(result, zid);
 
   // Mark rows in pre-excavation zone as void
-  // Per GEF spec section 3.6.2, data in pre-excavation zone should be treated as void
   if (preExcavatedDepth > 0) {
     const penetrationCol = findColumnByQuantity(
       columnInfo,
@@ -182,6 +181,7 @@ export function addComputedDepthColumns(
 
     result = result.map((row) => {
       const penetration = penetrationKey ? (row[penetrationKey] ?? 0) : 0;
+      // Per GEF spec section 3.6.2, data in pre-excavation zone should be treated as void
       const isVoid = penetration < preExcavatedDepth;
 
       return {

@@ -35,11 +35,8 @@ export async function action({ request }: Route.ActionArgs) {
 }
 
 export function meta({ matches }: Route.MetaArgs) {
-  const rootMatch = matches.find((m) => m?.id === "root");
-  const locale =
-    (rootMatch?.loaderData as { locale?: string } | undefined)?.locale || "nl";
-  const metadata =
-    metaDataTranslations[locale as "nl" | "en"] || metaDataTranslations.en;
+  const locale = matches[0].loaderData.locale as "nl" | "en";
+  const metadata = metaDataTranslations[locale];
   const ogLocale = locale === "nl" ? "nl_NL" : "en_US";
   const altLocale = locale === "nl" ? "en_US" : "nl_NL";
 

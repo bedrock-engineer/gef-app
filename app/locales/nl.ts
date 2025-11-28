@@ -23,14 +23,20 @@ export default {
     warning_plural: "{{count}} waarschuwingen:",
 
     // Header validation warnings
-    missingZidHeader: "Bestand '{{filename}}' mist ZID header (hoogtestelsel). Standaard ingesteld op 'Normaal Amsterdams Peil'. Dit kan de hoogte berekeningen en verticale positionering van metingen beïnvloeden.",
-    unknownHeightSystem: "Bestand '{{filename}}' bevat onbekende hoogtestelsel code \"{{heightCode}}\". Standaard ingesteld op 'Normaal Amsterdams Peil'. Dit kan leiden tot onjuiste hoogte berekeningen.",
-    zidWithoutHeight: "Bestand '{{filename}}' heeft een ZID header zonder hoogtewaarde. Maaiveldniveau standaard ingesteld op 0m. Dit beïnvloedt diepte-naar-hoogte conversies en kan leiden tot onjuiste maaiveldmetingen.",
-    missingXyidHeader: "Bestand '{{filename}}' mist XYID header (coördinaat informatie). Locatie is onbekend, kan niet op de kaart weergeven of converteren naar WGS84.",
-    missingColumnInfoQuantity: "Bestand '{{filename}}' heeft {{count}} COLUMNINFO {{entry}} die het quantity nummer missen (4e element volgens GEF spec). Standaard ingesteld op quantity 0 (onbekend). Dit kan ervoor zorgen dat data kolommen verkeerd worden geïnterpreteerd of niet correct worden weergegeven.",
+    missingZidHeader:
+      "Bestand '{{filename}}' mist ZID header (hoogtestelsel). Standaard ingesteld op 'Normaal Amsterdams Peil'. Dit kan de hoogte berekeningen en verticale positionering van metingen beïnvloeden.",
+    unknownHeightSystem:
+      "Bestand '{{filename}}' bevat onbekende hoogtestelsel code \"{{heightCode}}\". Standaard ingesteld op 'Normaal Amsterdams Peil'. Dit kan leiden tot onjuiste hoogte berekeningen.",
+    zidWithoutHeight:
+      "Bestand '{{filename}}' heeft een ZID header zonder hoogtewaarde. Maaiveldniveau standaard ingesteld op 0m. Dit beïnvloedt diepte-naar-hoogte conversies en kan leiden tot onjuiste maaiveldmetingen.",
+    missingXyidHeader:
+      "Bestand '{{filename}}' mist XYID header (coördinaat informatie). Locatie is onbekend, kan niet op de kaart weergeven of converteren naar WGS84.",
+    missingColumnInfoQuantity:
+      "Bestand '{{filename}}' heeft {{count}} COLUMNINFO {{entry}} die het quantity nummer missen (4e element volgens GEF spec). Standaard ingesteld op quantity 0 (onbekend). Dit kan ervoor zorgen dat data kolommen verkeerd worden geïnterpreteerd of niet correct worden weergegeven.",
     missingColumnInfoQuantity_entry: "item",
     missingColumnInfoQuantity_entry_plural: "items",
-    dissipationTestNotSupported: "GEF-DISS-Report (dissipatie test) bestanden worden niet ondersteund",
+    dissipationTestNotSupported:
+      "GEF-DISS-Report (dissipatie test) bestanden worden niet ondersteund",
     sieveTestNotSupported: "GEF-SIEVE bestanden worden niet ondersteund",
 
     // Location
@@ -53,6 +59,8 @@ export default {
     downloadJson: "Download JSON",
     downloadCsvTooltip: "Download alleen data als CSV",
     downloadJsonTooltip: "Download data en metadata als JSON",
+    name: "Naam",
+    unit: "Eenheid",
 
     // Copy buttons
     copyTestId: "Test ID kopiëren",
@@ -111,6 +119,7 @@ export default {
     columns: "Kolommen",
     yAxisVertical: "Y-as (Verticaal)",
     boreLog: "Boorstaat",
+    graphs: "Grafieken",
     legend: "Legenda",
     depthM: "Diepte (m)",
     downloadSvg: "Download SVG",

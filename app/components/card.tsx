@@ -1,7 +1,7 @@
 import type { PropsWithChildren } from "react";
 
 export const Card = (props: PropsWithChildren) => (
-  <div className="bg-white border border-gray-300 rounded-md p-6" {...props} />
+  <div className="bg-white border border-gray-300 rounded-sm p-6" {...props} />
 );
 
 export const CardTitle = (props: PropsWithChildren) => (

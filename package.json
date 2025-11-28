@@ -72,5 +72,13 @@
     "typescript-eslint": "^8.47.0",
     "vite": "^7.2.4",
     "vite-tsconfig-paths": "^5.1.4"
+  },
+  "prettier": {
+    "semi": true,
+    "trailingComma": "all",
+    "singleQuote": false,
+    "printWidth": 80,
+    "tabWidth": 2,
+    "endOfLine": "lf"
   }
 }

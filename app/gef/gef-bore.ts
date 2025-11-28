@@ -1070,15 +1070,3 @@ export function parseGefBoreSpecimens(
   return specimens;
 }
 
-// Generate BORE-specific warnings
-export function generateBoreWarnings(
-  _filename: string,
-  _headers: GefBoreHeaders
-): Array<string> {
-  const warnings: Array<string> = [];
-
-  // BORE-specific validations can be added here
-  // For now, no specific validations beyond common ones
-
-  return warnings;
-}

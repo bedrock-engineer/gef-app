@@ -56,7 +56,6 @@ export function CptPlots({
 
   const xAxisOptions = availableColumns.filter((col) => !isDepthColumn(col));
 
-  // Get the current y-axis column
   const currentYAxis =
     yAxisOptions.find((opt) => opt.key === selectedYAxis) ?? initialYAxis;
 
@@ -66,7 +65,7 @@ export function CptPlots({
 
   return (
     <Card>
-      <CardTitle>{t("boreLog")}</CardTitle>
+      <CardTitle>{t("graphs")}</CardTitle>
 
       <div className="mb-4 flex flex-wrap gap-4 items-end">
         <CheckboxGroup
@@ -113,12 +112,12 @@ export function CptPlots({
               }}
               className="w-full max-w-2xs"
             >
-              <Button className="w-full px-3 py-2 bg-white border border-gray-300 rounded-md text-sm text-gray-700 text-left flex justify-between items-center hover:bg-gray-50">
+              <Button className="w-full px-3 py-2 bg-white border border-gray-300 rounded-sm text-sm text-gray-700 text-left flex justify-between items-center hover:bg-gray-50">
                 <SelectValue />
                 <span aria-hidden="true">▼</span>
               </Button>
 
-              <Popover className="w-[--trigger-width] bg-white border border-gray-300 rounded-md shadow-lg">
+              <Popover className="w-[--trigger-width] bg-white border border-gray-300 rounded-sm shadow-lg">
                 <ListBox className="max-h-60 overflow-auto p-1">
                   {yAxisOptions.map((opt) => (
                     <ListBoxItem
@@ -133,7 +132,7 @@ export function CptPlots({
               </Popover>
             </Select>
           ) : (
-            <div className="px-3 py-2 bg-gray-50 border border-gray-300 rounded-md text-sm text-gray-700">
+            <div className="px-3 py-2 bg-gray-50 border border-gray-300 rounded-sm text-sm text-gray-700">
               {currentYAxis.name} ({currentYAxis.unit})
             </div>
           )}
@@ -237,7 +236,7 @@ function CptPlot({
       ],
     });
 
-    containerRef.current.innerHTML = "";
+    // @ts-expect-error TS2345: Argument of type 'SVGElement' is not assignable to parameter of type 'Node'.
     containerRef.current.append(plot);
     return () => {
       plot.remove();

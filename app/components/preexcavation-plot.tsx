@@ -112,14 +112,14 @@ export function PreExcavationPlot({
         ],
       });
 
-      containerRef.current.innerHTML = "";
+      // @ts-expect-error TS2345: Argument of type 'SVGElement' is not assignable to parameter of type 'Node'.
       containerRef.current.append(plot);
 
       return () => {
         plot.remove();
       };
     },
-    [layers, width, height]
+    [layers, width, height],
   );
 
   if (layers.length === 0) {

@@ -5,15 +5,15 @@ import { useTranslation } from "react-i18next";
 import type { BoreLayer, BoreSpecimen } from "~/gef/gef-bore";
 import { getSoilColor } from "~/gef/gef-bore";
 import { decodeBoreCode } from "~/gef/gef-bore-codes";
-import { PlotDownloadButtons } from "./plot-download-buttons";
 import { Card, CardTitle } from "./card";
+import { PlotDownloadButtons } from "./plot-download-buttons";
 
 interface BorePlotProps {
   layers: Array<BoreLayer>;
   specimens?: Array<BoreSpecimen>;
+  baseFilename: string;
   width?: number;
   height?: number;
-  baseFilename: string;
 }
 
 const MIN_LAYER_HEIGHT_PX = 15; // minimum pixel height to show label
@@ -158,7 +158,7 @@ export function BorePlot({
       ],
     });
 
-    containerRef.current.innerHTML = "";
+    // @ts-expect-error TS2345: Argument of type 'SVGElement' is not assignable to parameter of type 'Node'.
     containerRef.current.append(plot);
 
     return () => {
@@ -180,10 +180,15 @@ export function BorePlot({
         </h4>
         <div className="flex flex-wrap gap-2 text-xs">
           <LegendItem color={getSoilColor("Z")} label={`Z - ${t("sand")}`} />
+
           <LegendItem color={getSoilColor("K")} label={`K - ${t("clay")}`} />
+
           <LegendItem color={getSoilColor("V")} label={`V - ${t("peat")}`} />
+
           <LegendItem color={getSoilColor("L")} label={`L - ${t("silt")}`} />
+
           <LegendItem color={getSoilColor("G")} label={`G - ${t("gravel")}`} />
+
           <LegendItem
             color={getSoilColor("NBE")}
             label={`NBE - ${t("notDescribed")}`}

@@ -1,17 +1,18 @@
 import type { TFunction } from "i18next";
-import { TrashIcon, UploadIcon } from "lucide-react";
+import { GithubIcon, MailIcon, TrashIcon, UploadIcon } from "lucide-react";
 import { Suspense, useState, useTransition } from "react";
 import { Button, FileTrigger } from "react-aria-components";
 import { useTranslation } from "react-i18next";
 import { Form } from "react-router";
 import { parseGefFile, type GefData } from "~/gef/gef-common";
+import { CompactBoreHeader, DetailedBoreHeaders } from "./bore-header-items";
 import { BorePlot } from "./bore-plot";
 import { Card } from "./card";
+import { CompactCptHeader, DetailedCptHeaders } from "./cpt-header-items";
 import { CptPlots } from "./cpt-plot";
 import { DownloadGeoJSONButton } from "./download-geojson-button";
 import { FileTable } from "./file-table";
-import { CompactGefHeader, DetailedGefCptHeaders } from "./gef-header-display";
-import { GefMultiMap } from "./gef-map";
+import { GefMultiMap } from "./gef-map.client";
 import { PreExcavationPlot } from "./preexcavation-plot";
 import { SpecimenTable } from "./specimen-table";
 
@@ -32,12 +33,13 @@ function translateWarning(warning: string, t: TFunction): string {
     case "missingXyidHeader":
       return t("missingXyidHeader", { filename: parts[1] });
     case "missingColumnInfoQuantity": {
-      const count = parseInt(parts[2] || "0");
+      const count = parseInt(parts[2] ?? "0");
       const entry = t(
         count === 1
           ? "missingColumnInfoQuantity_entry"
-          : "missingColumnInfoQuantity_entry_plural"
+          : "missingColumnInfoQuantity_entry_plural",
       );
+
       return t("missingColumnInfoQuantity", {
         filename: parts[1],
         count,
@@ -92,7 +94,7 @@ export function App() {
 
     if (files.length > 0) {
       const results = await Promise.allSettled(
-        files.map((file) => parseGefFile(file))
+        files.map((file) => parseGefFile(file)),
       );
 
       const parsedGefFiles = results
@@ -104,7 +106,7 @@ export function App() {
         .map((result, i) => ({ result, file: files[i] }))
         .filter(
           (item): item is { result: PromiseRejectedResult; file: File } =>
-            item.result.status === "rejected"
+            item.result.status === "rejected",
         )
         .map(({ result, file }) => ({
           name: file.name,
@@ -157,7 +159,7 @@ export function App() {
       </header>
 
       <main className="main-grid px-2">
-        <div>
+        <div className="mb-2">
           <div className="mb-8">
             <FileTrigger
               acceptedFileTypes={[".gef", ".GEF"]}
@@ -246,12 +248,14 @@ export function App() {
             }}
             onFileRemove={(filename) => {
               setGefData((prev) => {
+                // eslint-disable-next-line @typescript-eslint/no-unused-vars
                 const { [filename]: _, ...rest } = prev;
                 return rest;
               });
+
               if (selectedFileName === filename) {
                 const remaining = Object.keys(gefData).filter(
-                  (f) => f !== filename
+                  (f) => f !== filename,
                 );
                 setSelectedFileName(remaining[0] ?? "");
               }
@@ -260,7 +264,7 @@ export function App() {
 
           {Object.keys(gefData).length > 0 && (
             <Button
-              className={"button mt-2 ml-auto transition-colors"}
+              className="button mt-2 ml-auto transition-colors"
               onPress={() => {
                 setGefData({});
                 setSelectedFileName("");
@@ -281,7 +285,7 @@ export function App() {
 
               <Suspense
                 fallback={
-                  <div className="w-full h-96 rounded-md border border-gray-300 bg-gray-100 flex items-center justify-center">
+                  <div className="w-full h-96 rounded-sm border border-gray-300 bg-gray-100 flex items-center justify-center">
                     <span className="text-gray-500">{t("loadingMap")}</span>
                   </div>
                 }
@@ -292,16 +296,16 @@ export function App() {
                   onMarkerClick={setSelectedFileName}
                 />
               </Suspense>
+
+              <DownloadGeoJSONButton gefData={gefData} />
             </div>
           )}
-
-          <DownloadGeoJSONButton gefData={gefData} />
         </div>
 
         {selectedFile ? (
           <div className="space-y-6">
             {selectedFile.warnings.length > 0 && (
-              <div className="p-4 bg-amber-50 border border-amber-200 rounded-md">
+              <div className="p-4 bg-amber-50 border border-amber-200 rounded-sm">
                 <h2 className="text-amber-800 font-semibold mb-2">
                   {t("warning", { count: selectedFile.warnings.length })}
                 </h2>
@@ -316,10 +320,12 @@ export function App() {
               </div>
             )}
 
-            <CompactGefHeader filename={selectedFileName} data={selectedFile} />
-
-            {selectedFile.fileType === "CPT" && (
+            {selectedFile.fileType === "CPT" ? (
               <>
+                <CompactCptHeader
+                  filename={selectedFileName}
+                  data={selectedFile}
+                />
                 {selectedFile.chartAxes.xAxis &&
                   selectedFile.chartAxes.yAxis && (
                     <CptPlots
@@ -337,11 +343,14 @@ export function App() {
                     baseFilename={selectedFileName.replace(/\.gef$/i, "")}
                   />
                 )}
+                <DetailedCptHeaders data={selectedFile} />
               </>
-            )}
-
-            {selectedFile.fileType === "BORE" && (
+            ) : (
               <>
+                <CompactBoreHeader
+                  filename={selectedFileName}
+                  data={selectedFile}
+                />
                 <BorePlot
                   layers={selectedFile.layers}
                   specimens={selectedFile.specimens}
@@ -350,10 +359,9 @@ export function App() {
                 {selectedFile.specimens.length > 0 && (
                   <SpecimenTable specimens={selectedFile.specimens} />
                 )}
+                <DetailedBoreHeaders data={selectedFile} />
               </>
             )}
-
-            <DetailedGefCptHeaders data={selectedFile} />
           </div>
         ) : (
           <Card>
@@ -381,60 +389,77 @@ export function App() {
           </Card>
         )}
       </main>
+      <Footer />
+    </div>
+  );
+}
 
-      <footer className="mt-8 py-8 border-t border-gray-300 text-sm text-gray-500">
-        <div className="max-w-6xl mx-auto px-4">
-          <div className="grid md:grid-cols-2 gap-8 mb-8">
-            <div className="space-y-3">
-              <h3 className="font-semibold text-gray-700 mb-3">{t("about")}</h3>
-              <p className="text-sm">{t("appDescription")}</p>
-              <p className="text-sm">{t("privacyNote")}</p>
-              <a
-                className="text-green-900 hover:underline inline-flex gap-1 items-center text-lg font-medium mt-2"
-                href="https://bedrock.engineer"
-              >
-                Bedrock.engineer
-                <img
-                  src="/bedrock.svg"
-                  width="18px"
-                  height="18px"
-                  alt="Bedrock logo"
-                />
-              </a>
-            </div>
+function Footer() {
+  const { t } = useTranslation();
+  return (
+    <footer className="mt-8 py-8 border-t border-gray-300 text-sm text-gray-500">
+      <div className="max-w-6xl mx-auto px-4">
+        <div className="grid md:grid-cols-2 gap-8 mb-8">
+          <div className="space-y-3">
+            <h3 className="font-semibold text-gray-700 mb-3">{t("about")}</h3>
+            <p className="text-sm">{t("appDescription")}</p>
+            <p className="text-sm">{t("privacyNote")}</p>
+            <a
+              className=" hover:underline inline-flex gap-1 items-center text-lg font-medium mt-2"
+              href="https://bedrock.engineer"
+              style={{ color: "hsl(111, 15%, 43%)" }}
+            >
+              Bedrock.engineer
+              <img
+                src="/bedrock.svg"
+                width="16px"
+                height="16px"
+                alt="Bedrock logo"
+              />
+            </a>
+          </div>
 
-            <div className="space-y-4">
-              <h3 className="font-semibold text-gray-700 mb-3">
-                {t("contact")}
-              </h3>
-              <div>
-                <p className="text-sm mb-1">{t("needSimilarApp")}</p>
+          <div className="space-y-4">
+            <h3 className="font-semibold text-gray-700 mb-3">{t("contact")}</h3>
+            <div>
+              <p className="text-sm mb-1 inline-flex">
+                {t("needSimilarApp")} {t("contactUs")}
+                {"  "}
                 <a
                   href="mailto:info@bedrock.engineer"
-                  className="text-blue-500 hover:underline font-medium"
+                  className="text-blue-400 hover:underline font-medium ml-1"
                 >
                   info@bedrock.engineer
                 </a>
-              </div>
-              <div>
-                <p className="text-sm mb-1">{t("feedbackOrRequests")}</p>
-                <a
-                  href="mailto:jules.blom@bedrock.engineer"
-                  className="text-blue-500 hover:underline font-medium"
-                >
-                  jules.blom@bedrock.engineer
-                </a>
-              </div>
+              </p>
+            </div>
+
+            <div>
+              <p className="text-sm mb-1 inline-flex">
+                {t("feedbackOrRequests")}
+              </p>
+
+              <a
+                className="flex gap-1 items-center text-blue-400 hover:underline font-medium"
+                href="https://github.com/bedrock-engineer/gef-app/issues"
+              >
+                <GithubIcon size={14} /> Github Issues
+              </a>
+
+              <a
+                href="mailto:jules.blom@bedrock.engineer"
+                className="flex gap-1 items-center text-blue-400 hover:underline font-medium"
+              >
+                <MailIcon size={12} /> jules.blom@bedrock.engineer
+              </a>
             </div>
           </div>
-
-          <div className="pt-6 border-t border-gray-300">
-            <p className="text-gray-400 text-xs text-center">
-              {t("disclaimer")}
-            </p>
-          </div>
         </div>
-      </footer>
-    </div>
+
+        <div className="pt-6 border-t border-gray-300">
+          <p className="text-gray-400 text-xs text-center">{t("disclaimer")}</p>
+        </div>
+      </div>
+    </footer>
   );
 }

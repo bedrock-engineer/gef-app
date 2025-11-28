@@ -87,9 +87,9 @@ Contributions are welcome. Please feel free to submit a Pull Request. For major 
 
 ### Development Guidelines
 
-1. Run `npm run typecheck` before committing
+1. Run `npm run typecheck`, `npm run lint`, and `npm run knip`, read the warnings and use your best judgement before committing
 2. Follow the existing code style
-3. Add tests for new features
+3. Add tests for new features is encouraged
 4. Update documentation as needed
 
 ## License
