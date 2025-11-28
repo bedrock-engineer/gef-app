@@ -74,6 +74,22 @@ export function Layout({ children, loaderData }: LayoutProps) {
   return (
     <html lang={locale}>
       <head>
+        {process.env.NODE_ENV === "production" && (
+          <>
+            <script
+              id="init-counterscale"
+              dangerouslySetInnerHTML={{
+                __html:
+                  '(function () { window.counterscale = { q: [["set", "siteId", "gef.bedrock.engineer"], ["trackPageview"]], };})();',
+              }}
+            />
+            <script
+              id="counterscale-script"
+              src="https://counterscale.julesb.workers.dev/tracker.js"
+              defer
+            />
+          </>
+        )}
         <meta charSet="utf-8" />
         <meta name="author" content="Jules Blom @ Bedrock" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
