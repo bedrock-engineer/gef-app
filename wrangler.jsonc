@@ -4,7 +4,7 @@
  */
 {
 	"$schema": "node_modules/wrangler/config-schema.json",
-	"name": "bedrock-gef-viewer",
+	"name": "gef-app",
 	"compatibility_date": "2025-04-04",
 	"main": "./workers/app.ts",
 	"vars": {
