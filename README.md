@@ -1,6 +1,7 @@
 # Bedrock GEF Viewer
 
-Free, open-source web application for viewing and visualizing GEF (Geotechnical Exchange Format) files
+Free, open-source web application for viewing and visualizing GEF (Geotechnical Exchange Format) files.
+GEF is an outdated format, however GEF files are still ubiquitous in geotechnical engineering in the Netherlands and Flanders for CPT and bore data.
 
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](LICENSE)
 
@@ -8,14 +9,17 @@ Free, open-source web application for viewing and visualizing GEF (Geotechnical 
 
 ## About
 
-GEF files are ubiquitous in geotechnical engineering in the Netherlands and Flanders. This web application provides a fast, modern interface for viewing and analyzing GEF files directly in your browser.
+<img src="/public/bedrock.svg" width="300px" alt="Bedrock Logo" />
+
+This is a free web application by [Bedrock](https://bedrock.engineer) that provides a fast, modern interface for viewing and analyzing GEF files directly in your browser.
+It also let's you download data from the GEF files as CSV or JSON, and the locations of multiple files as GeoJSON.
 
 ### Supported GEF Types
 
-- GEF-CPT
+- [GEF-CPT](https://bedrock.engineer/reference/formats/gef/gef-cpt/)
   - [Basisregistratie Ondergrond Additions](https://www.cptdata.nl/downloads/gef113Releasenotes.pdf)
   - [Databank Ondergrond Vlaanderen Additions](https://www.milieuinfo.be/confluence/display/DDOV/Toelichting+DOV-GEF+formaat)
-- GEF-BORE
+- [GEF-BORE](https://bedrock.engineer/reference/formats/gef/gef-bore/)
 
 GEF-SIEVE and GEF-DISS are not supported.
 
@@ -38,10 +42,10 @@ GEF-SIEVE and GEF-DISS are not supported.
 - Node.js 20 or higher
 - npm
 
-### Installation
+### Local Development
 
 ```bash
-git clone https://github.com/yourusername/gef-webapp.git
+git clone https://github.com/bedrock-engineer/gef-webapp.git
 cd gef-webapp
 
 npm install
@@ -89,8 +93,7 @@ Contributions are welcome. Please feel free to submit a Pull Request. For major 
 
 1. Run `npm run typecheck`, `npm run lint`, and `npm run knip`, read the warnings and use your best judgement before committing
 2. Follow the existing code style
-3. Add tests for new features is encouraged
-4. Update documentation as needed
+3. Adding tests for new features, or tests for existing code for that matter, is encouraged
 
 ## License
 
