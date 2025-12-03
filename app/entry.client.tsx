@@ -16,9 +16,8 @@ async function main() {
       fallbackLng: "nl",
       defaultNS: "translation",
       detection: {
-        order: ["cookie", "navigator"],
-        caches: ["cookie"],
-        lookupCookie: "lng",
+        order: ["htmlTag"],
+        caches: [],
       },
     });
 
