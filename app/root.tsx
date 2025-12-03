@@ -108,7 +108,7 @@ export function Layout({ children, loaderData }: LayoutProps) {
         />
         <meta
           name="keywords"
-          content="GEF, geotechnical, CPT, bore, soil data, viewer, sondeergegevens, sondeerdata, Geotechnical Exchange Format"
+          content="GEF, GEF bestand, GEF viewer, sondering, sondeergegevens, CPT, cone penetration test, grondonderzoek, boringen, boorprofielen, geotechniek, geotechnical engineering, BRO, Basisregistratie Ondergrond, DOV, Databank Ondergrond Vlaanderen, sondeerdata, grondmechanica, funderingsonderzoek, geotechnisch rapport, GEF-CPT, GEF-BORE, online GEF viewer, Nederlandse geotechniek, Vlaamse geotechniek, civil engineering Nederland, geotechnisch adviesbureau"
         />
         <meta name="format-detection" content="telephone=no" />
         <meta name="theme-color" content="hsl(111, 15%, 43%)" />
@@ -121,16 +121,41 @@ export function Layout({ children, loaderData }: LayoutProps) {
               "@context": "https://schema.org",
               "@type": "WebApplication",
               name: "Bedrock GEF File Viewer",
+              alternateName: "GEF Viewer",
               url: "https://gef.bedrock.engineer",
               description:
-                "View and visualize GEF files easily in your browser. View CPT data and Bore charts instantly.",
+                "Free online GEF file viewer for geotechnical engineers. View, analyze and export CPT sounding data and bore logs from BRO and DOV. Supports GEF-CPT and GEF-BORE formats.",
               applicationCategory: "UtilityApplication",
               operatingSystem: "Any",
               browserRequirements: "Requires JavaScript",
+              inLanguage: ["nl-NL", "en-US"],
+              audience: {
+                "@type": "ProfessionalAudience",
+                audienceType: "Geotechnical Engineers",
+              },
+              featureList: [
+                "View GEF-CPT files",
+                "View GEF-BORE files",
+                "CPT data visualization",
+                "Bore log visualization",
+                "Export to CSV",
+                "Export to JSON",
+                "Export locations to GeoJSON",
+                "BRO data support",
+                "DOV data support",
+                "Browser-based viewer",
+              ],
               offers: {
                 "@type": "Offer",
                 price: "0",
                 priceCurrency: "EUR",
+              },
+              keywords:
+                "GEF, sondering, CPT, grondonderzoek, boringen, BRO, DOV, geotechniek, geotechnical engineering, sondeergegevens, boorprofielen",
+              creator: {
+                "@type": "Organization",
+                name: "Bedrock",
+                url: "https://bedrock.engineer",
               },
             }),
           }}
