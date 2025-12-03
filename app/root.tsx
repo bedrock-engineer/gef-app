@@ -41,7 +41,8 @@ export const links: Route.LinksFunction = () => [
   },
   // Light
   { rel: "icon", href: "/favicon.ico", sizes: "32x32" },
-  { rel: "icon", href: "/favicon.svg", type: "image/svg+xml" },
+  { rel: "icon", href: "/favicon-light-512x512.png", sizes: "512x512" },
+  { rel: "icon", href: "/favicon.svg", type: "image/png" },
   // Dark
   {
     rel: "icon",
@@ -55,6 +56,14 @@ export const links: Route.LinksFunction = () => [
     type: "image/svg+xml",
     media: "(prefers-color-scheme: dark)",
   },
+  {
+    rel: "icon",
+    href: "/favicon-dark-512x512.png.svg",
+    type: "image/png",
+    sizes: "512x512",
+    media: "(prefers-color-scheme: dark)",
+  },
+
   // Other icons
   { rel: "apple-touch-icon", href: "/favicon-180x180.png" },
 

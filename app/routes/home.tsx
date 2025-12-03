@@ -60,6 +60,7 @@ export function meta({ matches }: Route.MetaArgs) {
     { property: "twitter:url", content: siteUrl },
     { name: "twitter:title", content: metadata.title },
     { name: "twitter:description", content: metadata.description },
+    { name: "twitter:creator", content: "@Mega_Jules" },
     {
       name: "twitter:image",
       content: `${siteUrl}/og-image.png`,
