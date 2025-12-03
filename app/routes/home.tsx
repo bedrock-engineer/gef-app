@@ -8,14 +8,14 @@ const siteUrl = "https://gef.bedrock.engineer";
 
 const metaDataTranslations = {
   en: {
-    title: "Bedrock GEF File Viewer",
+    title: "GEF File Viewer - Free CPT & Bore Data Visualization Tool | Bedrock",
     description:
-      "Free online GEF file viewer. View and visualize GEF files easily in your browser. View CPT data and Bore charts instantly.",
+      "Free online GEF viewer for geotechnical engineers. View, analyze and export CPT sounding data and bore logs from BRO and DOV. Supports GEF-CPT and GEF-BORE formats. Works directly in your browser.",
   },
   nl: {
-    title: "Bedrock GEF Bestandsviewer",
+    title: "GEF Bestand Viewer - Gratis Sondering & Boring Visualisatie | Bedrock",
     description:
-      "Gratis online GEF bestandsviewer. Visualisatie van sondeergegevens eenvoudig in uw browser. Bekijk CPT-gegevens en boorgrafieken direct.",
+      "Gratis online GEF viewer voor geotechnisch ingenieurs. Bekijk, analyseer en exporteer CPT sondeergegevens en boorprofielen van BRO en DOV. Ondersteunt GEF-CPT en GEF-BORE formaten. Werkt direct in je browser zonder installatie.",
   },
 };
 
@@ -43,7 +43,12 @@ export function meta({ matches }: Route.MetaArgs) {
   return [
     { title: metadata.title },
     { name: "description", content: metadata.description },
+    // Language alternates
+    { tagName: "link", rel: "alternate", hrefLang: "nl", href: siteUrl },
+    { tagName: "link", rel: "alternate", hrefLang: "en", href: siteUrl },
+    { tagName: "link", rel: "alternate", hrefLang: "x-default", href: siteUrl },
     // Open Graph
+    { property: "og:site_name", content: "Bedrock GEF Viewer" },
     { property: "og:url", content: siteUrl },
     { property: "og:type", content: "website" },
     { property: "og:title", content: metadata.title },
@@ -54,6 +59,9 @@ export function meta({ matches }: Route.MetaArgs) {
       property: "og:image",
       content: `${siteUrl}/og-image.png`,
     },
+    { property: "og:image:width", content: "1200" },
+    { property: "og:image:height", content: "630" },
+    { property: "og:image:alt", content: "Bedrock GEF File Viewer - Geotechnical data visualization" },
     // Twitter
     { name: "twitter:card", content: "summary_large_image" },
     { property: "twitter:domain", content: "gef.bedrock.engineer" },
@@ -65,6 +73,7 @@ export function meta({ matches }: Route.MetaArgs) {
       name: "twitter:image",
       content: `${siteUrl}/og-image.png`,
     },
+    { name: "twitter:image:alt", content: "Bedrock GEF File Viewer" },
   ];
 }
 
