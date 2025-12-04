@@ -68,7 +68,7 @@ function translateError(error: string, t: TFunction): string {
 }
 
 export function App() {
-  const { t, i18n } = useTranslation();
+  const { t } = useTranslation();
   const [isPending, startTransition] = useTransition();
   const [gefData, setGefData] = useState<Record<string, GefData>>({});
   const [selectedFileName, setSelectedFileName] = useState("");
@@ -139,30 +139,7 @@ export function App() {
 
   return (
     <div className="pancake">
-      <header className="mb-6 border-b border-gray-300 py-4 px-2">
-        <div
-          style={{ maxWidth: "clamp(360px, 100%, 1800px)" }}
-          className=" mx-auto flex justify-between items-center"
-        >
-          <h1 className="text-2xl flex gap-2 items-center">
-            <img src="bedrock.svg" width={30} /> {t("appTitle")}
-          </h1>
-
-          <Form method="post">
-            <input
-              type="hidden"
-              name="lang"
-              value={i18n.language === "nl" ? "en" : "nl"}
-            />
-            <button
-              type="submit"
-              className="px-3 py-1 text-sm border border-gray-300 rounded hover:bg-gray-100 transition-colors"
-            >
-              {i18n.language === "nl" ? "English" : "Nederlands"}
-            </button>
-          </Form>
-        </div>
-      </header>
+      <Header />
 
       <main className="main-grid px-2">
         <div className="mb-2">
@@ -332,6 +309,7 @@ export function App() {
                   filename={selectedFileName}
                   data={selectedFile}
                 />
+
                 {selectedFile.chartAxes.xAxis &&
                   selectedFile.chartAxes.yAxis && (
                     <CptPlots
@@ -343,6 +321,7 @@ export function App() {
                       baseFilename={selectedFileName.replace(/\.gef$/i, "")}
                     />
                   )}
+
                 {selectedFile.preExcavationLayers.length > 0 && (
                   <PreExcavationPlot
                     layers={selectedFile.preExcavationLayers}
@@ -370,33 +349,71 @@ export function App() {
             )}
           </div>
         ) : (
-          <Card>
-            <p className="text-gray-600 mb-4">{t("uploadGefFile")}</p>
-
-            <div className="text-sm text-gray-500">
-              <p className="mb-2">{t("freeToolByBedrock")}</p>
-
-              <ul className="list-disc list-inside space-y-1 ">
-                <li>{t("customWebApps")}</li>
-                <li>{t("bimCadIntegrations")}</li>
-                <li>{t("pythonAutomation")}</li>
-              </ul>
-
-              <p className="mt-3">
-                {t("emptyStateContact")}{" "}
-                <a
-                  href="mailto:info@bedrock.engineer"
-                  className="text-blue-500 hover:underline font-medium"
-                >
-                  {t("contactUs")} info@bedrock.engineer
-                </a>
-              </p>
-            </div>
-          </Card>
+          <MarketingMessage />
         )}
       </main>
       <Footer />
     </div>
+  );
+}
+
+function MarketingMessage() {
+  const { t } = useTranslation();
+  return (
+    <Card>
+      <p className="text-gray-600 mb-4">{t("uploadGefFile")}</p>
+
+      <div className="text-sm text-gray-500">
+        <p className="mb-2">{t("freeToolByBedrock")}</p>
+
+        <ul className="list-disc list-inside space-y-1 ">
+          <li>{t("customWebApps")}</li>
+          <li>{t("bimCadIntegrations")}</li>
+          <li>{t("pythonAutomation")}</li>
+        </ul>
+
+        <p className="mt-3">
+          {t("emptyStateContact")}{" "}
+          <a
+            href="mailto:info@bedrock.engineer"
+            className="text-blue-500 hover:underline font-medium"
+          >
+            {t("contactUs")} info@bedrock.engineer
+          </a>
+        </p>
+      </div>
+    </Card>
+  );
+}
+
+function Header() {
+  const { t, i18n } = useTranslation();
+
+  return (
+    <header className="mb-6 border-b border-gray-300 py-4 px-2">
+      <div
+        style={{ maxWidth: "clamp(360px, 100%, 1800px)" }}
+        className=" mx-auto flex justify-between items-center"
+      >
+        <h1 className="text-2xl flex gap-2 items-center">
+          <img src="bedrock.svg" width={30} /> {t("appTitle")}
+        </h1>
+
+        <Form method="post">
+          <input
+            type="hidden"
+            name="lang"
+            value={i18n.language === "nl" ? "en" : "nl"}
+          />
+          <button
+            type="submit"
+            className="px-3 py-1 text-sm border border-gray-300 rounded hover:bg-gray-100 transition-colors"
+          >
+            {i18n.language === "nl" ? "English" : "Nederlands"}
+          </button>
+        </Form>
+      </div>
+    </header>
   );
 }
 
