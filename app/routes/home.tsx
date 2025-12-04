@@ -15,7 +15,7 @@ const metaDataTranslations = {
   nl: {
     title: "GEF Bestand Viewer - Gratis Sondering & Boring Visualisatie | Bedrock",
     description:
-      "Gratis online GEF viewer voor geotechnisch ingenieurs. Bekijk, analyseer en exporteer CPT sondeergegevens en boorprofielen van BRO en DOV. Ondersteunt GEF-CPT en GEF-BORE formaten. Werkt direct in je browser zonder installatie.",
+      "Gratis online GEF viewer voor geotechnisch ingenieurs. Bekijk, analyseer, en exporteer CPT sondeergegevens en boorprofielen van BRO en DOV. Ondersteunt GEF-CPT en GEF-BORE formaten. Werkt direct in je browser zonder installatie.",
   },
 };
 
@@ -48,7 +48,7 @@ export function meta({ matches }: Route.MetaArgs) {
     { tagName: "link", rel: "alternate", hrefLang: "en", href: siteUrl },
     { tagName: "link", rel: "alternate", hrefLang: "x-default", href: siteUrl },
     // Open Graph
-    { property: "og:site_name", content: "Bedrock GEF Viewer" },
+    { property: "og:site_name", content: "Bedrock GEF Bestand Viewer" },
     { property: "og:url", content: siteUrl },
     { property: "og:type", content: "website" },
     { property: "og:title", content: metadata.title },
