@@ -151,7 +151,7 @@ export function Layout({ children, loaderData }: LayoutProps) {
                 priceCurrency: "EUR",
               },
               keywords:
-                "GEF, sondering, CPT, grondonderzoek, boringen, BRO, DOV, geotechniek, geotechnical engineering, sondeergegevens, boorprofielen",
+                "GEF, gef bestand, gef file, sondering, CPT, grondonderzoek, boringen, BRO, DOV, geotechniek, geotechnical engineering, sondeergegevens, boorprofielen",
               creator: {
                 "@type": "Organization",
                 name: "Bedrock",

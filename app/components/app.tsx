@@ -1,5 +1,11 @@
 import type { TFunction } from "i18next";
-import { GithubIcon, MailIcon, TrashIcon, UploadIcon } from "lucide-react";
+import {
+  GithubIcon,
+  LinkedinIcon,
+  MailIcon,
+  TrashIcon,
+  UploadIcon,
+} from "lucide-react";
 import { Suspense, useState, useTransition } from "react";
 import { Button, FileTrigger } from "react-aria-components";
 import { useTranslation } from "react-i18next";
@@ -451,6 +457,14 @@ function Footer() {
                 className="flex gap-1 items-center text-blue-400 hover:underline font-medium"
               >
                 <MailIcon size={12} /> jules.blom@bedrock.engineer
+              </a>
+
+              <a
+                href="https://www.linkedin.com/company/bedrock-engineer/"
+                className="flex gap-1 items-center text-blue-400 hover:underline font-medium"
+              >
+                <LinkedinIcon size={14} />
+                LinkedIn
               </a>
             </div>
           </div>
