@@ -226,7 +226,7 @@ const boreMeasurementVariables = [
   },
 ] as const;
 
-// Drilling method codes for GEF-BORE files (NEN 5104)
+// Drilling method codes from NEN 5104
 const DRILLING_METHOD_CODES = {
   ACK: "Ackermann-steekboring",
   AVE: "Avegaarboring",
@@ -277,6 +277,13 @@ const DRILLING_METHOD_CODES = {
   ZEN: "Zenkovitchboring",
   ZUI: "Zuigboring",
 } as const;
+
+const drillingMethodCodes = Object.entries(DRILLING_METHOD_CODES).map(
+  ([code, description]) => ({
+    code,
+    description,
+  }),
+);
 
 const boreMeasurementTextVariables = [
   {
@@ -436,120 +443,70 @@ const boreMeasurementTextVariables = [
     description: "Boormethode boortraject 1",
     category: "drilling_methods",
     required: true,
-    standardizedCodes: Object.entries(DRILLING_METHOD_CODES).map(
-      ([code, description]) => ({
-        code,
-        description,
-      })
-    ),
+    standardizedCodes: drillingMethodCodes,
   },
   {
     id: 32,
     description: "Boormethode boortraject 2",
     category: "drilling_methods",
     required: false,
-    standardizedCodes: Object.entries(DRILLING_METHOD_CODES).map(
-      ([code, description]) => ({
-        code,
-        description,
-      })
-    ),
+    standardizedCodes: drillingMethodCodes,
   },
   {
     id: 33,
     description: "Boormethode boortraject 3",
     category: "drilling_methods",
     required: false,
-    standardizedCodes: Object.entries(DRILLING_METHOD_CODES).map(
-      ([code, description]) => ({
-        code,
-        description,
-      })
-    ),
+    standardizedCodes: drillingMethodCodes,
   },
   {
     id: 34,
     description: "Boormethode boortraject 4",
     category: "drilling_methods",
     required: false,
-    standardizedCodes: Object.entries(DRILLING_METHOD_CODES).map(
-      ([code, description]) => ({
-        code,
-        description,
-      })
-    ),
+    standardizedCodes: drillingMethodCodes,
   },
   {
     id: 35,
     description: "Boormethode boortraject 5",
     category: "drilling_methods",
     required: false,
-    standardizedCodes: Object.entries(DRILLING_METHOD_CODES).map(
-      ([code, description]) => ({
-        code,
-        description,
-      })
-    ),
+    standardizedCodes: drillingMethodCodes,
   },
   {
     id: 36,
     description: "Boormethode boortraject 6",
     category: "drilling_methods",
     required: false,
-    standardizedCodes: Object.entries(DRILLING_METHOD_CODES).map(
-      ([code, description]) => ({
-        code,
-        description,
-      })
-    ),
+    standardizedCodes: drillingMethodCodes,
   },
   {
     id: 37,
     description: "Boormethode boortraject 7",
     category: "drilling_methods",
     required: false,
-    standardizedCodes: Object.entries(DRILLING_METHOD_CODES).map(
-      ([code, description]) => ({
-        code,
-        description,
-      })
-    ),
+    standardizedCodes: drillingMethodCodes,
   },
   {
     id: 38,
     description: "Boormethode boortraject 8",
     category: "drilling_methods",
     required: false,
-    standardizedCodes: Object.entries(DRILLING_METHOD_CODES).map(
-      ([code, description]) => ({
-        code,
-        description,
-      })
-    ),
+    standardizedCodes: drillingMethodCodes,
   },
   {
     id: 39,
     description: "Boormethode boortraject 9",
     category: "drilling_methods",
     required: false,
-    standardizedCodes: Object.entries(DRILLING_METHOD_CODES).map(
-      ([code, description]) => ({
-        code,
-        description,
-      })
-    ),
+    standardizedCodes: drillingMethodCodes,
   },
   {
     id: 40,
     description: "Boormethode boortraject 10",
     category: "drilling_methods",
     required: false,
-    standardizedCodes: Object.entries(DRILLING_METHOD_CODES).map(
-      ([code, description]) => ({
-        code,
-        description,
-      })
-    ),
+    standardizedCodes: drillingMethodCodes,
   },
 ] as const;
 
@@ -575,7 +532,7 @@ function decodeBoreMeasurementText(id: number, text: string): string {
   }
 
   const code = variable.standardizedCodes.find(
-    (c) => c.code.toLowerCase() === text.trim().toLowerCase()
+    (c) => c.code.toLowerCase() === text.trim().toLowerCase(),
   );
   if (code) {
     return `${code.description} (${code.code})`;
@@ -594,7 +551,7 @@ function decodeBoreMeasurementText(id: number, text: string): string {
  */
 export function processBoreMetadata(
   filename: string,
-  headers: GefBoreHeaders
+  headers: GefBoreHeaders,
 ): ProcessedMetadata {
   const common = processCommonFields(filename, "BORE", headers);
 
@@ -610,7 +567,7 @@ export function processBoreMetadata(
 
       const translationKey = getMeasurementVarKey(
         mv.id,
-        boreMeasurementVariables
+        boreMeasurementVariables,
       );
       if (translationKey) {
         const value = parseFloat(mv.value);
@@ -640,7 +597,7 @@ export function processBoreMetadata(
 
       const translationKey = getMeasurementTextKey(
         mt.id,
-        boreMeasurementTextVariables
+        boreMeasurementTextVariables,
       );
       if (translationKey) {
         const decoded = decodeBoreMeasurementText(mt.id, mt.text);
@@ -770,7 +727,7 @@ export function getSoilColor(code: string): string {
     if (code.startsWith(prefix)) {
       // Find a matching color
       const matchingKey = Object.keys(SOIL_COLORS).find((k) =>
-        k.startsWith(prefix)
+        k.startsWith(prefix),
       );
       if (matchingKey && SOIL_COLORS[matchingKey]) {
         return SOIL_COLORS[matchingKey];
@@ -807,29 +764,60 @@ export interface BoreLayer {
   organicPercent?: number | null;
 }
 
+interface SpecimenCode {
+  code: string;
+  nl: string;
+  en: string;
+}
+
 // Specimen codes based on GEF-BORE specification
-export const SPECIMEN_CODES = {
+export const SPECIMEN_CODES: {
+  geroerd: ReadonlyArray<SpecimenCode>;
+  monstersteekapparaat: ReadonlyArray<SpecimenCode>;
+  dikDunwandig: ReadonlyArray<SpecimenCode>;
+  monstermethode: ReadonlyArray<SpecimenCode>;
+} = {
   geroerd: [
-    { code: "G", description: "Geroerd (Disturbed)" },
-    { code: "O", description: "Ongeroerd (Undisturbed)" },
+    { code: "G", nl: "Geroerd", en: "Disturbed" },
+    { code: "O", nl: "Ongeroerd", en: "Undisturbed" },
   ],
   monstersteekapparaat: [
-    { code: "AMS", description: "Ackermann-apparaat" },
-    { code: "BMS", description: "Begemann-continu-monstersteekapparaat" },
-    { code: "DMS", description: "Druksteekapparaat" },
-    { code: "ZMS", description: "Zuiger-monstersteekapparaat" },
-    { code: "OMS", description: "Open monstersteekapparaat" },
-    { code: "SMS", description: "Monstersteekapparaat SPT" },
+    { code: "AMS", nl: "Ackermann-apparaat", en: "Ackermann apparatus" },
+    {
+      code: "BMS",
+      nl: "Begemann-continu-monstersteekapparaat",
+      en: "Begemann continuous sampler",
+    },
+    { code: "DMS", nl: "Druksteekapparaat", en: "Push sampler" },
+    { code: "ZMS", nl: "Zuiger-monstersteekapparaat", en: "Piston sampler" },
+    { code: "OMS", nl: "Open monstersteekapparaat", en: "Open tube sampler" },
+    { code: "SMS", nl: "Monstersteekapparaat SPT", en: "SPT sampler" },
   ],
   dikDunwandig: [
-    { code: "DIK", description: "Dikwandig (Thick-walled)" },
-    { code: "DUN", description: "Dunwandig (Thin-walled)" },
+    { code: "DIK", nl: "Dikwandig", en: "Thick-walled" },
+    { code: "DUN", nl: "Dunwandig", en: "Thin-walled" },
   ],
   monstermethode: [
-    { code: "D", description: "Drukken (Pushed/Static)" },
-    { code: "H", description: "Hameren (Hammered/Dynamic)" },
+    { code: "D", nl: "Drukken", en: "Pushed/Static" },
+    { code: "H", nl: "Hameren", en: "Hammered/Dynamic" },
   ],
-} as const;
+};
+
+/**
+ * Format a specimen code by looking it up in the provided code list
+ * Returns the description in the specified language if found, the original code if not in list, or undefined if code is undefined
+ */
+export function formatSpecimenCode(
+  code: string | undefined,
+  codeList: ReadonlyArray<{ code: string; nl: string; en: string }>,
+  language: "nl" | "en" = "nl",
+): string | undefined {
+  if (!code) {
+    return undefined;
+  }
+  const found = codeList.find((c) => c.code === code);
+  return found ? found[language] : code;
+}
 
 // Specimen data structure for bore files
 export interface BoreSpecimen {
@@ -861,7 +849,7 @@ const specimenVarOffsets = {
 // Helper to calculate SPECIMENVAR ID for a given specimen number k
 function getSpecimenVarId(
   k: number,
-  property: keyof typeof specimenVarOffsets
+  property: keyof typeof specimenVarOffsets,
 ): number {
   return specimenVarOffsets[property] + 7 * k;
 }
@@ -879,14 +867,14 @@ const specimentTextOffsets = {
 // Helper to calculate SPECIMENTEXT ID for a given specimen number k
 function getSpecimenTextId(
   k: number,
-  property: keyof typeof specimentTextOffsets
+  property: keyof typeof specimentTextOffsets,
 ): number {
   return specimentTextOffsets[property] + 7 * k;
 }
 
 export function parseGefBoreData(
   dataString: string,
-  headersMap: GEFHeadersMap
+  headersMap: GEFHeadersMap,
 ): { layers: Array<BoreLayer>; headers: GefBoreHeaders } {
   const headers = parseGefBoreHeaders(headersMap);
   const columnSeparator = headers.COLUMNSEPARATOR ?? ";";
@@ -903,7 +891,7 @@ export function parseGefBoreData(
     headers.COLUMNVOID?.map(({ columnNumber, voidValue }) => [
       columnNumber,
       voidValue,
-    ]) ?? []
+    ]) ?? [],
   );
 
   const layers: Array<BoreLayer> = records.map((record) => {
@@ -931,11 +919,11 @@ export function parseGefBoreData(
     // Find depth columns by quantity number
     const depthTopIdx = columnInfo.findIndex(
       (c) =>
-        c.quantityNumber === 1 || c.name.toLowerCase().includes("bovenkant")
+        c.quantityNumber === 1 || c.name.toLowerCase().includes("bovenkant"),
     );
     const depthBottomIdx = columnInfo.findIndex(
       (c) =>
-        c.quantityNumber === 2 || c.name.toLowerCase().includes("onderkant")
+        c.quantityNumber === 2 || c.name.toLowerCase().includes("onderkant"),
     );
 
     // Default to columns 0 and 1 if not found
@@ -989,7 +977,7 @@ export function parseGefBoreData(
 }
 
 export function parseGefBoreSpecimens(
-  headers: GefBoreHeaders
+  headers: GefBoreHeaders,
 ): Array<BoreSpecimen> {
   const specimenVars = headers.SPECIMENVAR ?? [];
   const specimenTexts = headers.SPECIMENTEXT ?? [];
@@ -1029,10 +1017,10 @@ export function parseGefBoreSpecimens(
     const depthTopVar = varMap.get(getSpecimenVarId(k, "depthTop"));
     const depthBottomVar = varMap.get(getSpecimenVarId(k, "depthBottom"));
     const diameterMonsterVar = varMap.get(
-      getSpecimenVarId(k, "diameterMonster")
+      getSpecimenVarId(k, "diameterMonster"),
     );
     const diameterApparaatVar = varMap.get(
-      getSpecimenVarId(k, "diameterMonstersteekapparaat")
+      getSpecimenVarId(k, "diameterMonstersteekapparaat"),
     );
 
     // Get SPECIMENTEXT values using helper function
@@ -1041,11 +1029,11 @@ export function parseGefBoreSpecimens(
     const monstertijdText = textMap.get(getSpecimenTextId(k, "monstertijd"));
     const geroerdText = textMap.get(getSpecimenTextId(k, "geroerdOngeroerd"));
     const monstersteekapparaatText = textMap.get(
-      getSpecimenTextId(k, "monstersteekapparaat")
+      getSpecimenTextId(k, "monstersteekapparaat"),
     );
     const dikDunwandigText = textMap.get(getSpecimenTextId(k, "dikDunwandig"));
     const monstermethodeText = textMap.get(
-      getSpecimenTextId(k, "monstermethode")
+      getSpecimenTextId(k, "monstermethode"),
     );
 
     const specimen: BoreSpecimen = {
@@ -1069,4 +1057,3 @@ export function parseGefBoreSpecimens(
 
   return specimens;
 }
-
