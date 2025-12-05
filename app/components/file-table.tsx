@@ -74,7 +74,7 @@ export function FileTable({
         testDate = data.processed.texts.datumBoring?.value ?? null;
         // Get end depth from processed measurements (MEASUREMENTVAR ID 16 = "Einddiepte")
         finalDepth = data.processed.measurements.einddiepte?.value ?? null;
-      // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+        // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
       } else if (data.fileType === "CPT") {
         // For CPT files, use processed startDate
         testDate = data.processed.startDate ?? null;
@@ -138,7 +138,7 @@ export function FileTable({
 
   const handleDrop = async (e: { items: ReadonlyArray<{ kind: string }> }) => {
     const fileItems = e.items.filter(
-      (item): item is FileDropItem => item.kind === "file"
+      (item): item is FileDropItem => item.kind === "file",
     );
     const files = await Promise.all(fileItems.map((item) => item.getFile()));
     onFileDrop(files);
@@ -178,7 +178,7 @@ export function FileTable({
             <SortIndicator column="testDate" sortDescriptor={sortDescriptor} />
           </Column>
           <Column id="type" allowsSorting className="file-table-column">
-            {t("type")}
+            Type
             <SortIndicator column="type" sortDescriptor={sortDescriptor} />
           </Column>
           <Column id="finalDepth" allowsSorting className="file-table-column">
@@ -211,7 +211,7 @@ export function FileTable({
                 className="file-table-cell"
                 style={{ fontVariantNumeric: "tabular-nums" }}
               >
-                {row.finalDepth !== null ? row.finalDepth.toFixed(2) : "-"}
+                {row.finalDepth ?? "-"}
               </Cell>
               <Cell className="file-table-cell">
                 <Button

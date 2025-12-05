@@ -100,7 +100,7 @@ export function CompactHeaderRightColumn({
       ? `${processed.startDate} ${processed.startTime}`
       : processed.startDate;
 
-  const elevationValue = processed.surfaceElevation?.toFixed(2) ?? null;
+  const elevationValue = processed.surfaceElevation ?? null;
   const elevationDisplay = elevationValue
     ? `${elevationValue}m ${processed.heightSystem?.name}`
     : null;
@@ -135,10 +135,10 @@ export function CompactHeaderRightColumn({
             </div>
 
             <div className="flex items-center gap-1">
-              {processed.originalX?.toFixed(2)},{" "}
-              {processed.originalY?.toFixed(2)}
+              {processed.originalX},{" "}
+              {processed.originalY}
               <CopyButton
-                value={`${processed.originalX?.toFixed(2)}, ${processed.originalY?.toFixed(2)}`}
+                value={`${processed.originalX}, ${processed.originalY}`}
                 label={t("copyCoordinates")}
               />
             </div>

@@ -60,7 +60,7 @@ function BoreCompactInfo({ data }: { data: GefBoreData }) {
       {finalDepth && (
         <>
           <dt className="text-gray-500">{t("depth")}</dt>
-          <dd>{finalDepth.value.toFixed(2)}m</dd>
+          <dd>{finalDepth.value}m</dd>
         </>
       )}
     </>
@@ -229,12 +229,12 @@ function getBoreCoordinatesInfo(
     if (xyid) {
       items.push({
         label: t("xCoordinate"),
-        value: `${xyid.x.toFixed()} m ± ${xyid.deltaX.toFixed(3)}`,
+        value: `${xyid.x} m ± ${xyid.deltaX}`,
       });
 
       items.push({
         label: t("yCoordinate"),
-        value: `${xyid.y.toFixed()} m ± ${xyid.deltaY.toFixed(3)}`,
+        value: `${xyid.y} m ± ${xyid.deltaY}`,
       });
     }
   }
@@ -249,7 +249,7 @@ function getBoreCoordinatesInfo(
     if (zid) {
       items.push({
         label: t("surfaceLevel"),
-        value: `${zid.height.toFixed()} m ± ${zid.deltaZ.toFixed(3)}`,
+        value: `${zid.height} m ± ${zid.deltaZ}`,
       });
     }
   }

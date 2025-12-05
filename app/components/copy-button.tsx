@@ -3,7 +3,7 @@ import { useTransition } from "react";
 import { Button } from "react-aria-components";
 
 interface CopyButtonProps {
-  value: string;
+  value: number | string;
   label?: string;
 }
 
@@ -12,7 +12,7 @@ export function CopyButton({ value, label = "Copy" }: CopyButtonProps) {
 
   async function handleCopy() {
     try {
-      await navigator.clipboard.writeText(value);
+      await navigator.clipboard.writeText(String(value));
       startTransition(async () => {
         await new Promise((resolve) => setTimeout(resolve, 2000));
       });

@@ -1,25 +1,15 @@
 import { useTranslation } from "react-i18next";
 import type { BoreSpecimen } from "~/gef/gef-bore";
-import { SPECIMEN_CODES } from "~/gef/gef-bore";
+import { SPECIMEN_CODES, formatSpecimenCode } from "~/gef/gef-bore";
 import { CardTitle } from "./card";
-
-function formatCode(
-  code: string | undefined,
-  codeList: ReadonlyArray<{ code: string; description: string }>
-): string {
-  if (!code) {
-    return "-";
-  }
-  const found = codeList.find((c) => c.code === code);
-  return found ? found.description : code;
-}
 
 interface SpecimenTableProps {
   specimens: Array<BoreSpecimen>;
 }
 
 export function SpecimenTable({ specimens }: SpecimenTableProps) {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
+  const lang: "nl" | "en" = i18n.language === "en" ? "en" : "nl";
 
   if (specimens.length === 0) {
     return null;
@@ -100,7 +90,7 @@ export function SpecimenTable({ specimens }: SpecimenTableProps) {
                 className="border border-gray-300 px-2 py-1 text-center whitespace-nowrap"
                 style={{ fontVariantNumeric: "tabular-nums" }}
               >
-                {spec.depthTop.toFixed(2)} - {spec.depthBottom.toFixed(2)}
+                {spec.depthTop} - {spec.depthBottom}
               </td>
 
               {/* 4. Sample Diameter */}
@@ -108,9 +98,7 @@ export function SpecimenTable({ specimens }: SpecimenTableProps) {
                 className="border border-gray-300 px-2 py-1 text-right"
                 style={{ fontVariantNumeric: "tabular-nums" }}
               >
-                {spec.diameterMonster != null
-                  ? spec.diameterMonster.toFixed(1)
-                  : "-"}
+                {spec.diameterMonster ?? "-"}
               </td>
 
               {/* 5. Apparatus Diameter - NEW COLUMN */}
@@ -118,9 +106,7 @@ export function SpecimenTable({ specimens }: SpecimenTableProps) {
                 className="border border-gray-300 px-2 py-1 text-right"
                 style={{ fontVariantNumeric: "tabular-nums" }}
               >
-                {spec.diameterMonstersteekapparaat != null
-                  ? spec.diameterMonstersteekapparaat.toFixed(1)
-                  : "-"}
+                {spec.diameterMonstersteekapparaat ?? "-"}
               </td>
 
               {/* 6. Date/Time */}
@@ -131,22 +117,35 @@ export function SpecimenTable({ specimens }: SpecimenTableProps) {
 
               {/* 7. Disturbed */}
               <td className="border border-gray-300 px-2 py-1 whitespace-nowrap">
-                {formatCode(spec.geroerdOngeroerd, SPECIMEN_CODES.geroerd)}
+                {formatSpecimenCode(
+                  spec.geroerdOngeroerd,
+                  SPECIMEN_CODES.geroerd,
+                  lang,
+                ) ?? "-"}
               </td>
 
               {/* 8. Apparatus Type */}
               <td className="border border-gray-300 px-2 py-1">
-                {formatCode(
+                {formatSpecimenCode(
                   spec.monstersteekapparaat,
-                  SPECIMEN_CODES.monstersteekapparaat
-                )}
+                  SPECIMEN_CODES.monstersteekapparaat,
+                  lang,
+                ) ?? "-"}
               </td>
 
               {/* 9. Wall/Method */}
               <td className="border border-gray-300 px-2 py-1 whitespace-nowrap">
-                {formatCode(spec.dikDunwandig, SPECIMEN_CODES.dikDunwandig)}
+                {formatSpecimenCode(
+                  spec.dikDunwandig,
+                  SPECIMEN_CODES.dikDunwandig,
+                  lang,
+                ) ?? "-"}
                 {spec.dikDunwandig && spec.monstermethode && " / "}
-                {formatCode(spec.monstermethode, SPECIMEN_CODES.monstermethode)}
+                {formatSpecimenCode(
+                  spec.monstermethode,
+                  SPECIMEN_CODES.monstermethode,
+                  lang,
+                ) ?? "-"}
               </td>
             </tr>
           ))}

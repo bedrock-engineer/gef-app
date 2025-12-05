@@ -3,10 +3,17 @@ import { max, min } from "d3-array";
 import { useEffect, useRef } from "react";
 import { useTranslation } from "react-i18next";
 import type { BoreLayer, BoreSpecimen } from "~/gef/gef-bore";
-import { getSoilColor } from "~/gef/gef-bore";
+import {
+  getSoilColor,
+  SPECIMEN_CODES,
+  formatSpecimenCode,
+} from "~/gef/gef-bore";
 import { decodeBoreCode } from "~/gef/gef-bore-codes";
 import { Card, CardTitle } from "./card";
 import { PlotDownloadButtons } from "./plot-download-buttons";
+
+const MIN_LAYER_HEIGHT_PX = 15; // minimum pixel height to show label
+const id = "boreplot";
 
 interface BorePlotProps {
   layers: Array<BoreLayer>;
@@ -16,9 +23,6 @@ interface BorePlotProps {
   height?: number;
 }
 
-const MIN_LAYER_HEIGHT_PX = 15; // minimum pixel height to show label
-const id = "boreplot";
-
 export function BorePlot({
   layers,
   specimens = [],
@@ -26,13 +30,16 @@ export function BorePlot({
   height = 800,
   baseFilename,
 }: BorePlotProps) {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const containerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (containerRef.current === null || layers.length === 0) {
       return;
     }
+
+    // Get current language for specimen code formatting
+    const lang: "nl" | "en" = i18n.language === "en" ? "en" : "nl";
 
     // Calculate the depth range and pixels per meter
     const minDepth = min(layers.map((l) => l.depthTop)) ?? 0;
@@ -79,30 +86,7 @@ export function BorePlot({
           },
           stroke: "white",
           strokeWidth: 0.5,
-          title: (d: BoreLayer) => {
-            const codes = [d.soilCode, ...d.additionalCodes].join(" ");
-            // Decode main soil code
-            const decodedSoil = decodeBoreCode(d.soilCode);
-            let tooltip = `${d.depthTop.toFixed(2)} – ${d.depthBottom.toFixed(2)} m\n${codes}`;
-            // Add decoded description if different from code
-            if (decodedSoil !== d.soilCode) {
-              tooltip += `\n${decodedSoil}`;
-            }
-            // Decode additional codes
-            const decodedExtras = d.additionalCodes
-              .map((c) => {
-                const decoded = decodeBoreCode(c);
-                return decoded !== c ? decoded : null;
-              })
-              .filter(Boolean);
-            if (decodedExtras.length > 0) {
-              tooltip += `\n${decodedExtras.join(", ")}`;
-            }
-            if (d.description) {
-              tooltip += `\n${d.description}`;
-            }
-            return tooltip;
-          },
+          title: formatBoreLayerTitle,
           tip: true,
         }),
         // Soil code labels for layers tall enough in pixels
@@ -134,14 +118,7 @@ export function BorePlot({
                 fill: "#e11d48",
                 r: 4,
                 symbol: "triangle",
-                title: (d: BoreSpecimen) =>
-                  `Monster ${d.specimenNumber}${
-                    d.monstercode ? ` (${d.monstercode})` : ""
-                  }\n` +
-                  `${d.depthTop.toFixed(2)} – ${d.depthBottom.toFixed(2)} m\n` +
-                  `${d.geroerdOngeroerd ?? ""} ${
-                    d.monstersteekapparaat ?? ""
-                  } ${d.monstermethode ?? ""}`.trim(),
+                title: (d: BoreSpecimen) => formatSpecimentTitle(d, lang),
                 tip: true,
               }),
             ]
@@ -164,7 +141,7 @@ export function BorePlot({
     return () => {
       plot.remove();
     };
-  }, [layers, specimens, width, height]);
+  }, [layers, specimens, width, height, i18n.language]);
 
   return (
     <Card>
@@ -199,6 +176,72 @@ export function BorePlot({
       <PlotDownloadButtons plotId={id} filename={`${baseFilename}-boorstaat`} />
     </Card>
   );
+}
+
+function formatBoreLayerTitle({
+  soilCode,
+  depthBottom,
+  depthTop,
+  additionalCodes,
+  description,
+}: BoreLayer) {
+  const codes = [soilCode, ...additionalCodes].join(" ");
+  const decodedSoil = decodeBoreCode(soilCode);
+  let tooltip = `${depthTop} – ${depthBottom} m\n${codes}`;
+
+  if (decodedSoil !== soilCode) {
+    tooltip += `\n${decodedSoil}`;
+  }
+  // Decode additional codes
+  const decodedExtras = additionalCodes
+    .map((c) => {
+      const decoded = decodeBoreCode(c);
+      return decoded !== c ? decoded : null;
+    })
+    .filter(Boolean);
+  if (decodedExtras.length > 0) {
+    tooltip += `\n${decodedExtras.join(", ")}`;
+  }
+
+  if (description) {
+    tooltip += `\n${description}`;
+  }
+
+  return tooltip;
+}
+
+function formatSpecimentTitle(
+  {
+    monstercode,
+    depthBottom,
+    depthTop,
+    specimenNumber,
+    geroerdOngeroerd,
+    monstermethode,
+    monstersteekapparaat,
+  }: BoreSpecimen,
+  lang: "nl" | "en",
+) {
+  const parts = [
+    `Monster ${specimenNumber}${monstercode ? ` (${monstercode})` : ""}`,
+    `${depthTop} – ${depthBottom} m`,
+  ];
+
+  const decodedParts = [
+    formatSpecimenCode(geroerdOngeroerd, SPECIMEN_CODES.geroerd, lang),
+    formatSpecimenCode(
+      monstersteekapparaat,
+      SPECIMEN_CODES.monstersteekapparaat,
+      lang,
+    ),
+    formatSpecimenCode(monstermethode, SPECIMEN_CODES.monstermethode, lang),
+  ].filter(Boolean);
+
+  if (decodedParts.length > 0) {
+    parts.push(decodedParts.join(", "));
+  }
+
+  return parts.join("\n");
 }
 
 function LegendItem({ color, label }: { color: string; label: string }) {
