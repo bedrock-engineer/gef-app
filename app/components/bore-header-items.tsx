@@ -229,12 +229,12 @@ function getBoreCoordinatesInfo(
     if (xyid) {
       items.push({
         label: t("xCoordinate"),
-        value: `${xyid.x.toFixed()} m ± ${xyid.deltaX.toFixed()}`,
+        value: `${xyid.x.toFixed()} m ± ${xyid.deltaX.toFixed(3)}`,
       });
 
       items.push({
         label: t("yCoordinate"),
-        value: `${xyid.y.toFixed()} m ± ${xyid.deltaY.toFixed()}`,
+        value: `${xyid.y.toFixed()} m ± ${xyid.deltaY.toFixed(3)}`,
       });
     }
   }
@@ -249,7 +249,7 @@ function getBoreCoordinatesInfo(
     if (zid) {
       items.push({
         label: t("surfaceLevel"),
-        value: `${zid.height.toFixed()} m ± ${zid.deltaZ.toFixed()}`,
+        value: `${zid.height.toFixed()} m ± ${zid.deltaZ.toFixed(3)}`,
       });
     }
   }
