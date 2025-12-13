@@ -125,7 +125,7 @@ export function BorePlot({
           : []),
         Plot.frame(),
         // Watermark
-        Plot.text(["Made with Bedrock GEF Viewer"], {
+        Plot.text([t("madeWithBedrockGefViewer")], {
           frameAnchor: "bottom-right",
           dx: 0,
           dy: 15,
@@ -141,7 +141,7 @@ export function BorePlot({
     return () => {
       plot.remove();
     };
-  }, [layers, specimens, width, height, i18n.language]);
+  }, [layers, specimens, width, height, i18n.language, t]);
 
   return (
     <Card>

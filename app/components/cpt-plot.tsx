@@ -221,6 +221,7 @@ function CptPlot({
   showComments,
   plotId,
 }: CptPlotInternalProps) {
+  const { t } = useTranslation();
   const containerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -280,7 +281,7 @@ function CptPlot({
             ]
           : []),
         // Watermark
-        Plot.text(["Made with Bedrock GEF Viewer"], {
+        Plot.text([t("madeWithBedrockGefViewer")], {
           frameAnchor: "top-right",
           dx: -5,
           dy: 5,
@@ -295,7 +296,7 @@ function CptPlot({
     return () => {
       plot.remove();
     };
-  }, [data, xAxis, yAxis, width, height, reverseY, showComments]);
+  }, [data, xAxis, yAxis, width, height, reverseY, showComments, t]);
 
   return <div id={plotId} ref={containerRef}></div>;
 }
