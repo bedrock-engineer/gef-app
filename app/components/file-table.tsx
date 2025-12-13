@@ -16,7 +16,7 @@ import {
   TableHeader,
 } from "react-aria-components";
 import { useTranslation } from "react-i18next";
-import type { GefData, GefFileType } from "~/gef/gef-common";
+import type { GefData, GefFileType } from "@bedrock-engineer/gef-parser";
 
 function SortIndicator({
   column,

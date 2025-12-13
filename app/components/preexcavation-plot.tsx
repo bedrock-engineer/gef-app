@@ -2,9 +2,9 @@ import * as Plot from "@observablehq/plot";
 import { max } from "d3-array";
 import { useEffect, useRef } from "react";
 import { useTranslation } from "react-i18next";
-import type { PreExcavationLayer } from "~/gef/gef-cpt";
-import { getSoilColor } from "~/gef/gef-bore";
-import { getSoilCodeFromDescription } from "~/gef/gef-bore-codes";
+import type { PreExcavationLayer } from "@bedrock-engineer/gef-parser";
+import { getSoilColor } from "@bedrock-engineer/gef-parser";
+import { getSoilCodeFromDescription } from "@bedrock-engineer/gef-parser";
 import { PlotDownloadButtons } from "./plot-download-buttons";
 import { Card, CardTitle } from "./card";
 

@@ -1,25 +1,22 @@
 import { useTranslation } from "react-i18next";
 import type { TFunction } from "i18next";
-import type { GefBoreData } from "../gef/gef-bore";
-import { findBoreMeasurementVariable } from "../gef/gef-bore";
-import { type ProcessedMetadata } from "../gef/gef-cpt";
-import type { GefBoreHeaders } from "~/gef/gef-schemas";
+import type { GefBoreData } from "@bedrock-engineer/gef-parser";
+import { type ProcessedMetadata } from "@bedrock-engineer/gef-parser";
 import { CardTitle } from "./card";
 import {
-  countryCodeTranslationMap,
-  formatNumericValue,
-  getLocalizedDescription,
-  type HeaderItem,
-} from "./common-header-items";
-import {
-  CompactHeaderLeftColumn,
-  CompactHeaderRightColumn,
+  filterMeasurementsByCategories,
   filterMeasurementTextsByCategories,
   getCalculationsInfo,
   getComments,
   getConditionsInfo,
   getFileMetadata,
   getProcessingInfo,
+  countryCodeTranslationMap,
+  type HeaderItem,
+} from "./common-header-items";
+import {
+  CompactHeaderLeftColumn,
+  CompactHeaderRightColumn,
   HeaderDisclosurePanels,
   type HeaderSection,
 } from "./gef-header-display";
@@ -88,7 +85,6 @@ export function CompactBoreHeader({ filename, data }: CompactBoreHeaderProps) {
 }
 
 function getBoreProjectInfo(
-  headers: GefBoreHeaders,
   processed: ProcessedMetadata,
   t: TFunction,
   locale: string,
@@ -106,25 +102,22 @@ function getBoreProjectInfo(
     items.push({ label: t("company"), value: processed.companyName });
   }
 
-  const company = headers.COMPANYID;
-  if (company) {
-    if (company.address) {
-      items.push({ label: t("address"), value: company.address });
-    }
+  if (processed.companyAddress) {
+    items.push({ label: t("address"), value: processed.companyAddress });
+  }
 
-    if (company.countryCode) {
-      const countryKey =
-        countryCodeTranslationMap[
-          company.countryCode as keyof typeof countryCodeTranslationMap
-        ];
+  if (processed.companyCountryCode) {
+    const countryKey =
+      countryCodeTranslationMap[
+        processed.companyCountryCode as keyof typeof countryCodeTranslationMap
+      ];
 
-      // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-      if (countryKey) {
-        items.push({
-          label: t("country"),
-          value: t(countryKey),
-        });
-      }
+    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+    if (countryKey) {
+      items.push({
+        label: t("country"),
+        value: t(countryKey),
+      });
     }
   }
 
@@ -145,9 +138,9 @@ function getBoreProjectInfo(
 }
 
 function getBoreTestInfo(
-  headers: GefBoreHeaders,
   processed: ProcessedMetadata,
   t: TFunction,
+  locale: string,
 ): Array<HeaderItem> {
   const items: Array<HeaderItem> = [];
 
@@ -165,41 +158,18 @@ function getBoreTestInfo(
     });
   }
 
-  headers.MEASUREMENTVAR?.forEach(({ id, value, unit }) => {
-    const varInfo = findBoreMeasurementVariable(id);
-
-    if (
-      varInfo &&
-      ["test_type", "test_execution", "site_conditions"].includes(
-        varInfo.category,
-      )
-    ) {
-      let displayValue: string;
-
-      if ("options" in varInfo) {
-        const numValue = parseFloat(value);
-
-        const option = (
-          varInfo.options as ReadonlyArray<{ value: number; meaning: string }>
-        ).find((o) => o.value === numValue);
-
-        displayValue = option ? option.meaning : formatNumericValue(value);
-      } else {
-        displayValue = formatNumericValue(value);
-      }
-
-      items.push({
-        label: varInfo.description,
-        value: unit && unit !== "-" ? `${displayValue} ${unit}` : displayValue,
-      });
-    }
-  });
+  items.push(
+    ...filterMeasurementsByCategories(
+      processed,
+      ["test_type", "test_execution", "site_conditions"],
+      locale,
+    ),
+  );
 
   return items;
 }
 
 function getBoreCoordinatesInfo(
-  headers: GefBoreHeaders,
   processed: ProcessedMetadata,
   t: TFunction,
   locale: string,
@@ -225,16 +195,23 @@ function getBoreCoordinatesInfo(
       value: `${processed.coordinateSystem.name} ${processed.coordinateSystem.epsg}`,
     });
 
-    const xyid = headers.XYID;
-    if (xyid) {
+    if (
+      processed.originalX !== undefined &&
+      processed.xUncertainty !== undefined
+    ) {
       items.push({
         label: t("xCoordinate"),
-        value: `${xyid.x} m ± ${xyid.deltaX}`,
+        value: `${processed.originalX} m ± ${processed.xUncertainty}`,
       });
+    }
 
+    if (
+      processed.originalY !== undefined &&
+      processed.yUncertainty !== undefined
+    ) {
       items.push({
         label: t("yCoordinate"),
-        value: `${xyid.y} m ± ${xyid.deltaY}`,
+        value: `${processed.originalY} m ± ${processed.yUncertainty}`,
       });
     }
   }
@@ -245,11 +222,13 @@ function getBoreCoordinatesInfo(
       value: processed.heightSystem.name,
     });
 
-    const zid = headers.ZID;
-    if (zid) {
+    if (
+      processed.surfaceElevation !== undefined &&
+      processed.elevationUncertainty !== undefined
+    ) {
       items.push({
         label: t("surfaceLevel"),
-        value: `${zid.height} m ± ${zid.deltaZ}`,
+        value: `${processed.surfaceElevation} m ± ${processed.elevationUncertainty}`,
       });
     }
   }
@@ -258,7 +237,6 @@ function getBoreCoordinatesInfo(
 }
 
 function getBoreEquipmentInfo(
-  headers: GefBoreHeaders,
   processed: ProcessedMetadata,
   locale: string,
 ): Array<HeaderItem> {
@@ -277,11 +255,10 @@ function getBoreEquipmentInfo(
     ),
   );
 
-  headers.MEASUREMENTVAR?.forEach(({ id, value, unit }) => {
-    const varInfo = findBoreMeasurementVariable(id);
-    if (
-      !varInfo ||
-      ![
+  items.push(
+    ...filterMeasurementsByCategories(
+      processed,
+      [
         "equipment",
         "capabilities",
         "drilling_equipment",
@@ -289,27 +266,10 @@ function getBoreEquipmentInfo(
         "borehole_geometry",
         "groundwater",
         "monitoring_wells",
-      ].includes(varInfo.category)
-    ) {
-      return;
-    }
-
-    let displayValue: string;
-    if ("options" in varInfo) {
-      const numValue = parseFloat(value);
-      const option = (
-        varInfo.options as ReadonlyArray<{ value: number; meaning: string }>
-      ).find((o) => o.value === numValue);
-      displayValue = option ? option.meaning : formatNumericValue(value);
-    } else {
-      displayValue = formatNumericValue(value);
-    }
-
-    items.push({
-      label: getLocalizedDescription(varInfo, locale),
-      value: unit && unit !== "-" ? `${displayValue} ${unit}` : displayValue,
-    });
-  });
+      ],
+      locale,
+    ),
+  );
 
   return items;
 }
@@ -321,29 +281,29 @@ interface DetailedBoreHeadersProps {
 export function DetailedBoreHeaders({ data }: DetailedBoreHeadersProps) {
   const { t, i18n } = useTranslation();
   const locale = i18n.language;
-  const { headers, processed } = data;
+  const { processed } = data;
 
   const allSections: Array<HeaderSection> = [
     // BORE-specific sections
     {
       id: "project",
       title: t("projectInformation"),
-      items: getBoreProjectInfo(headers, processed, t, locale),
+      items: getBoreProjectInfo(processed, t, locale),
     },
     {
       id: "test_info",
       title: t("testInformation"),
-      items: getBoreTestInfo(headers, processed, t),
+      items: getBoreTestInfo(processed, t, locale),
     },
     {
       id: "coordinates",
       title: t("coordinatesLocation"),
-      items: getBoreCoordinatesInfo(headers, processed, t, locale),
+      items: getBoreCoordinatesInfo(processed, t, locale),
     },
     {
       id: "equipment",
       title: t("equipmentCapabilities"),
-      items: getBoreEquipmentInfo(headers, processed, locale),
+      items: getBoreEquipmentInfo(processed, locale),
     },
     // Shared sections using generic utilities
     {
@@ -364,12 +324,12 @@ export function DetailedBoreHeaders({ data }: DetailedBoreHeadersProps) {
     {
       id: "metadata",
       title: t("fileMetadata"),
-      items: getFileMetadata(headers, t),
+      items: getFileMetadata(processed, t),
     },
     {
       id: "comments",
       title: t("comments"),
-      items: getComments(headers, t),
+      items: getComments(processed, t),
     },
     // BORE-specific sections can be added here in the future
   ].filter((section) => section.items.length > 0);

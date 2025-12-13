@@ -1,4 +1,4 @@
-import type { TFunction } from "i18next";
+import type { GefData, ProcessedMetadata } from "@bedrock-engineer/gef-parser";
 import { DownloadIcon } from "lucide-react";
 import type { ReactNode } from "react";
 import {
@@ -10,15 +10,10 @@ import {
   TooltipTrigger,
 } from "react-aria-components";
 import { useTranslation } from "react-i18next";
-import type { GefData } from "~/gef/gef-common";
-import type { GefBoreHeaders, GefCptHeaders } from "~/gef/gef-schemas";
 import { downloadGefDataAsCsv } from "~/util/csv-download";
 import { downloadGefDataAsJson } from "~/util/json-download";
-import type { ProcessedMetadata } from "../gef/gef-cpt";
-import { formatGefDate } from "../gef/gef-metadata-processed";
 import {
-  getLocalizedDescription,
-  type HeaderItem,
+  type HeaderItem
 } from "./common-header-items";
 import { CopyButton } from "./copy-button";
 
@@ -135,8 +130,7 @@ export function CompactHeaderRightColumn({
             </div>
 
             <div className="flex items-center gap-1">
-              {processed.originalX},{" "}
-              {processed.originalY}
+              {processed.originalX}, {processed.originalY}
               <CopyButton
                 value={`${processed.originalX}, ${processed.originalY}`}
                 label={t("copyCoordinates")}
@@ -251,141 +245,4 @@ export function HeaderDisclosurePanels({
       ))}
     </div>
   );
-}
-
-export function getFileMetadata(
-  headers: GefBoreHeaders | GefCptHeaders,
-  t: TFunction,
-) {
-  const items: Array<{ label: string; value: string }> = [];
-
-  if (headers.GEFID) {
-    items.push({
-      label: t("gefVersion"),
-      value: `${headers.GEFID.major}.${headers.GEFID.minor}.${headers.GEFID.patch}`,
-    });
-  }
-
-  if (headers.REPORTCODE) {
-    items.push({
-      label: t("reportCode"),
-      value: `${headers.REPORTCODE.code} v${headers.REPORTCODE.major}.${headers.REPORTCODE.minor}.${headers.REPORTCODE.patch}`,
-    });
-  }
-
-  if (headers.MEASUREMENTCODE) {
-    // If it has version info, show it; otherwise just show the code
-    const hasVersion =
-      headers.MEASUREMENTCODE.major > 0 ||
-      headers.MEASUREMENTCODE.minor > 0 ||
-      headers.MEASUREMENTCODE.patch > 0;
-    const value = hasVersion
-      ? `${headers.MEASUREMENTCODE.code} v${headers.MEASUREMENTCODE.major}.${headers.MEASUREMENTCODE.minor}.${headers.MEASUREMENTCODE.patch}`
-      : headers.MEASUREMENTCODE.code;
-    items.push({
-      label: t("measurementCode"),
-      value,
-    });
-  }
-
-  if (headers.FILEDATE) {
-    items.push({
-      label: t("fileDate"),
-      value: formatGefDate(headers.FILEDATE),
-    });
-  }
-
-  if (headers.FILEOWNER) {
-    items.push({ label: t("fileOwner"), value: headers.FILEOWNER });
-  }
-  if (headers.OS) {
-    items.push({ label: t("operatingSystem"), value: headers.OS });
-  }
-
-  return items;
-}
-
-export function filterMeasurementTextsByCategories(
-  processed: ProcessedMetadata,
-  categories: Array<string>,
-  locale: string,
-): Array<HeaderItem> {
-  const items: Array<HeaderItem> = [];
-
-  for (const textItem of Object.values(processed.texts)) {
-    if (!categories.includes(textItem.metadata.category)) {
-      continue;
-    }
-
-    if (!textItem.value || textItem.value === "-" || textItem.value === "0") {
-      continue;
-    }
-
-    if (textItem.metadata.category === "reserved") {
-      continue;
-    }
-
-    const displayValue = textItem.decoded ?? textItem.value;
-
-    items.push({
-      label: getLocalizedDescription(textItem.metadata, locale),
-      value: displayValue,
-    });
-  }
-
-  return items;
-}
-
-export function getConditionsInfo(
-  processed: ProcessedMetadata,
-  locale: string,
-) {
-  return filterMeasurementTextsByCategories(
-    processed,
-    [
-      "conditions",
-      "general",
-      "infrastructure",
-      "measurements",
-      "sample_condition",
-      "monitoring_wells",
-    ],
-    locale,
-  );
-}
-
-export function getProcessingInfo(
-  processed: ProcessedMetadata,
-  locale: string,
-) {
-  return filterMeasurementTextsByCategories(processed, ["processing"], locale);
-}
-
-export function getCalculationsInfo(
-  processed: ProcessedMetadata,
-  locale: string,
-) {
-  return filterMeasurementTextsByCategories(
-    processed,
-    ["calculations"],
-    locale,
-  );
-}
-
-export function getComments(
-  headers: GefBoreHeaders | GefCptHeaders,
-  t: TFunction,
-) {
-  const items: Array<HeaderItem> = [];
-
-  if (headers.COMMENT && headers.COMMENT.length > 0) {
-    headers.COMMENT.forEach((comment, index) => {
-      items.push({
-        label: `${t("comment")} ${index + 1}`,
-        value: comment,
-      });
-    });
-  }
-
-  return items;
 }

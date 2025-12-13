@@ -13,8 +13,9 @@ import {
 } from "react-aria-components";
 import { useTranslation } from "react-i18next";
 import { PlotDownloadButtons } from "./plot-download-buttons";
-import { DEPTH_KEYWORDS } from "~/gef/gef-cpt";
+import type { Row } from "@bedrock-engineer/gef-parser";
 import { Card, CardTitle } from "./card";
+import { DEPTH_KEYWORDS } from "~/util/chart-axes";
 
 interface Column {
   key: string;
@@ -30,7 +31,7 @@ function isDepthColumn(col: Column): boolean {
 }
 
 interface CptPlotProps {
-  data: Array<Record<string, number>>;
+  data: Array<Row>;
   xAxis: Column;
   yAxis: Column;
   availableColumns: Array<Column>;
@@ -175,7 +176,7 @@ export function CptPlots({
 }
 
 interface CptPlotInternalProps {
-  data: Array<Record<string, number>>;
+  data: Array<Row>;
   xAxis: Column;
   yAxis: Column;
   width: number;

@@ -2,8 +2,8 @@ import type { Feature, FeatureCollection } from "geojson";
 import { DownloadIcon } from "lucide-react";
 import { Button } from "react-aria-components";
 import { useTranslation } from "react-i18next";
-import type { GefData } from "~/gef/gef-common";
-import type { ProcessedMetadata } from "~/gef/gef-cpt";
+import type { GefData } from "@bedrock-engineer/gef-parser";
+import type { ProcessedMetadata } from "@bedrock-engineer/gef-parser";
 import { downloadFile } from "~/util/download";
 
 function createGeoJSON(gefData: Record<string, GefData>): FeatureCollection {
