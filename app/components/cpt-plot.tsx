@@ -54,6 +54,7 @@ export function CptPlots({
   const { t } = useTranslation();
   const [selectedAxes, setSelectedAxes] = useState([initialXAxis.key]);
   const [selectedYAxis, setSelectedYAxis] = useState(initialYAxis.key);
+  const [showComments, setShowComments] = useState(true);
 
   const xAxisOptions = availableColumns.filter((col) => !isDepthColumn(col));
 
@@ -63,6 +64,9 @@ export function CptPlots({
   // Determine if we should reverse the y-axis
   // Elevation should NOT be reversed (positive up), depth should be reversed (positive down)
   const isElevation = selectedYAxis === "elevation";
+
+  // Check if data contains any comments
+  const hasComments = data.some((row) => row.comment);
 
   return (
     <Card>
@@ -138,6 +142,26 @@ export function CptPlots({
             </div>
           )}
         </div>
+
+        {hasComments && (
+          <div className="flex items-center gap-2">
+            <Checkbox
+              isSelected={showComments}
+              onChange={setShowComments}
+              className="flex items-center gap-2 group"
+            >
+              <div className="w-4 h-4 border-2 border-gray-300 rounded flex items-center justify-center group-data-[selected]:bg-blue-600 group-data-[selected]:border-blue-600 group-hover:border-gray-400 group-data-[selected]:group-hover:bg-blue-700 group-data-[pressed]:scale-95 transition-all">
+                <svg
+                  viewBox="0 0 18 18"
+                  className="w-3 h-3 fill-none stroke-white stroke-2 opacity-0 group-data-selected:opacity-100"
+                >
+                  <polyline points="1 9 7 14 15 4" />
+                </svg>
+              </div>
+              <span className="text-sm text-gray-700">Show comments</span>
+            </Checkbox>
+          </div>
+        )}
       </div>
 
       <div className="flex justify-center">
@@ -162,6 +186,7 @@ export function CptPlots({
                 yAxis={currentYAxis}
                 xAxis={xAxis}
                 reverseY={!isElevation}
+                showComments={showComments}
               />
               <PlotDownloadButtons
                 plotId={plotId}
@@ -182,6 +207,7 @@ interface CptPlotInternalProps {
   width: number;
   height: number;
   reverseY?: boolean;
+  showComments: boolean;
   plotId: string;
 }
 
@@ -192,6 +218,7 @@ function CptPlot({
   yAxis,
   data,
   reverseY = true,
+  showComments,
   plotId,
 }: CptPlotInternalProps) {
   const containerRef = useRef<HTMLDivElement>(null);
@@ -201,11 +228,23 @@ function CptPlot({
       return;
     }
 
+    // Filter rows that have comments
+    const dataWithComments = data.filter((row) => row.comment);
+    const hasComments = dataWithComments.length > 0;
+
+    // Find the max x value to position comments to the right of the plot area
+    const maxX = Math.max(...data.map((d) => d[xAxis.key] as number));
+
+    // Only adjust width/margin if we have comments AND want to show them
+    const shouldShowComments = hasComments && showComments;
+
     const plot = Plot.plot({
       height,
-      width,
+      width: shouldShowComments ? width + 160 : width,
+      marginRight: shouldShowComments ? 200 : 40,
       style: {
         backgroundColor: "white",
+        overflow: "visible",
       },
       x: {
         label: `${xAxis.name} (${xAxis.unit})`,
@@ -226,6 +265,20 @@ function CptPlot({
           x: xAxis.key,
           y: yAxis.key,
         }),
+        // Text comments from data block, positioned to the right of the frame
+        ...(shouldShowComments
+          ? [
+              Plot.text(dataWithComments, {
+                x: maxX,
+                y: yAxis.key,
+                text: (d: Row) => String(d.comment),
+                dx: 5,
+                textAnchor: "start",
+                fill: "black",
+                fontSize: 9,
+              }),
+            ]
+          : []),
         // Watermark
         Plot.text(["Made with Bedrock GEF Viewer"], {
           frameAnchor: "top-right",
@@ -242,7 +295,7 @@ function CptPlot({
     return () => {
       plot.remove();
     };
-  }, [data, xAxis, yAxis, width, height, reverseY]);
+  }, [data, xAxis, yAxis, width, height, reverseY, showComments]);
 
   return <div id={plotId} ref={containerRef}></div>;
 }
