@@ -11,4 +11,13 @@ export default defineConfig({
     reactRouter(),
     tsconfigPaths(),
   ],
+  assetsInclude: ["**/*.wasm"],
+  optimizeDeps: {
+    exclude: ["@bedrock-engineer/gef-parser"],
+    esbuildOptions: {
+      supported: {
+        "top-level-await": true,
+      },
+    },
+  },
 });

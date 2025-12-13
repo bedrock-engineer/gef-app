@@ -10,7 +10,7 @@ import { Suspense, useState, useTransition } from "react";
 import { Button, FileTrigger } from "react-aria-components";
 import { useTranslation } from "react-i18next";
 import { Form } from "react-router";
-import { parseGefFile, type GefData } from "~/gef/gef-common";
+import { parseGefFile, type GefData } from "@bedrock-engineer/gef-parser";
 import { CompactBoreHeader, DetailedBoreHeaders } from "./bore-header-items";
 import { BorePlot } from "./bore-plot";
 import { Card } from "./card";
@@ -21,6 +21,7 @@ import { FileTable } from "./file-table";
 import { GefMultiMap } from "./gef-map.client";
 import { PreExcavationPlot } from "./preexcavation-plot";
 import { SpecimenTable } from "./specimen-table";
+import { detectChartAxes } from "~/util/chart-axes";
 
 function translateWarning(warning: string, t: TFunction): string {
   const parts = warning.split(":");
@@ -136,6 +137,15 @@ export function App() {
   }
 
   const selectedFile = selectedFileName ? gefData[selectedFileName] : undefined;
+
+  const chartAxes =
+    selectedFile && selectedFile.fileType === "CPT"
+      ? detectChartAxes(
+          selectedFile.columnInfo,
+          selectedFile.data,
+          selectedFile.headers.ZID,
+        )
+      : null;
 
   return (
     <div className="pancake">
@@ -310,17 +320,16 @@ export function App() {
                   data={selectedFile}
                 />
 
-                {selectedFile.chartAxes.xAxis &&
-                  selectedFile.chartAxes.yAxis && (
-                    <CptPlots
-                      data={selectedFile.data}
-                      xAxis={selectedFile.chartAxes.xAxis}
-                      yAxis={selectedFile.chartAxes.yAxis}
-                      availableColumns={selectedFile.chartAxes.availableColumns}
-                      yAxisOptions={selectedFile.chartAxes.yAxisOptions}
-                      baseFilename={selectedFileName.replace(/\.gef$/i, "")}
-                    />
-                  )}
+                {chartAxes?.xAxis && chartAxes?.yAxis && (
+                  <CptPlots
+                    data={selectedFile.data}
+                    xAxis={chartAxes.xAxis}
+                    yAxis={chartAxes.yAxis}
+                    availableColumns={chartAxes.availableColumns}
+                    yAxisOptions={chartAxes.yAxisOptions}
+                    baseFilename={selectedFileName.replace(/\.gef$/i, "")}
+                  />
+                )}
 
                 {selectedFile.preExcavationLayers.length > 0 && (
                   <PreExcavationPlot

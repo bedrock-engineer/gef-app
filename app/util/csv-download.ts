@@ -1,5 +1,5 @@
 import { csvFormat } from "d3-dsv";
-import type { GefData } from "~/gef/gef-common";
+import type { GefData } from "@bedrock-engineer/gef-parser";
 import { downloadFile } from "./download";
 
 export function downloadGefDataAsCsv(gefData: GefData, filename: string): void {

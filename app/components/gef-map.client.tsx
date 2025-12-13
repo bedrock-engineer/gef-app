@@ -4,8 +4,8 @@ import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 import { useEffect, useMemo, useRef } from "react";
 import { useTranslation } from "react-i18next";
-import type { GefData } from "~/gef/gef-common";
-import type { ProcessedMetadata } from "~/gef/gef-cpt";
+import type { GefData } from "@bedrock-engineer/gef-parser";
+import type { ProcessedMetadata } from "@bedrock-engineer/gef-parser";
 
 interface GefMultiMapProps {
   gefData: Record<string, GefData>;

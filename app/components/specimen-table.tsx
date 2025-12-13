@@ -1,6 +1,6 @@
 import { useTranslation } from "react-i18next";
-import type { BoreSpecimen } from "~/gef/gef-bore";
-import { SPECIMEN_CODES, formatSpecimenCode } from "~/gef/gef-bore";
+import type { BoreSpecimen } from "@bedrock-engineer/gef-parser";
+import { SPECIMEN_CODES, formatSpecimenCode } from "@bedrock-engineer/gef-parser";
 import { CardTitle } from "./card";
 
 interface SpecimenTableProps {

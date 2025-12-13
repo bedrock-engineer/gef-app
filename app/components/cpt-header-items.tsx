@@ -1,7 +1,7 @@
 import type { TFunction } from "i18next";
 import type { ReactNode } from "react";
 import { useTranslation } from "react-i18next";
-import type { GefCptHeaders } from "~/gef/gef-schemas";
+import type { GefCptHeaders } from "@bedrock-engineer/gef-parser";
 import {
   belgianMeasurementTextVariables,
   belgianMeasurementVariables,
@@ -12,24 +12,24 @@ import {
   type GefCptData,
   type GefExtension,
   type ProcessedMetadata,
-} from "../gef/gef-cpt";
+} from "@bedrock-engineer/gef-parser";
 import { CardTitle } from "./card";
 import {
   countryCodeTranslationMap,
+  filterMeasurementTextsByCategories,
   formatNumericValue,
+  getCalculationsInfo,
+  getComments,
+  getConditionsInfo,
+  getFileMetadata,
   getLocalizedDescription,
+  getProcessingInfo,
   type HeaderItem,
 } from "./common-header-items";
 import { CopyButton } from "./copy-button";
 import {
   CompactHeaderLeftColumn,
   CompactHeaderRightColumn,
-  filterMeasurementTextsByCategories,
-  getCalculationsInfo,
-  getComments,
-  getConditionsInfo,
-  getFileMetadata,
-  getProcessingInfo,
   HeaderDisclosurePanels,
   type HeaderSection,
 } from "./gef-header-display";
@@ -44,7 +44,7 @@ function getCalibrationData(
   headers.MEASUREMENTVAR?.forEach(({ id, value, unit }) => {
     const varInfo = findCptMeasurementVariable(id, extension);
 
-    if (varInfo?.category === "calibration" && parseFloat(value) !== 0) {
+    if (varInfo?.category === "calibration" && value !== 0) {
       const displayValue = formatNumericValue(value);
       items.push({
         label: getLocalizedDescription(varInfo, locale),
@@ -121,7 +121,6 @@ export function CompactCptHeader({ filename, data }: CompactCptHeaderProps) {
 }
 
 function getCptProjectInfo(
-  headers: GefCptHeaders,
   processed: ProcessedMetadata,
   t: TFunction,
   locale: string,
@@ -139,25 +138,22 @@ function getCptProjectInfo(
     items.push({ label: t("company"), value: processed.companyName });
   }
 
-  const company = headers.COMPANYID;
-  if (company) {
-    if (company.address) {
-      items.push({ label: t("address"), value: company.address });
-    }
+  if (processed.companyAddress) {
+    items.push({ label: t("address"), value: processed.companyAddress });
+  }
 
-    if (company.countryCode) {
-      const countryKey =
-        countryCodeTranslationMap[
-          company.countryCode as keyof typeof countryCodeTranslationMap
-        ];
+  if (processed.companyCountryCode) {
+    const countryKey =
+      countryCodeTranslationMap[
+        processed.companyCountryCode as keyof typeof countryCodeTranslationMap
+      ];
 
-      // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-      if (countryKey) {
-        items.push({
-          label: t("country"),
-          value: t(countryKey),
-        });
-      }
+    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+    if (countryKey) {
+      items.push({
+        label: t("country"),
+        value: t(countryKey),
+      });
     }
   }
 
@@ -211,11 +207,9 @@ function getCptTestInfo(
       let displayValue: string;
 
       if ("options" in varInfo) {
-        const numValue = parseFloat(value);
-
         const option = (
           varInfo.options as ReadonlyArray<{ value: number; meaning: string }>
-        ).find((o) => o.value === numValue);
+        ).find((o) => o.value === value);
 
         displayValue = option ? option.meaning : formatNumericValue(value);
       } else {
@@ -233,7 +227,6 @@ function getCptTestInfo(
 }
 
 function getCptCoordinatesInfo(
-  headers: GefCptHeaders,
   processed: ProcessedMetadata,
   t: TFunction,
   locale: string,
@@ -259,16 +252,23 @@ function getCptCoordinatesInfo(
       value: `${processed.coordinateSystem.name} ${processed.coordinateSystem.epsg}`,
     });
 
-    const xyid = headers.XYID;
-    if (xyid) {
+    if (
+      processed.originalX !== undefined &&
+      processed.xUncertainty !== undefined
+    ) {
       items.push({
         label: t("xCoordinate"),
-        value: `${xyid.x} m ± ${xyid.deltaX}`,
+        value: `${processed.originalX} m ± ${processed.xUncertainty}`,
       });
+    }
 
+    if (
+      processed.originalY !== undefined &&
+      processed.yUncertainty !== undefined
+    ) {
       items.push({
         label: t("yCoordinate"),
-        value: `${xyid.y} m ± ${xyid.deltaY}`,
+        value: `${processed.originalY} m ± ${processed.yUncertainty}`,
       });
     }
   }
@@ -279,11 +279,13 @@ function getCptCoordinatesInfo(
       value: processed.heightSystem.name,
     });
 
-    const zid = headers.ZID;
-    if (zid) {
+    if (
+      processed.surfaceElevation !== undefined &&
+      processed.elevationUncertainty !== undefined
+    ) {
       items.push({
         label: t("surfaceLevel"),
-        value: `${zid.height} m ± ${zid.deltaZ}`,
+        value: `${processed.surfaceElevation} m ± ${processed.elevationUncertainty}`,
       });
     }
   }
@@ -331,10 +333,9 @@ function getCptEquipmentInfo(
 
     let displayValue: string;
     if ("options" in varInfo) {
-      const numValue = parseFloat(value);
       const option = (
         varInfo.options as ReadonlyArray<{ value: number; meaning: string }>
-      ).find((o) => o.value === numValue);
+      ).find((o) => o.value === value);
       displayValue = option ? option.meaning : formatNumericValue(value);
     } else {
       displayValue = formatNumericValue(value);
@@ -368,7 +369,10 @@ function getExtensionInfo(
 
     // Add Dutch MEASUREMENTTEXT fields with values
     headers.MEASUREMENTTEXT?.forEach(({ id, text }) => {
-      const varInfo = dutchMeasurementTextVariables.find((v) => v.id === id);
+      const varInfo =
+        dutchMeasurementTextVariables[
+          id as keyof typeof dutchMeasurementTextVariables
+        ];
       if (varInfo) {
         items.push({
           label: varInfo.description,
@@ -379,7 +383,8 @@ function getExtensionInfo(
 
     // Add Dutch MEASUREMENTVAR fields with values
     headers.MEASUREMENTVAR?.forEach(({ id, value, unit }) => {
-      const varInfo = dutchMeasurementVariables.find((v) => v.id === id);
+      const varInfo =
+        dutchMeasurementVariables[id as keyof typeof dutchMeasurementVariables];
       if (varInfo) {
         const displayValue = formatNumericValue(value);
         items.push({
@@ -398,7 +403,10 @@ function getExtensionInfo(
 
     // Add Belgian MEASUREMENTTEXT fields with values
     headers.MEASUREMENTTEXT?.forEach(({ id, text }) => {
-      const varInfo = belgianMeasurementTextVariables.find((v) => v.id === id);
+      const varInfo =
+        belgianMeasurementTextVariables[
+          id as keyof typeof belgianMeasurementTextVariables
+        ];
       if (varInfo) {
         items.push({
           label: varInfo.description,
@@ -409,7 +417,10 @@ function getExtensionInfo(
 
     // Add Belgian MEASUREMENTVAR fields with values
     headers.MEASUREMENTVAR?.forEach(({ id, value, unit }) => {
-      const varInfo = belgianMeasurementVariables.find((v) => v.id === id);
+      const varInfo =
+        belgianMeasurementVariables[
+          id as keyof typeof belgianMeasurementVariables
+        ];
       if (varInfo) {
         const displayValue = formatNumericValue(value);
         items.push({
@@ -443,7 +454,7 @@ export function DetailedCptHeaders({ data }: DetailedCptHeaderProps) {
     {
       id: "project",
       title: t("projectInformation"),
-      items: getCptProjectInfo(headers, processed, t, locale),
+      items: getCptProjectInfo(processed, t, locale),
     },
     {
       id: "test_info",
@@ -453,7 +464,7 @@ export function DetailedCptHeaders({ data }: DetailedCptHeaderProps) {
     {
       id: "coordinates",
       title: t("coordinatesLocation"),
-      items: getCptCoordinatesInfo(headers, processed, t, locale),
+      items: getCptCoordinatesInfo(processed, t, locale),
     },
     {
       id: "equipment",
@@ -479,12 +490,12 @@ export function DetailedCptHeaders({ data }: DetailedCptHeaderProps) {
     {
       id: "metadata",
       title: t("fileMetadata"),
-      items: getFileMetadata(headers, t),
+      items: getFileMetadata(processed, t),
     },
     {
       id: "comments",
       title: t("comments"),
-      items: getComments(headers, t),
+      items: getComments(processed, t),
     },
     // CPT-only sections
     {
@@ -559,33 +570,39 @@ function getDataStructure(headers: GefCptHeaders, t: TFunction) {
               )}
             </tr>
           </thead>
-          {headers.COLUMNINFO.map((col, index) => {
-            const colNum = index + 1;
-            const minMax = minMaxMap.get(colNum);
-            return (
-              <tr key={col.name}>
-                <td className="border border-gray-300 px-2 py-1">{col.name}</td>
-                <td className="border border-gray-300 px-2 py-1">{col.unit}</td>
-                {minMax && (
-                  <>
-                    <td
-                      className="border border-gray-300 px-2 py-1 text-right"
-                      style={{ fontVariantNumeric: "tabular-nums" }}
-                    >
-                      {minMax.min}
-                    </td>
+          <tbody>
+            {headers.COLUMNINFO.map((col, index) => {
+              const colNum = index + 1;
+              const minMax = minMaxMap.get(colNum);
+              return (
+                <tr key={col.name}>
+                  <td className="border border-gray-300 px-2 py-1">
+                    {col.name}
+                  </td>
+                  <td className="border border-gray-300 px-2 py-1">
+                    {col.unit}
+                  </td>
+                  {minMax && (
+                    <>
+                      <td
+                        className="border border-gray-300 px-2 py-1 text-right"
+                        style={{ fontVariantNumeric: "tabular-nums" }}
+                      >
+                        {minMax.min}
+                      </td>
 
-                    <td
-                      className="border border-gray-300 px-2 py-1 text-right"
-                      style={{ fontVariantNumeric: "tabular-nums" }}
-                    >
-                      {minMax.max}
-                    </td>
-                  </>
-                )}
-              </tr>
-            );
-          })}
+                      <td
+                        className="border border-gray-300 px-2 py-1 text-right"
+                        style={{ fontVariantNumeric: "tabular-nums" }}
+                      >
+                        {minMax.max}
+                      </td>
+                    </>
+                  )}
+                </tr>
+              );
+            })}
+          </tbody>
         </table>
       ),
     });
@@ -593,4 +610,3 @@ function getDataStructure(headers: GefCptHeaders, t: TFunction) {
 
   return items;
 }
-

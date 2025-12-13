@@ -2,13 +2,13 @@ import * as Plot from "@observablehq/plot";
 import { max, min } from "d3-array";
 import { useEffect, useRef } from "react";
 import { useTranslation } from "react-i18next";
-import type { BoreLayer, BoreSpecimen } from "~/gef/gef-bore";
+import type { BoreLayer, BoreSpecimen } from "@bedrock-engineer/gef-parser";
 import {
   getSoilColor,
   SPECIMEN_CODES,
   formatSpecimenCode,
-} from "~/gef/gef-bore";
-import { decodeBoreCode } from "~/gef/gef-bore-codes";
+} from "@bedrock-engineer/gef-parser";
+import { decodeBoreCode } from "@bedrock-engineer/gef-parser";
 import { Card, CardTitle } from "./card";
 import { PlotDownloadButtons } from "./plot-download-buttons";
 

@@ -21,8 +21,8 @@ import {
   SECONDARY_COLORS,
   SHELL_CONTENT,
   STRATIGRAPHIC_UNITS,
-} from "~/gef/gef-bore-codes";
-import type { GefData } from "~/gef/gef-common";
+} from "@bedrock-engineer/gef-parser";
+import type { GefData } from "@bedrock-engineer/gef-parser";
 import { downloadFile } from "./download";
 
 // Combined lookup for all codes
