@@ -7,19 +7,11 @@ export interface HeaderItem {
   value: React.ReactNode;
 }
 
-const formatNumber = format(".3~f");
-
-/**
- * Format a numeric value, removing unnecessary trailing zeros
- * 0.000000 -> "0", 1.500000 -> "1.5", 1.234567 -> "1.235"
- */
-export function formatNumericValue(value: number): string {
-  return formatNumber(value);
-}
+export const formatNumericValue = format(".3~f");
 
 export function getLocalizedDescription(
   varInfo: { description: string; descriptionNl?: string } | undefined,
-  locale: string
+  locale: string,
 ): string {
   if (!varInfo) {
     return "";
@@ -36,11 +28,7 @@ export const countryCodeTranslationMap = {
   "49": "countryGermany",
 } as const;
 
-
-export function getFileMetadata(
-  processed: ProcessedMetadata,
-  t: TFunction,
-) {
+export function getFileMetadata(processed: ProcessedMetadata, t: TFunction) {
   const items: Array<HeaderItem> = [];
 
   if (processed.gefVersion) {
@@ -76,7 +64,10 @@ export function getFileMetadata(
   }
 
   if (processed.operatingSystem) {
-    items.push({ label: t("operatingSystem"), value: processed.operatingSystem });
+    items.push({
+      label: t("operatingSystem"),
+      value: processed.operatingSystem,
+    });
   }
 
   return items;
@@ -180,10 +171,7 @@ export function getCalculationsInfo(
   );
 }
 
-export function getComments(
-  processed: ProcessedMetadata,
-  t: TFunction,
-) {
+export function getComments(processed: ProcessedMetadata, t: TFunction) {
   if (processed.comments.length > 0) {
     return processed.comments.map((comment, index) => ({
       label: `${t("comment")} ${index + 1}`,
