@@ -102,7 +102,7 @@ export function PreExcavationPlot({
           }),
           Plot.frame(),
           // Watermark
-          Plot.text(["Made with Bedrock GEF Viewer"], {
+          Plot.text([t("madeWithBedrockGefViewer")], {
             frameAnchor: "bottom",
             dx: -5,
             dy: 10,
@@ -119,7 +119,7 @@ export function PreExcavationPlot({
         plot.remove();
       };
     },
-    [layers, width, height],
+    [layers, width, height, t],
   );
 
   if (layers.length === 0) {
