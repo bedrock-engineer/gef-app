@@ -39,10 +39,13 @@ export const links: Route.LinksFunction = () => [
     href: "https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:ital,wght@0,100..700;1,100..700&family=IBM+Plex+Sans:ital,wght@0,100..700;1,100..700&display=swap",
     rel: "stylesheet",
   },
-  // Light
+  // Primary favicon
   { rel: "icon", href: "/favicon.ico", sizes: "32x32" },
+
+  // Light
   { rel: "icon", href: "/favicon-light-512x512.png", sizes: "512x512" },
-  { rel: "icon", href: "/favicon.svg", type: "image/png" },
+  { rel: "icon", href: "/favicon.svg", type: "image/svg+xml" },
+  
   // Dark
   {
     rel: "icon",
@@ -58,7 +61,7 @@ export const links: Route.LinksFunction = () => [
   },
   {
     rel: "icon",
-    href: "/favicon-dark-512x512.png.svg",
+    href: "/favicon-dark-512x512.png",
     type: "image/png",
     sizes: "512x512",
     media: "(prefers-color-scheme: dark)",
