@@ -25,7 +25,7 @@ GEF-SIEVE and GEF-DISS are not supported.
 
 ## Technology Stack
 
-- **GEF Parsing**: [gef-file-to-map](https://github.com/cemsbv/gef-file-to-map) and [Zod](https://zod.dev/)
+- **GEF Parsing**: [`@bedrock-engineer/gef-parser-ts](https://github.com/bedrock-engineer/gef-parser-ts) which uses [gef-file-to-map](https://github.com/cemsbv/gef-file-to-map) and [Zod](https://zod.dev/)
 - **Framework**: [React Router v7](https://reactrouter.com/) with Server-Side Rendering
 - **Build Tool**: [Vite](https://vite.dev/)
 - **Language**: TypeScript (strict mode)
