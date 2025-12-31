@@ -9,7 +9,6 @@ import {
 import { Suspense, useState, useTransition } from "react";
 import { Button, FileTrigger } from "react-aria-components";
 import { useTranslation } from "react-i18next";
-import { Form } from "react-router";
 import { parseGefFile, type GefData } from "@bedrock-engineer/gef-parser";
 import { CompactBoreHeader, DetailedBoreHeaders } from "./bore-header-items";
 import { BorePlot } from "./bore-plot";
@@ -398,6 +397,19 @@ function MarketingMessage() {
 function Header() {
   const { t, i18n } = useTranslation();
 
+  async function toggleLanguage() {
+    const newLang = i18n.language === "nl" ? "en" : "nl";
+    await i18n.changeLanguage(newLang);
+
+    await fetch("/", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/x-www-form-urlencoded",
+      },
+      body: new URLSearchParams({ lang: newLang }),
+    });
+  }
+
   return (
     <header className="mb-6 border-b border-gray-300 py-4 px-2">
       <div
@@ -408,19 +420,17 @@ function Header() {
           <img src="bedrock.svg" width={30} /> {t("appTitle")}
         </h1>
 
-        <Form method="post">
-          <input
-            type="hidden"
-            name="lang"
-            value={i18n.language === "nl" ? "en" : "nl"}
-          />
-          <button
-            type="submit"
-            className="px-3 py-1 text-sm border border-gray-300 rounded hover:bg-gray-100 transition-colors"
-          >
-            {i18n.language === "nl" ? "English" : "Nederlands"}
-          </button>
-        </Form>
+        <button
+          type="button"
+          onClick={() => {
+            toggleLanguage().catch((error: unknown) => {
+              console.error(error);
+            });
+          }}
+          className="px-3 py-1 text-sm border border-gray-300 rounded hover:bg-gray-100 transition-colors"
+        >
+          {i18n.language === "nl" ? "English" : "Nederlands"}
+        </button>
       </div>
     </header>
   );

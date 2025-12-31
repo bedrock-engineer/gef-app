@@ -5,7 +5,7 @@ export default {
     appDescription:
       "Bekijk en analyseer GEF (Geotechnical Exchange Format) bestanden voor CPT en boorgatgegevens in je browser.",
     privacyNote:
-      "Gegevens verlaten nooit uw browser, ze worden niet naar een server verzonden.",
+      "Gegevens verlaten nooit je browser, ze worden niet naar een server verzonden.",
 
     // File actions
     chooseFiles: "Kies GEF bestanden",
@@ -181,7 +181,7 @@ export default {
     contact: "Contact",
     feedbackOrRequests: "Bugs, feedback of verzoeken?",
     needSimilarApp:
-      "Heeft u een vergelijkbare app nodig voor uw geotechnische workflow?",
+      "Heb je een vergelijkbare app nodig voor je geotechnische workflow?",
     contactUs: "Neem contact op",
 
     // Empty state CTA
