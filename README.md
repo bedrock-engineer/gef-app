@@ -104,4 +104,4 @@ This project is licensed under the Apache License 2.0 - see the [LICENSE](LICENS
 - **Issues**: Report bugs or request features via [GitHub Issues](https://github.com/bedrock-engineer/gef-webapp/issues) 
 - **Live App**: Try it at [gef.bedrock.engineer](https://gef.bedrock.engineer)
 
-[Bedrock](https://www.bedrock.engineer)
+[Bedrock](https://bedrock.engineer)
