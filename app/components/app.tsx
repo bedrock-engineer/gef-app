@@ -1,3 +1,4 @@
+import { parseGefFile, type GefData } from "@bedrock-engineer/gef-parser";
 import type { TFunction } from "i18next";
 import {
   GithubIcon,
@@ -9,7 +10,8 @@ import {
 import { Suspense, useState, useTransition } from "react";
 import { Button, FileTrigger } from "react-aria-components";
 import { useTranslation } from "react-i18next";
-import { parseGefFile, type GefData } from "@bedrock-engineer/gef-parser";
+import { useFetcher } from "react-router";
+import { detectChartAxes } from "~/util/chart-axes";
 import { CompactBoreHeader, DetailedBoreHeaders } from "./bore-header-items";
 import { BorePlot } from "./bore-plot";
 import { Card } from "./card";
@@ -20,7 +22,6 @@ import { FileTable } from "./file-table";
 import { GefMultiMap } from "./gef-map.client";
 import { PreExcavationPlot } from "./preexcavation-plot";
 import { SpecimenTable } from "./specimen-table";
-import { detectChartAxes } from "~/util/chart-axes";
 
 function translateWarning(warning: string, t: TFunction): string {
   const parts = warning.split(":");
@@ -138,7 +139,7 @@ export function App() {
   const selectedFile = selectedFileName ? gefData[selectedFileName] : undefined;
 
   const chartAxes =
-    selectedFile && selectedFile.fileType === "CPT"
+    selectedFile?.fileType === "CPT"
       ? detectChartAxes(
           selectedFile.columnInfo,
           selectedFile.data,
@@ -319,7 +320,7 @@ export function App() {
                   data={selectedFile}
                 />
 
-                {chartAxes?.xAxis && chartAxes?.yAxis && (
+                {chartAxes?.xAxis && chartAxes.yAxis && (
                   <CptPlots
                     data={selectedFile.data}
                     xAxis={chartAxes.xAxis}
@@ -396,19 +397,17 @@ function MarketingMessage() {
 
 function Header() {
   const { t, i18n } = useTranslation();
+  const fetcher = useFetcher();
 
-  async function toggleLanguage() {
+  const handleLanguageChange = () => {
     const newLang = i18n.language === "nl" ? "en" : "nl";
-    await i18n.changeLanguage(newLang);
+    console.log({ newLang });
 
-    await fetch("/", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/x-www-form-urlencoded",
-      },
-      body: new URLSearchParams({ lang: newLang }),
-    });
-  }
+    return fetcher.submit(
+      { locale: newLang },
+      { method: "post", action: "/set-language" },
+    );
+  };
 
   return (
     <header className="mb-6 border-b border-gray-300 py-4 px-2">
@@ -421,13 +420,16 @@ function Header() {
         </h1>
 
         <button
-          type="button"
-          onClick={() => {
-            toggleLanguage().catch((error: unknown) => {
-              console.error(error);
-            });
-          }}
           className="px-3 py-1 text-sm border border-gray-300 rounded hover:bg-gray-100 transition-colors"
+          onClick={() => {
+            handleLanguageChange()
+              .then((a) => {
+                console.log("Language change submitted", a);
+              })
+              .catch((error: unknown) => {
+                console.error(error);
+              });
+          }}
         >
           {i18n.language === "nl" ? "English" : "Nederlands"}
         </button>
@@ -449,15 +451,14 @@ function Footer() {
             <a
               className=" hover:underline inline-flex gap-1 items-center text-lg font-medium mt-2"
               href="https://bedrock.engineer"
-              style={{ color: "hsl(111, 15%, 43%)" }}
             >
-              Bedrock.engineer
               <img
                 src="/bedrock.svg"
                 width="16px"
                 height="16px"
                 alt="Bedrock logo"
               />
+              Bedrock.engineer
             </a>
           </div>
 
