@@ -18,13 +18,12 @@ import {
 import { useTranslation } from "react-i18next";
 import type { GefData, GefFileType } from "@bedrock-engineer/gef-parser";
 
-function SortIndicator({
-  column,
-  sortDescriptor,
-}: {
+interface SortIndicatorProps {
   column: string;
   sortDescriptor: SortDescriptor;
-}) {
+}
+
+function SortIndicator({ column, sortDescriptor }: SortIndicatorProps) {
   const isActive = sortDescriptor.column === column;
 
   const Icon =
