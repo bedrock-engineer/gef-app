@@ -20,6 +20,8 @@ export const [i18nextMiddleware, getLocale, getInstance] =
       supportedLanguages: languageCodes,
       fallbackLanguage: "nl",
       cookie: localeCookie,
+      // Cookie first (user's explicit choice), then Accept-Language header
+      order: ["cookie", "header"],
     },
     i18next: { resources },
     plugins: [initReactI18next],

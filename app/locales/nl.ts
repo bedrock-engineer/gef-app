@@ -1,11 +1,16 @@
 export default {
   translation: {
     // App title and description
-    appTitle: "Bedrock GEF Bestand Viewer",
+    appTitle: "Bedrock.engineer GEF Viewer",
     appDescription:
       "Bekijk en analyseer GEF (Geotechnical Exchange Format) bestanden voor CPT en boorgatgegevens in je browser.",
-    privacyNote:
-      "Gegevens verlaten nooit je browser, ze worden niet naar een server verzonden.",
+    privacyNote: "Je gegevens verlaten nooit je browser.",
+    offlineNote: "Deze app werkt ook offline.",
+    installInstructionsDesktop:
+      "Klik op het installatie-icoon in de adresbalk om te installeren.",
+    installInstructionsIOS:
+      "Tik op Deel, dan 'Zet op beginscherm' om te installeren.",
+    installInstructionsAndroid: "Tik op het menu (⋮), dan 'App installeren'.",
 
     // File actions
     chooseFiles: "Kies GEF bestanden",
@@ -185,7 +190,7 @@ export default {
     contactUs: "Neem contact op",
 
     // Empty state CTA
-    freeToolByBedrock: "Gratis tool van Bedrock. Wij bouwen:",
+    freeToolByBedrock: "Gratis tool van Bedrock.engineer. Wij bouwen:",
     customWebApps: "Webapps op maat voor geotechnische workflows",
     pythonAutomation: "Geotechnische workflow automatisering met Python",
     bimCadIntegrations:

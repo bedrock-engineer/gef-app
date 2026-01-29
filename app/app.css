@@ -16,6 +16,35 @@ body {
   height: 100%;
 }
 
+/* Blurry status bar for iOS PWA */
+@supports (padding: env(safe-area-inset-top)) {
+  body::before {
+    content: "";
+    z-index: 9999;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: env(safe-area-inset-top);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    mask: linear-gradient(
+      to bottom,
+      black,
+      black 50%,
+      rgba(0, 0, 0, 0.7) 75%,
+      rgba(0, 0, 0, 0) 100%
+    );
+    -webkit-mask: linear-gradient(
+      to bottom,
+      black,
+      black 50%,
+      rgba(0, 0, 0, 0.7) 75%,
+      rgba(0, 0, 0, 0) 100%
+    );
+  }
+}
+
 .pancake {
   display: grid;
   grid-template-rows: auto 1fr auto;

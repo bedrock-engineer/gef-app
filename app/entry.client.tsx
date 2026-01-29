@@ -4,7 +4,11 @@ import { hydrateRoot } from "react-dom/client";
 import { I18nextProvider, initReactI18next } from "react-i18next";
 import LanguageDetector from "i18next-browser-languagedetector";
 import { HydratedRouter } from "react-router/dom";
+import { registerSW } from "virtual:pwa-register";
 import resources from "~/locales";
+
+// Register service worker for offline support
+registerSW({ immediate: true });
 
 async function main() {
   await i18next

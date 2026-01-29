@@ -20,6 +20,7 @@ import { CptPlots } from "./cpt-plot";
 import { DownloadGeoJSONButton } from "./download-geojson-button";
 import { FileTable } from "./file-table";
 import { GefMultiMap } from "./gef-map.client";
+import { InstallInstructions } from "./install-instructions.client";
 import { PreExcavationPlot } from "./preexcavation-plot";
 import { SpecimenTable } from "./specimen-table";
 
@@ -440,6 +441,7 @@ function Header() {
 
 function Footer() {
   const { t } = useTranslation();
+
   return (
     <footer className="mt-8 py-8 border-t border-gray-300 text-sm text-gray-500">
       <div className="max-w-6xl mx-auto px-4">
@@ -447,9 +449,14 @@ function Footer() {
           <div className="space-y-3">
             <h3 className="font-semibold text-gray-700 mb-3">{t("about")}</h3>
             <p className="text-sm">{t("appDescription")}</p>
-            <p className="text-sm">{t("privacyNote")}</p>
+            <p className="text-sm">
+              {t("privacyNote")} {t("offlineNote")}{" "}
+              <Suspense>
+                <InstallInstructions />
+              </Suspense>
+            </p>
             <a
-              className=" hover:underline inline-flex gap-1 items-center text-lg font-medium mt-2"
+              className="hover:underline inline-flex gap-1 items-center text-lg mt-2"
               href="https://bedrock.engineer"
             >
               <img

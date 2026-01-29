@@ -8,14 +8,20 @@ const siteUrl = "https://gef.bedrock.engineer";
 
 const metaDataTranslations = {
   en: {
-    title: "GEF File Viewer - Free CPT & Bore Data Visualization Tool | Bedrock",
+    title:
+      "GEF File Viewer - Free CPT & Bore Data Visualization Tool | Bedrock.engineer",
     description:
       "Free online GEF viewer for geotechnical engineers. View, analyze and export CPT sounding data and bore logs from BRO and DOV. Supports GEF-CPT and GEF-BORE formats. Works directly in your browser.",
+    siteName: "Bedrock.engineer GEF Viewer",
+    imageAlt: "Bedrock.engineer GEF Viewer - Geotechnical data visualization",
   },
   nl: {
-    title: "GEF Bestand Viewer - Gratis Sondering & Boring Visualisatie | Bedrock",
+    title:
+      "GEF Bestand Viewer - Gratis Sondering & Boring Visualisatie | Bedrock.engineer",
     description:
       "Gratis online GEF viewer voor geotechnisch ingenieurs. Bekijk, analyseer, en exporteer CPT sondeergegevens en boorprofielen van BRO en DOV. Ondersteunt GEF-CPT en GEF-BORE formaten. Werkt direct in je browser zonder installatie.",
+    siteName: "Bedrock.engineer GEF Viewer",
+    imageAlt: "Bedrock.engineer GEF Viewer - Geotechnische data visualisatie",
   },
 };
 
@@ -43,25 +49,26 @@ export function meta({ matches }: Route.MetaArgs) {
   return [
     { title: metadata.title },
     { name: "description", content: metadata.description },
+    { name: "robots", content: "index, follow" },
+    { name: "application-name", content: "Bedrock.engineer GEF Viewer" },
     // Language alternates
     { tagName: "link", rel: "alternate", hrefLang: "nl", href: siteUrl },
     { tagName: "link", rel: "alternate", hrefLang: "en", href: siteUrl },
     { tagName: "link", rel: "alternate", hrefLang: "x-default", href: siteUrl },
     // Open Graph
-    { property: "og:site_name", content: "Bedrock GEF Bestand Viewer" },
+    { property: "og:site_name", content: metadata.siteName },
     { property: "og:url", content: siteUrl },
     { property: "og:type", content: "website" },
     { property: "og:title", content: metadata.title },
     { property: "og:description", content: metadata.description },
     { property: "og:locale", content: ogLocale },
     { property: "og:locale:alternate", content: altLocale },
-    {
-      property: "og:image",
-      content: `${siteUrl}/og-image.png`,
-    },
+    { property: "og:image:type", content: "image/png" },
+    { property: "og:image", content: `${siteUrl}/og-image.png` },
+    { property: "og:image:type", content: "image/png" },
     { property: "og:image:width", content: "1200" },
     { property: "og:image:height", content: "630" },
-    { property: "og:image:alt", content: "Bedrock GEF File Viewer - Geotechnical data visualization" },
+    { property: "og:image:alt", content: metadata.imageAlt },
     // Twitter
     { name: "twitter:card", content: "summary_large_image" },
     { property: "twitter:domain", content: "gef.bedrock.engineer" },
@@ -69,11 +76,8 @@ export function meta({ matches }: Route.MetaArgs) {
     { name: "twitter:title", content: metadata.title },
     { name: "twitter:description", content: metadata.description },
     { name: "twitter:creator", content: "@Mega_Jules" },
-    {
-      name: "twitter:image",
-      content: `${siteUrl}/og-image.png`,
-    },
-    { name: "twitter:image:alt", content: "Bedrock GEF File Viewer" },
+    { name: "twitter:image", content: `${siteUrl}/og-image.png` },
+    { name: "twitter:image:alt", content: metadata.imageAlt },
   ];
 }
 
