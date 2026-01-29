@@ -8,7 +8,7 @@ export function InstallInstructions() {
   const { t } = useTranslation();
   const ua = navigator.userAgent;
   const isIOS = /iPad|iPhone|iPod/.test(ua);
-  const isAndroid = /Android/.test(ua);
+  const isAndroid = ua.includes('Android');
 
   if (isIOS) {
     return <>{t("installInstructionsIOS")}</>;

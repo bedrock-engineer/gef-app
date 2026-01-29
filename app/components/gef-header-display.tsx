@@ -207,7 +207,7 @@ export function HeaderDisclosurePanels({
   sections,
 }: HeaderDisclosurePanelsProps) {
   return (
-    <div className="grid grid-cols-2 gap-x-2 gap-y-2 items-start">
+    <div className="grid grid-cols-[repeat(auto-fit,minmax(200px,420px))] gap-x-2 gap-y-2 items-start">
       {sections.map((section) => (
         <Disclosure
           key={section.id}
