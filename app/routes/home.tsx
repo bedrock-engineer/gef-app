@@ -65,7 +65,6 @@ export function meta({ matches }: Route.MetaArgs) {
     { property: "og:locale:alternate", content: altLocale },
     { property: "og:image:type", content: "image/png" },
     { property: "og:image", content: `${siteUrl}/og-image.png` },
-    { property: "og:image:type", content: "image/png" },
     { property: "og:image:width", content: "1200" },
     { property: "og:image:height", content: "630" },
     { property: "og:image:alt", content: metadata.imageAlt },

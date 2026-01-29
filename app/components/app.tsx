@@ -297,7 +297,7 @@ export function App() {
         </div>
 
         {selectedFile ? (
-          <div className="space-y-6">
+          <div className="space-y-6 max-w-full">
             {selectedFile.warnings.length > 0 && (
               <div className="p-4 bg-amber-50 border border-amber-200 rounded-sm">
                 <h2 className="text-amber-800 font-semibold mb-2">
@@ -451,7 +451,9 @@ function Footer() {
             <p className="text-sm">{t("appDescription")}</p>
             <p className="text-sm">
               {t("privacyNote")} {t("offlineNote")}{" "}
-              <Suspense>
+            </p>
+            <p>
+              <Suspense fallback="Checking...">
                 <InstallInstructions />
               </Suspense>
             </p>
