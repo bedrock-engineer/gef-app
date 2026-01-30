@@ -111,10 +111,6 @@ export function Layout({ children, loaderData }: LayoutProps) {
           name="description"
           content="View and visualize GEF (Geotechnical Exchange Format) files in your browser. Analyze CPT data and Bore charts instantly."
         />
-        <meta
-          name="keywords"
-          content="GEF, GEF bestand, GEF viewer, sondering, sondeergegevens, CPT, cone penetration test, grondonderzoek, boringen, boorprofielen, geotechniek, geotechnical engineering, BRO, Basisregistratie Ondergrond, DOV, Databank Ondergrond Vlaanderen, sondeerdata, grondmechanica, funderingsonderzoek, geotechnisch rapport, GEF-CPT, GEF-BORE, online GEF viewer, Nederlandse geotechniek, Vlaamse geotechniek, civil engineering Nederland, geotechnisch adviesbureau"
-        />
         <meta name="format-detection" content="telephone=no" />
         <meta name="theme-color" content="#5d7a5a" />
         <meta name="apple-mobile-web-app-capable" content="yes" />
