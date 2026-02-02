@@ -76,6 +76,7 @@ export function CompactBoreHeader({ filename, data }: CompactBoreHeaderProps) {
     <div className="bg-white border border-gray-300 rounded-sm p-4 mb-6">
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 text-sm">
         <CompactHeaderLeftColumn filename={filename} data={data} />
+
         <CompactHeaderRightColumn processed={processed}>
           <BoreCompactInfo data={data} />
         </CompactHeaderRightColumn>

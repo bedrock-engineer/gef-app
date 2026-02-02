@@ -79,22 +79,17 @@ export function App() {
   >([]);
 
   async function loadSampleFiles() {
-    const [boreResponse, cptResponse] = await Promise.all([
-      fetch("/example_bore.gef"),
-      fetch("/example_cpt.gef"),
-    ]);
+    const sampleFiles = ["example_bore.gef", "example_cpt.gef"];
 
-    const boreText = await boreResponse.text();
-    const cptText = await cptResponse.text();
+    const files = await Promise.all(
+      sampleFiles.map(async (filename) => {
+        const response = await fetch(`/${filename}`);
+        const text = await response.text();
+        return new File([text], filename, { type: "text/plain" });
+      }),
+    );
 
-    const boreFile = new File([boreText], "example_bore.gef", {
-      type: "text/plain",
-    });
-    const cptFile = new File([cptText], "example_cpt.gef", {
-      type: "text/plain",
-    });
-
-    await handleFiles([boreFile, cptFile]);
+    await handleFiles(files);
   }
 
   async function handleFiles(fileList: FileList | Array<File> | null) {
@@ -338,6 +333,7 @@ export function App() {
                     baseFilename={selectedFileName.replace(/\.gef$/i, "")}
                   />
                 )}
+
                 <DetailedCptHeaders data={selectedFile} />
               </>
             ) : (
@@ -346,14 +342,17 @@ export function App() {
                   filename={selectedFileName}
                   data={selectedFile}
                 />
+
                 <BorePlot
                   layers={selectedFile.layers}
                   specimens={selectedFile.specimens}
                   baseFilename={selectedFileName.replace(/\.gef$/i, "")}
                 />
+
                 {selectedFile.specimens.length > 0 && (
                   <SpecimenTable specimens={selectedFile.specimens} />
                 )}
+
                 <DetailedBoreHeaders data={selectedFile} />
               </>
             )}
