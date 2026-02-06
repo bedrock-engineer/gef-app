@@ -207,7 +207,7 @@ export function HeaderDisclosurePanels({
   sections,
 }: HeaderDisclosurePanelsProps) {
   return (
-    <div className="grid grid-cols-[repeat(auto-fit,minmax(200px,420px))] gap-x-2 gap-y-2 items-start">
+    <div className="grid grid-cols-[repeat(auto-fit,minmax(200px,420px))] gap-4 items-start">
       {sections.map((section) => (
         <Disclosure
           key={section.id}
@@ -226,11 +226,11 @@ export function HeaderDisclosurePanels({
             </Button>
           </Heading>
 
-          <DisclosurePanel className=" bg-white">
+          <DisclosurePanel className="bg-white">
             <dl className="space-y-2 p-4 overflow-x-auto">
-              {section.items.map((item, idx) => (
+              {section.items.map((item, index) => (
                 <div
-                  key={idx}
+                  key={index}
                   className="grid grid-cols-[200px_1fr] gap-4 text-sm"
                 >
                   <dt className="text-gray-600">{item.label}</dt>

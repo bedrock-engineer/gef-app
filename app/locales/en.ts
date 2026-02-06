@@ -130,6 +130,8 @@ export default {
     downloadPng: "Download PNG",
     madeWithBedrockGefViewer: "Made with Bedrock GEF Viewer",
 
+    selectDownloadFormat: "Selecteer download formaat",
+
     // Soil types
     sand: "Sand",
     clay: "Clay",
