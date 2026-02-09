@@ -20,7 +20,7 @@ import { CptPlots } from "./cpt-plot";
 import { DownloadGeoJSONButton } from "./download-geojson-button";
 import { FileTable } from "./file-table";
 import { GefMultiMap } from "./gef-map.client";
-import { InstallInstructions } from "./install-instructions.client";
+import { InstallInstructions } from "./install-instructions";
 import { PreExcavationPlot } from "./preexcavation-plot";
 import { SpecimenTable } from "./specimen-table";
 
