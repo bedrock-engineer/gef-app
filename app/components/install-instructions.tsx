@@ -5,7 +5,7 @@ export function InstallInstructions() {
 
   if (typeof window === "undefined") {
     // throw Error("InstallInstructions should only render on the client.");
-    return null;
+    return t("installInstructionsDesktop");
   }
 
   const ua = navigator.userAgent;
@@ -13,12 +13,12 @@ export function InstallInstructions() {
   const isAndroid = ua.includes("Android");
 
   if (isIOS) {
-    return <>{t("installInstructionsIOS")}</>;
+    return t("installInstructionsIOS");
   }
 
   if (isAndroid) {
-    return <>{t("installInstructionsAndroid")}</>;
+    return t("installInstructionsAndroid");
   }
 
-  return <>{t("installInstructionsDesktop")}</>;
+  return t("installInstructionsDesktop");
 }
