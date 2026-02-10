@@ -447,17 +447,21 @@ function Footer() {
         <div className="grid md:grid-cols-2 gap-8 mb-8">
           <div className="space-y-3">
             <h3 className="font-semibold text-gray-700 mb-3">{t("about")}</h3>
+
             <p className="text-sm">{t("appDescription")}</p>
+            
             <p className="text-sm">
               {t("privacyNote")} {t("offlineNote")}{" "}
             </p>
+
             <p>
               <Suspense fallback="Checking...">
                 <InstallInstructions />
               </Suspense>
             </p>
+
             <a
-              className="hover:underline inline-flex gap-1 items-center text-lg mt-2"
+              className="hover:underline flex gap-1 items-center text-lg mt-2"
               href="https://bedrock.engineer"
             >
               <img
@@ -467,6 +471,13 @@ function Footer() {
                 alt="Bedrock logo"
               />
               Bedrock.engineer
+            </a>
+
+            <a
+              className="text-blue-400 hover:underline flex gap-1 items-center text-sm mt-2"
+              href="https://bro.bedrock.engineer"
+            >
+              Bedrock BRO/XML viewer
             </a>
           </div>
 
