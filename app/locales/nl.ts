@@ -3,7 +3,7 @@ export default {
     // App title and description
     appTitle: "Bedrock.engineer GEF Viewer",
     appDescription:
-      "Bekijk en analyseer GEF (Geotechnical Exchange Format) bestanden voor CPT en boorgatgegevens in je browser.",
+      "Bekijk en analyseer GEF (Geotechnical Exchange Format) bestanden voor CPT, dissipatietesten, geotechnische boringen in je browser.",
     privacyNote: "Je gegevens verlaten nooit je browser.",
     offlineNote: "Deze app werkt ook offline.",
     installInstructionsDesktop:
@@ -40,8 +40,6 @@ export default {
       "Bestand '{{filename}}' heeft {{count}} COLUMNINFO {{entry}} die het quantity nummer missen (4e element volgens GEF spec). Standaard ingesteld op quantity 0 (onbekend). Dit kan ervoor zorgen dat data kolommen verkeerd worden geïnterpreteerd of niet correct worden weergegeven.",
     missingColumnInfoQuantity_entry: "item",
     missingColumnInfoQuantity_entry_plural: "items",
-    dissipationTestNotSupported:
-      "GEF-DISS-Report (dissipatie test) bestanden worden niet ondersteund",
     sieveTestNotSupported: "GEF-SIEVE bestanden worden niet ondersteund",
 
     // Location
@@ -119,6 +117,13 @@ export default {
     operatingSystem: "Besturingssysteem",
     extensionType: "Extensietype",
     comment: "Opmerking",
+
+    // DISS-specific
+    parentFile: "Ouder CPT:",
+    dissipationDepth: "Testdiepte:",
+    porePressure: "Waterspanning",
+    coneResistance: "Conusweerstand",
+    parentInformation: "Ouder bestand",
 
     // Plot labels
     columns: "Kolommen",
@@ -201,5 +206,13 @@ export default {
     // Disclaimer
     disclaimer:
       "Deze tool is bedoeld voor informatieve doeleinden. Alle geotechnische gegevens dienen te worden geverifieerd door een bevoegd geotechnisch specialist. Aan het gebruik kunnen geen rechten worden ontleend.",
+
+    childGefFiles: "Child GEF bestanden",
+    childGefFile: "Child GEF bestand",
+    childGefFilesCount: "{{count}} child bestand",
+    childGefFilesCount_plural: "{{count}} child bestanden",
+    dissTests: "Dissipatie testen:",
+    reference: "Referentie",
+    description: "Beschrijving",
   },
 } as const;

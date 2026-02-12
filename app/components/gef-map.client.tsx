@@ -1,25 +1,24 @@
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
+import type { GefData, ProcessedMetadata } from "@bedrock-engineer/gef-parser";
 import type { CircleMarker, Map as LeafletMap } from "leaflet";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 import { useEffect, useMemo, useRef } from "react";
 import { useTranslation } from "react-i18next";
-import type { GefData } from "@bedrock-engineer/gef-parser";
-import type { ProcessedMetadata } from "@bedrock-engineer/gef-parser";
 
-interface GefMultiMapProps {
+interface GefMapProps {
   gefData: Record<string, GefData>;
   selectedFileName: string | null;
   onMarkerClick: (filename: string) => void;
 }
 
-export function GefMultiMap({
+export function GefMap({
   gefData,
   selectedFileName,
   onMarkerClick,
-}: GefMultiMapProps) {
+}: GefMapProps) {
   if (typeof window === "undefined") {
-    throw Error("GefMultiMap should only render on the client.");
+    throw Error("GefMap should only render on the client.");
   }
 
   const { t } = useTranslation();
@@ -75,8 +74,13 @@ export function GefMultiMap({
 
     // Add markers for each location
     locations.forEach((loc) => {
-      // CPT = blue, BORE = orange
-      const color = loc.fileType === "CPT" ? "#2563eb" : "#ea580c";
+      // CPT = blue, BORE = orange, DISS = green
+      const color =
+        loc.fileType === "CPT"
+          ? "#2563eb"
+          : loc.fileType === "DISS"
+            ? "#16a34a"
+            : "#ea580c";
 
       const marker = L.circleMarker([loc.wgs84!.lat, loc.wgs84!.lon], {
         radius: 8,
@@ -104,7 +108,6 @@ export function GefMultiMap({
       markersRef.current.set(loc.filename, marker);
     });
 
-    // Cleanup on unmount
     return () => {
       if (mapInstanceRef.current) {
         mapInstanceRef.current.remove();
@@ -122,7 +125,12 @@ export function GefMultiMap({
     markersRef.current.forEach((marker, filename) => {
       const isSelected = filename === selectedFileName;
       const meta = locations.find((l) => l.filename === filename);
-      const baseColor = meta?.fileType === "CPT" ? "#2563eb" : "#ea580c";
+      const baseColor =
+        meta?.fileType === "CPT"
+          ? "#2563eb"
+          : meta?.fileType === "DISS"
+            ? "#16a34a"
+            : "#ea580c";
 
       marker.setStyle({
         radius: isSelected ? 10 : 8,

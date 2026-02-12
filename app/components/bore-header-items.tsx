@@ -1,7 +1,5 @@
+import type { GefBoreData, ProcessedMetadata } from "@bedrock-engineer/gef-parser";
 import { useTranslation } from "react-i18next";
-import type { TFunction } from "i18next";
-import type { GefBoreData } from "@bedrock-engineer/gef-parser";
-import { type ProcessedMetadata } from "@bedrock-engineer/gef-parser";
 import { CardTitle } from "./card";
 import {
   filterMeasurementsByCategories,
@@ -9,16 +7,17 @@ import {
   getCalculationsInfo,
   getComments,
   getConditionsInfo,
+  getCoordinatesInfo,
   getFileMetadata,
   getProcessingInfo,
-  countryCodeTranslationMap,
+  getProjectInfo,
+  getTestInfo,
   type HeaderItem,
 } from "./common-header-items";
 import {
   CompactHeaderLeftColumn,
-  CompactHeaderRightColumn,
-  HeaderDisclosurePanels,
-  type HeaderSection,
+  CompactHeaderRightColumn, HeaderContainer, HeaderDisclosurePanels,
+  type HeaderSection
 } from "./gef-header-display";
 
 function BoreCompactInfo({ data }: { data: GefBoreData }) {
@@ -73,168 +72,14 @@ export function CompactBoreHeader({ filename, data }: CompactBoreHeaderProps) {
   const { processed } = data;
 
   return (
-    <div className="bg-white border border-gray-300 rounded-sm p-4 mb-6">
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 text-sm">
-        <CompactHeaderLeftColumn filename={filename} data={data} />
+    <HeaderContainer>
+      <CompactHeaderLeftColumn filename={filename} data={data} />
 
-        <CompactHeaderRightColumn processed={processed}>
-          <BoreCompactInfo data={data} />
-        </CompactHeaderRightColumn>
-      </div>
-    </div>
+      <CompactHeaderRightColumn processed={processed}>
+        <BoreCompactInfo data={data} />
+      </CompactHeaderRightColumn>
+    </HeaderContainer>
   );
-}
-
-function getBoreProjectInfo(
-  processed: ProcessedMetadata,
-  t: TFunction,
-  locale: string,
-): Array<HeaderItem> {
-  const items: Array<HeaderItem> = [];
-
-  if (processed.projectId) {
-    items.push({ label: t("projectId"), value: processed.projectId });
-  }
-  if (processed.testId) {
-    items.push({ label: t("testId"), value: processed.testId });
-  }
-
-  if (processed.companyName) {
-    items.push({ label: t("company"), value: processed.companyName });
-  }
-
-  if (processed.companyAddress) {
-    items.push({ label: t("address"), value: processed.companyAddress });
-  }
-
-  if (processed.companyCountryCode) {
-    const countryKey =
-      countryCodeTranslationMap[
-        processed.companyCountryCode as keyof typeof countryCodeTranslationMap
-      ];
-
-    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-    if (countryKey) {
-      items.push({
-        label: t("country"),
-        value: t(countryKey),
-      });
-    }
-  }
-
-  const measurementTextItems = filterMeasurementTextsByCategories(
-    processed,
-    [
-      "project_info",
-      "standards",
-      "location",
-      "personnel",
-      "data_management",
-      "related_investigations",
-    ],
-    locale,
-  );
-
-  return items.concat(measurementTextItems);
-}
-
-function getBoreTestInfo(
-  processed: ProcessedMetadata,
-  t: TFunction,
-  locale: string,
-): Array<HeaderItem> {
-  const items: Array<HeaderItem> = [];
-
-  if (processed.startDate) {
-    items.push({
-      label: t("startDate"),
-      value: processed.startDate,
-    });
-  }
-
-  if (processed.startTime) {
-    items.push({
-      label: t("startTime"),
-      value: processed.startTime,
-    });
-  }
-
-  items.push(
-    ...filterMeasurementsByCategories(
-      processed,
-      ["test_type", "test_execution", "site_conditions"],
-      locale,
-    ),
-  );
-
-  return items;
-}
-
-function getBoreCoordinatesInfo(
-  processed: ProcessedMetadata,
-  t: TFunction,
-  locale: string,
-): Array<HeaderItem> {
-  const items: Array<HeaderItem> = [];
-
-  items.push(
-    ...filterMeasurementTextsByCategories(
-      processed,
-      [
-        "coordinates",
-        "reference_system",
-        "elevation_determination",
-        "position_determination",
-      ],
-      locale,
-    ),
-  );
-
-  if (processed.coordinateSystem) {
-    items.push({
-      label: t("coordinateSystem"),
-      value: `${processed.coordinateSystem.name} ${processed.coordinateSystem.epsg}`,
-    });
-
-    if (
-      processed.originalX !== undefined &&
-      processed.xUncertainty !== undefined
-    ) {
-      items.push({
-        label: t("xCoordinate"),
-        value: `${processed.originalX} m ± ${processed.xUncertainty}`,
-      });
-    }
-
-    if (
-      processed.originalY !== undefined &&
-      processed.yUncertainty !== undefined
-    ) {
-      items.push({
-        label: t("yCoordinate"),
-        value: `${processed.originalY} m ± ${processed.yUncertainty}`,
-      });
-    }
-  }
-
-  if (processed.heightSystem) {
-    items.push({
-      label: t("heightSystem"),
-      value: processed.heightSystem.name,
-    });
-
-    if (
-      processed.surfaceElevation !== undefined &&
-      processed.elevationUncertainty !== undefined
-    ) {
-      items.push({
-        label: t("surfaceLevel"),
-        value: `${processed.surfaceElevation} m ± ${processed.elevationUncertainty}`,
-      });
-    }
-  }
-
-  return items;
 }
 
 function getBoreEquipmentInfo(
@@ -289,17 +134,17 @@ export function DetailedBoreHeaders({ data }: DetailedBoreHeadersProps) {
     {
       id: "project",
       title: t("projectInformation"),
-      items: getBoreProjectInfo(processed, t, locale),
+      items: getProjectInfo(processed, t, locale),
     },
     {
       id: "test_info",
       title: t("testInformation"),
-      items: getBoreTestInfo(processed, t, locale),
+      items: getTestInfo(processed, t, locale),
     },
     {
       id: "coordinates",
       title: t("coordinatesLocation"),
-      items: getBoreCoordinatesInfo(processed, t, locale),
+      items: getCoordinatesInfo(processed, t, locale),
     },
     {
       id: "equipment",

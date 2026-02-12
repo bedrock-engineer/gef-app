@@ -12,9 +12,7 @@ import {
 import { useTranslation } from "react-i18next";
 import { downloadGefDataAsCsv } from "~/util/csv-download";
 import { downloadGefDataAsJson } from "~/util/json-download";
-import {
-  type HeaderItem
-} from "./common-header-items";
+import { type HeaderItem } from "./common-header-items";
 import { CopyButton } from "./copy-button";
 
 interface CompactHeaderLeftColumnProps {
@@ -83,7 +81,6 @@ interface CompactHeaderRightColumnProps {
   children?: ReactNode;
 }
 
-// Shared right column: date, coordinates, elevation + slot for type-specific content
 export function CompactHeaderRightColumn({
   processed,
   children,
@@ -207,7 +204,7 @@ export function HeaderDisclosurePanels({
   sections,
 }: HeaderDisclosurePanelsProps) {
   return (
-    <div className="grid grid-cols-[repeat(auto-fit,minmax(200px,420px))] gap-4 items-start">
+    <div className="grid grid-cols-[repeat(auto-fit,minmax(300px,520px))] gap-4 items-start">
       {sections.map((section) => (
         <Disclosure
           key={section.id}
@@ -246,3 +243,10 @@ export function HeaderDisclosurePanels({
     </div>
   );
 }
+export const HeaderContainer = ({ children }: { children: ReactNode }) => (
+  <div className="bg-white border border-gray-300 rounded-sm p-4 mb-6">
+    <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 text-sm">
+      {children}
+    </div>
+  </div>
+);

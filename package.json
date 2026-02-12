@@ -2,10 +2,10 @@
   "name": "bedrock-gef-webapp",
   "description": "Web Application for viewing Geotechnical Exchange Format (GEF) File",
   "homepage": "https://github.com/bedrock-engineer",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "author": {
     "name": "Jules Blom",
-    "url": "htts://bedrock.engineer",
+    "url": "https://bedrock.engineer",
     "email": "jules.blom@bedrock.engineer"
   },
   "repository": {
@@ -29,7 +29,7 @@
     "knip": "knip"
   },
   "dependencies": {
-    "@bedrock-engineer/gef-parser": "^0.1.2",
+    "@bedrock-engineer/gef-parser": "^0.1.3-beta.2",
     "@observablehq/plot": "^0.6.17",
     "@react-router/fs-routes": "^7.12.0",
     "@react-router/node": "^7.12.0",
@@ -44,7 +44,7 @@
     "leaflet": "^1.9.4",
     "lucide-react": "^0.554.0",
     "react": "^19.2.4",
-    "react-aria-components": "^1.13.0",
+    "react-aria-components": "^1.15.1",
     "react-dom": "^19.2.4",
     "react-i18next": "^16.3.5",
     "react-router": "^7.12.0",
@@ -52,7 +52,7 @@
     "svg-crowbar": "^0.7.0"
   },
   "devDependencies": {
-    "@cloudflare/vite-plugin": "^1.15.2",
+    "@cloudflare/vite-plugin": "^1.24.0",
     "@eslint/js": "^9.39.1",
     "@react-router/dev": "^7.12.0",
     "@tailwindcss/vite": "^4.1.17",
@@ -74,7 +74,7 @@
     "vite": "^7.3.1",
     "vite-plugin-pwa": "^1.2.0",
     "vite-tsconfig-paths": "^5.1.4",
-    "wrangler": "^4.61.1"
+    "wrangler": "^4.64.0"
   },
   "prettier": {
     "semi": true,

@@ -1,6 +1,7 @@
 import { parseGefFile, type GefData } from "@bedrock-engineer/gef-parser";
 import type { TFunction } from "i18next";
 import {
+  ChevronDownIcon,
   GithubIcon,
   LinkedinIcon,
   MailIcon,
@@ -8,18 +9,25 @@ import {
   UploadIcon,
 } from "lucide-react";
 import { Suspense, useState, useTransition } from "react";
-import { Button, FileTrigger } from "react-aria-components";
+import {
+  Button,
+  Disclosure,
+  DisclosurePanel,
+  FileTrigger,
+  Heading,
+} from "react-aria-components";
 import { useTranslation } from "react-i18next";
 import { useFetcher } from "react-router";
-import { detectChartAxes } from "~/util/chart-axes";
 import { CompactBoreHeader, DetailedBoreHeaders } from "./bore-header-items";
 import { BorePlot } from "./bore-plot";
 import { Card } from "./card";
 import { CompactCptHeader, DetailedCptHeaders } from "./cpt-header-items";
 import { CptPlots } from "./cpt-plot";
+import { CompactDissHeader, DetailedDissHeaders } from "./diss-header-items";
+import { DissPlots } from "./diss-plots";
 import { DownloadGeoJSONButton } from "./download-geojson-button";
 import { FileTable } from "./file-table";
-import { GefMultiMap } from "./gef-map.client";
+import { GefMap } from "./gef-map.client";
 import { InstallInstructions } from "./install-instructions";
 import { PreExcavationPlot } from "./preexcavation-plot";
 import { SpecimenTable } from "./specimen-table";
@@ -60,9 +68,6 @@ function translateWarning(warning: string, t: TFunction): string {
 }
 
 function translateError(error: string, t: TFunction): string {
-  if (error === "dissipationTestNotSupported") {
-    return t("dissipationTestNotSupported");
-  }
   if (error === "sieveTestNotSupported") {
     return t("sieveTestNotSupported");
   }
@@ -79,7 +84,11 @@ export function App() {
   >([]);
 
   async function loadSampleFiles() {
-    const sampleFiles = ["example_bore.gef", "example_cpt.gef"];
+    const sampleFiles = [
+      "example_bore.gef",
+      "example_cpt.gef",
+      "example_diss.gef",
+    ];
 
     const files = await Promise.all(
       sampleFiles.map(async (filename) => {
@@ -100,24 +109,25 @@ export function App() {
         files.map((file) => parseGefFile(file)),
       );
 
-      const parsedGefFiles = results
-        .filter((f) => f.status === "fulfilled")
-        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-        .map((d, i) => [files[i]!.name, d.value]);
+      const parsedGefFiles: Array<[string, GefData]> = [];
+      const failed: Array<{ name: string; error: string }> = [];
 
-      const failed = results
-        .map((result, i) => ({ result, file: files[i] }))
-        .filter(
-          (item): item is { result: PromiseRejectedResult; file: File } =>
-            item.result.status === "rejected",
-        )
-        .map(({ result, file }) => ({
-          name: file.name,
-          error:
-            result.reason instanceof Error
-              ? result.reason.message
-              : String(result.reason),
-        }));
+      for (let i = 0; i < results.length; i++) {
+        const result = results[i]!;
+        const file = files[i]!;
+
+        if (result.status === "fulfilled") {
+          parsedGefFiles.push([file.name, result.value]);
+        } else {
+          failed.push({
+            name: file.name,
+            error:
+              result.reason instanceof Error
+                ? result.reason.message
+                : String(result.reason),
+          });
+        }
+      }
 
       const gef = Object.fromEntries(parsedGefFiles) as Record<string, GefData>;
 
@@ -125,23 +135,16 @@ export function App() {
         setGefData((prev) => ({ ...prev, ...gef }));
         setFailedFiles((prev) => [...prev, ...failed]);
 
-        if (files[0]) {
-          setSelectedFileName(files[0].name);
+        // Select the first successfully parsed file
+        const firstParsed = parsedGefFiles[0];
+        if (firstParsed) {
+          setSelectedFileName(firstParsed[0]);
         }
       });
     }
   }
 
   const selectedFile = selectedFileName ? gefData[selectedFileName] : undefined;
-
-  const chartAxes =
-    selectedFile?.fileType === "CPT"
-      ? detectChartAxes(
-          selectedFile.columnInfo,
-          selectedFile.data,
-          selectedFile.headers.ZID,
-        )
-      : null;
 
   return (
     <div className="pancake">
@@ -211,19 +214,31 @@ export function App() {
           </div>
 
           {failedFiles.length > 0 && (
-            <div className="mb-4 p-4 bg-red-50 border border-red-200 rounded-sm">
-              <h2 className="text-red-800 font-semibold mb-2">
-                {t("failedToParse", { count: failedFiles.length })}
-              </h2>
-              <ul className="space-y-1">
-                {failedFiles.map(({ name, error }) => (
-                  <li key={name} className="text-sm text-red-700">
-                    <span className="font-medium">{name}</span>:{" "}
-                    {translateError(error, t)}
-                  </li>
-                ))}
-              </ul>
-            </div>
+            <Disclosure className="mb-4 p-4 bg-red-50 border border-red-200 rounded-sm group">
+              <Heading level={2}>
+                <Button
+                  slot="trigger"
+                  className="flex items-center gap-1 text-red-800 font-semibold w-full"
+                >
+                  <ChevronDownIcon
+                    size={16}
+                    className="transition-transform group-data-[expanded]:rotate-180"
+                  />
+                  {t("failedToParse", { count: failedFiles.length })}
+                </Button>
+              </Heading>
+
+              <DisclosurePanel>
+                <ul className="space-y-1 mt-2">
+                  {failedFiles.map(({ name, error }) => (
+                    <li key={name} className="text-sm text-red-700">
+                      <span className="font-medium">{name}</span>:{" "}
+                      {translateError(error, t)}
+                    </li>
+                  ))}
+                </ul>
+              </DisclosurePanel>
+            </Disclosure>
           )}
 
           <FileTable
@@ -279,7 +294,7 @@ export function App() {
                   </div>
                 }
               >
-                <GefMultiMap
+                <GefMap
                   gefData={gefData}
                   selectedFileName={selectedFileName}
                   onMarkerClick={setSelectedFileName}
@@ -294,38 +309,62 @@ export function App() {
         {selectedFile ? (
           <div className="space-y-6 max-w-full">
             {selectedFile.warnings.length > 0 && (
-              <div className="p-4 bg-amber-50 border border-amber-200 rounded-sm">
-                <h2 className="text-amber-800 font-semibold mb-2">
-                  {t("warning", { count: selectedFile.warnings.length })}
-                </h2>
+              <Disclosure className="p-4 bg-amber-50 border border-amber-200 rounded-sm group">
+                <Heading level={2}>
+                  <Button
+                    slot="trigger"
+                    className="flex items-center gap-1 text-amber-800 font-semibold w-full"
+                  >
+                    <ChevronDownIcon
+                      size={16}
+                      className="transition-transform group-data-[expanded]:rotate-180"
+                    />
+                    {t("warning", { count: selectedFile.warnings.length })}
+                  </Button>
+                </Heading>
 
-                <ul className="space-y-1">
-                  {selectedFile.warnings.map((warning, i) => (
-                    <li key={i} className="text-sm text-amber-700">
-                      {translateWarning(warning, t)}
-                    </li>
-                  ))}
-                </ul>
-              </div>
+                <DisclosurePanel>
+                  <ul className="space-y-1 mt-2">
+                    {selectedFile.warnings.map((warning, i) => (
+                      <li key={i} className="text-sm text-amber-700">
+                        {translateWarning(warning, t)}
+                      </li>
+                    ))}
+                  </ul>
+                </DisclosurePanel>
+              </Disclosure>
             )}
 
-            {selectedFile.fileType === "CPT" ? (
+            {selectedFile.fileType === "DISS" && (
+              <>
+                <CompactDissHeader
+                  filename={selectedFileName}
+                  data={selectedFile}
+                />
+
+                <DissPlots
+                  data={selectedFile.data}
+                  columnInfo={selectedFile.columnInfo}
+                  baseFilename={selectedFileName.replace(/\.gef$/i, "")}
+                />
+
+                <DetailedDissHeaders data={selectedFile} />
+              </>
+            )}
+
+            {selectedFile.fileType === "CPT" && (
               <>
                 <CompactCptHeader
                   filename={selectedFileName}
                   data={selectedFile}
                 />
 
-                {chartAxes?.xAxis && chartAxes.yAxis && (
-                  <CptPlots
-                    data={selectedFile.data}
-                    xAxis={chartAxes.xAxis}
-                    yAxis={chartAxes.yAxis}
-                    availableColumns={chartAxes.availableColumns}
-                    yAxisOptions={chartAxes.yAxisOptions}
-                    baseFilename={selectedFileName.replace(/\.gef$/i, "")}
-                  />
-                )}
+                <CptPlots
+                  data={selectedFile.data}
+                  columnInfo={selectedFile.columnInfo}
+                  zid={selectedFile.headers.ZID}
+                  baseFilename={selectedFileName.replace(/\.gef$/i, "")}
+                />
 
                 {selectedFile.preExcavationLayers.length > 0 && (
                   <PreExcavationPlot
@@ -336,7 +375,9 @@ export function App() {
 
                 <DetailedCptHeaders data={selectedFile} />
               </>
-            ) : (
+            )}
+
+            {selectedFile.fileType === "BORE" && (
               <>
                 <CompactBoreHeader
                   filename={selectedFileName}
@@ -415,7 +456,10 @@ function Header() {
         style={{ maxWidth: "clamp(360px, 100%, 1800px)" }}
         className=" mx-auto flex justify-between items-center"
       >
-        <h1 className="text-2xl flex gap-2 items-center">
+        <h1
+          className="text-3xl flex gap-2 items-center"
+          style={{ fontFamily: "var(--font-condensed)" }}
+        >
           <img src="bedrock.svg" width={30} /> {t("appTitle")}
         </h1>
 
@@ -449,7 +493,7 @@ function Footer() {
             <h3 className="font-semibold text-gray-700 mb-3">{t("about")}</h3>
 
             <p className="text-sm">{t("appDescription")}</p>
-            
+
             <p className="text-sm">
               {t("privacyNote")} {t("offlineNote")}{" "}
             </p>
@@ -461,7 +505,7 @@ function Footer() {
             </p>
 
             <a
-              className="hover:underline flex gap-1 items-center text-lg mt-2"
+              className="hover:underline flex gap-1 items-center text-md mt-2"
               href="https://bedrock.engineer"
             >
               <img
@@ -484,9 +528,10 @@ function Footer() {
           <div className="space-y-4">
             <h3 className="font-semibold text-gray-700 mb-3">{t("contact")}</h3>
             <div>
-              <p className="text-sm mb-1 inline-flex">
-                {t("needSimilarApp")} {t("contactUs")}
-                {"  "}
+              <p className="text-sm mb-1">
+                {t("needSimilarApp")}
+                <br />
+                {t("contactUs")}:
                 <a
                   href="mailto:info@bedrock.engineer"
                   className="text-blue-400 hover:underline font-medium ml-1"

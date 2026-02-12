@@ -5,6 +5,10 @@
     "IBM Plex Sans", ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji",
     "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
 
+  --font-condensed:
+    "IBM Plex Sans Condensed", ui-monospace, SFMono-Regular, Menlo, Monaco,
+    Consolas, "Liberation Mono", "Courier New", monospace;
+
   --font-mono:
     "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas,
     "Liberation Mono", "Courier New", monospace;
@@ -250,4 +254,83 @@ body {
   --button-bg: var(--color-red-400);
   --button-border-color: var(--color-red-600);
   --button-hover-bg: var(--color-red-500);
+}
+
+/* Split Button */
+.split-button {
+  display: inline-flex;
+}
+
+.split-button-action {
+  border-top-right-radius: 0;
+  border-bottom-right-radius: 0;
+  border-right: none;
+}
+
+.split-button-trigger {
+  border-top-left-radius: 0;
+  border-bottom-left-radius: 0;
+  padding-inline: 4px;
+  height: 100%;
+}
+
+.split-button-popover {
+  --popover-bg: var(--color-gray-100);
+  --popover-border-color: var(--color-gray-400);
+
+  background: var(--popover-bg);
+  border: 1px solid var(--popover-border-color);
+  border-radius: var(--radius-sm);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  outline: none;
+
+  &[data-entering] {
+    animation: popover-slide 150ms ease-out;
+  }
+
+  &[data-exiting] {
+    animation: popover-slide 150ms ease-in reverse;
+  }
+}
+
+@keyframes popover-slide {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.split-button-menu {
+  outline: none;
+  padding: 4px;
+  min-width: 120px;
+}
+
+.split-button-menu-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 8px;
+  border-radius: calc(var(--radius-sm) - 2px);
+  cursor: pointer;
+  outline: none;
+  font-size: var(--text-sm);
+
+  &[data-focused] {
+    background: var(--color-blue-100);
+    color: var(--color-blue-900);
+  }
+
+  &[data-selected] {
+    font-weight: 500;
+
+    &::before {
+      content: "✓";
+      font-size: 0.75em;
+    }
+  }
 }
