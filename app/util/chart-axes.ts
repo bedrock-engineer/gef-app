@@ -75,7 +75,7 @@ export function getColumnDisplayName(col: ColumnInfo): string {
  * - X-axis: Cone resistance (quantity 2), fallback to corrected cone (13) or friction (4)
  * - Also provides all available columns and Y-axis alternatives
  */
-export function detectChartAxes(
+export function detectCptChartAxes(
   columnInfo: Array<ColumnInfo>,
   data: Array<Row>,
   zid: ZID | undefined,
@@ -150,8 +150,14 @@ export function detectChartAxes(
     });
   }
 
+  const availableColumns = columnInfo.map((col) => ({
+    key: col.name,
+    unit: getUnitCode(col.unit),
+    name: getColumnDisplayName(col),
+  }));
+
   return {
-    yAxis: yAxisOptions[0] ?? null,
+    yAxis: yAxisOptions[0] ?? null, // bit duplicate though
     xAxis: xColumn
       ? {
           key: xColumn.name,
@@ -159,11 +165,7 @@ export function detectChartAxes(
           name: getColumnDisplayName(xColumn),
         }
       : null,
-    availableColumns: columnInfo.map((col) => ({
-      key: col.name,
-      unit: getUnitCode(col.unit),
-      name: getColumnDisplayName(col),
-    })),
+    availableColumns,
     yAxisOptions,
   };
 }

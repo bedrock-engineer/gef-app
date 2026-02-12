@@ -68,18 +68,29 @@ export function FileTable({
       let testDate: string | null = null;
       let finalDepth: number | null = null;
 
-      if (data.fileType === "BORE") {
-        // For BORE files, use processed boring date (MEASUREMENTTEXT ID 16 = "Datum boring")
-        testDate = data.processed.texts.datumBoring?.value ?? null;
-        // Get end depth from processed measurements (MEASUREMENTVAR ID 16 = "Einddiepte")
-        finalDepth = data.processed.measurements.einddiepte?.value ?? null;
-        // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-      } else if (data.fileType === "CPT") {
-        // For CPT files, use processed startDate
-        testDate = data.processed.startDate ?? null;
-        // Get end depth from processed measurements (MEASUREMENTVAR ID 16)
-        finalDepth =
-          data.processed.measurements.endDepthOfPenetrationTest?.value ?? null;
+      switch (data.fileType) {
+        case "BORE": {
+          // For BORE files, use processed boring date (MEASUREMENTTEXT ID 16 = "Datum boring")
+          testDate = data.processed.texts.datumBoring?.value ?? null;
+          // Get end depth from processed measurements (MEASUREMENTVAR ID 16 = "Einddiepte")
+          finalDepth = data.processed.measurements.einddiepte?.value ?? null;
+          break;
+        }
+        case "CPT": {
+          // For CPT files, use processed startDate
+          testDate = data.processed.startDate ?? null;
+          // Get end depth from processed measurements (MEASUREMENTVAR ID 16)
+          finalDepth =
+            data.processed.measurements.endDepthOfPenetrationTest?.value ??
+            null;
+          break;
+        }
+        case "DISS": {
+          testDate = data.processed.startDate ?? null;
+
+          finalDepth = data.parent?.value ?? null;
+          break;
+        }
       }
 
       return {
@@ -217,7 +228,7 @@ export function FileTable({
                   onPress={() => {
                     onFileRemove(row.filename);
                   }}
-                  className="p-1 hover:bg-gray-200 rounded text-gray-500 hover:text-gray-700"
+                  className="p-1 transition-colors hover:bg-red-200 rounded-sm text-gray-500 hover:text-red-700"
                   aria-label={t("removeFile")}
                 >
                   <XIcon size={14} />
@@ -234,6 +245,7 @@ export function FileTable({
 const badgeClassNames = {
   BORE: "bg-orange-300 text-orange-800",
   CPT: "bg-blue-300 text-blue-800",
+  DISS: "bg-green-300 text-green-800",
 };
 
 const TypeBadge = ({ children }: { children: GefFileType }) => (

@@ -1,29 +1,27 @@
+import type { ColumnInfo, Row, ZID } from "@bedrock-engineer/gef-parser";
 import * as Plot from "@observablehq/plot";
 import { useEffect, useRef, useState } from "react";
 import {
+  Button,
   Checkbox,
   CheckboxGroup,
   Label,
-  Select,
-  SelectValue,
-  Button,
-  Popover,
   ListBox,
   ListBoxItem,
+  Popover,
+  Select,
+  SelectValue,
 } from "react-aria-components";
 import { useTranslation } from "react-i18next";
-import { PlotDownloadButtons } from "./plot-download-buttons";
-import type { Row } from "@bedrock-engineer/gef-parser";
+import {
+  DEPTH_KEYWORDS,
+  detectCptChartAxes,
+  type ChartColumn,
+} from "~/util/chart-axes";
 import { Card, CardTitle } from "./card";
-import { DEPTH_KEYWORDS } from "~/util/chart-axes";
+import { PlotDownloadButtons } from "./plot-download-buttons";
 
-interface Column {
-  key: string;
-  unit: string;
-  name: string;
-}
-
-function isDepthColumn(col: Column): boolean {
+function isDepthColumn(col: ChartColumn): boolean {
   const nameLower = col.name.toLowerCase();
   return (
     col.unit === "m" && DEPTH_KEYWORDS.some((kw) => nameLower.includes(kw))
@@ -32,10 +30,8 @@ function isDepthColumn(col: Column): boolean {
 
 interface CptPlotProps {
   data: Array<Row>;
-  xAxis: Column;
-  yAxis: Column;
-  availableColumns: Array<Column>;
-  yAxisOptions?: Array<Column>;
+  columnInfo: Array<ColumnInfo>;
+  zid: ZID | undefined;
   width?: number;
   height?: number;
   baseFilename: string;
@@ -43,23 +39,30 @@ interface CptPlotProps {
 
 export function CptPlots({
   data,
-  xAxis: initialXAxis,
-  yAxis: initialYAxis,
-  availableColumns,
-  yAxisOptions = [],
+  columnInfo,
+  zid,
   width = 300,
   height = 800,
   baseFilename,
 }: CptPlotProps) {
   const { t } = useTranslation();
-  const [selectedAxes, setSelectedAxes] = useState([initialXAxis.key]);
-  const [selectedYAxis, setSelectedYAxis] = useState(initialYAxis.key);
+  const chartAxes = detectCptChartAxes(columnInfo, data, zid);
+
+  const [selectedAxes, setSelectedAxes] = useState([chartAxes.xAxis?.key ?? ""]);
+  const [selectedYAxis, setSelectedYAxis] = useState(chartAxes.yAxis?.key ?? "");
   const [showComments, setShowComments] = useState(true);
 
-  const xAxisOptions = availableColumns.filter((col) => !isDepthColumn(col));
+  if (!chartAxes.xAxis || !chartAxes.yAxis) {
+    return null;
+  }
+
+  const xAxisOptions = chartAxes.availableColumns.filter(
+    (col) => !isDepthColumn(col),
+  );
 
   const currentYAxis =
-    yAxisOptions.find((opt) => opt.key === selectedYAxis) ?? initialYAxis;
+    chartAxes.yAxisOptions.find((opt) => opt.key === selectedYAxis) ??
+    chartAxes.yAxis;
 
   // Determine if we should reverse the y-axis
   // Elevation should NOT be reversed (positive up), depth should be reversed (positive down)
@@ -89,7 +92,7 @@ export function CptPlots({
                 value={x.key}
                 className="flex items-center gap-2 group"
               >
-                <div className="w-4 h-4 border-2 border-gray-300 rounded flex items-center justify-center group-data-[selected]:bg-blue-600 group-data-[selected]:border-blue-600 group-hover:border-gray-400 group-data-[selected]:group-hover:bg-blue-700 group-data-[pressed]:scale-95 transition-all">
+                <div className="w-4 h-4 border-2 border-gray-300 rounded flex items-center justify-center group-data-selected:bg-blue-600 group-data-selected:border-blue-600 group-hover:border-gray-400 group-data-selected:group-hover:bg-blue-700 group-data-pressed:scale-95 transition-all">
                   <svg
                     viewBox="0 0 18 18"
                     className="w-3 h-3 fill-none stroke-white stroke-2 opacity-0 group-data-selected:opacity-100"
@@ -109,8 +112,9 @@ export function CptPlots({
           <span className="block text-sm font-medium text-gray-700 mb-1">
             {t("yAxisVertical")}
           </span>
-          {yAxisOptions.length > 1 ? (
+          {chartAxes.yAxisOptions.length > 1 ? (
             <Select
+              aria-label={t("yAxisVertical")}
               value={selectedYAxis}
               onChange={(key) => {
                 setSelectedYAxis(key as string);
@@ -124,7 +128,7 @@ export function CptPlots({
 
               <Popover className="w-[--trigger-width] bg-white border border-gray-300 rounded-sm shadow-lg">
                 <ListBox className="max-h-60 overflow-auto p-1">
-                  {yAxisOptions.map((opt) => (
+                  {chartAxes.yAxisOptions.map((opt) => (
                     <ListBoxItem
                       key={opt.key}
                       id={opt.key}
@@ -150,7 +154,7 @@ export function CptPlots({
               onChange={setShowComments}
               className="flex items-center gap-2 group"
             >
-              <div className="w-4 h-4 border-2 border-gray-300 rounded flex items-center justify-center group-data-[selected]:bg-blue-600 group-data-[selected]:border-blue-600 group-hover:border-gray-400 group-data-[selected]:group-hover:bg-blue-700 group-data-[pressed]:scale-95 transition-all">
+              <div className="w-4 h-4 border-2 border-gray-300 rounded flex items-center justify-center group-data-selected:bg-blue-600 group-data-selected:border-blue-600 group-hover:border-gray-400 group-data-selected:group-hover:bg-blue-700 group-data-pressed:scale-95 transition-all">
                 <svg
                   viewBox="0 0 18 18"
                   className="w-3 h-3 fill-none stroke-white stroke-2 opacity-0 group-data-selected:opacity-100"
@@ -202,8 +206,8 @@ export function CptPlots({
 
 interface CptPlotInternalProps {
   data: Array<Row>;
-  xAxis: Column;
-  yAxis: Column;
+  xAxis: ChartColumn;
+  yAxis: ChartColumn;
   width: number;
   height: number;
   reverseY?: boolean;

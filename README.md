@@ -12,7 +12,7 @@ GEF is an outdated format, however GEF files are still ubiquitous in geotechnica
 <img src="/public/bedrock.svg" width="300px" alt="Bedrock Logo" />
 
 This is a free web application by [Bedrock](https://bedrock.engineer) that provides a fast, modern interface for viewing and analyzing GEF files directly in your browser.
-It also let's you download data from the GEF files as CSV or JSON, and the locations of multiple files as GeoJSON.
+It also let's you download data from the GEF files as CSV or JSON, and the locations of multiple GEF files as GeoJSON.
 
 ### Supported GEF Types
 
@@ -20,8 +20,9 @@ It also let's you download data from the GEF files as CSV or JSON, and the locat
   - [Basisregistratie Ondergrond Additions](https://www.cptdata.nl/downloads/gef113Releasenotes.pdf)
   - [Databank Ondergrond Vlaanderen Additions](https://www.milieuinfo.be/confluence/display/DDOV/Toelichting+DOV-GEF+formaat)
 - [GEF-BORE](https://bedrock.engineer/reference/formats/gef/gef-bore/)
+- GEF-DISS
 
-GEF-SIEVE and GEF-DISS are not supported.
+GEF-SIEVE files are not supported.
 
 ## Technology Stack
 

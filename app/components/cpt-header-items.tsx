@@ -1,5 +1,4 @@
 import type { TFunction } from "i18next";
-import type { ReactNode } from "react";
 import { useTranslation } from "react-i18next";
 import type { GefCptHeaders } from "@bedrock-engineer/gef-parser";
 import {
@@ -15,21 +14,24 @@ import {
 } from "@bedrock-engineer/gef-parser";
 import { CardTitle } from "./card";
 import {
-  countryCodeTranslationMap,
   filterMeasurementTextsByCategories,
   formatNumericValue,
   getCalculationsInfo,
   getComments,
   getConditionsInfo,
+  getCoordinatesInfo,
+  getDataStructure,
   getFileMetadata,
   getLocalizedDescription,
   getProcessingInfo,
+  getProjectInfo,
   type HeaderItem,
 } from "./common-header-items";
 import { CopyButton } from "./copy-button";
 import {
   CompactHeaderLeftColumn,
   CompactHeaderRightColumn,
+  HeaderContainer,
   HeaderDisclosurePanels,
   type HeaderSection,
 } from "./gef-header-display";
@@ -59,9 +61,14 @@ function getCalibrationData(
 interface CptCompactInfoProps {
   processed: ProcessedMetadata;
   lastScan: number | undefined;
+  childCount: number;
 }
 
-function CptCompactInfo({ processed, lastScan }: CptCompactInfoProps) {
+function CptCompactInfo({
+  processed,
+  lastScan,
+  childCount,
+}: CptCompactInfoProps) {
   const { t } = useTranslation();
 
   const waterLevel =
@@ -96,6 +103,13 @@ function CptCompactInfo({ processed, lastScan }: CptCompactInfoProps) {
           <dd>{lastScan}</dd>
         </>
       )}
+
+      {childCount > 0 && (
+        <>
+          <dt className="text-gray-500">{t("dissTests")}</dt>
+          <dd>{childCount}</dd>
+        </>
+      )}
     </>
   );
 }
@@ -109,68 +123,17 @@ export function CompactCptHeader({ filename, data }: CompactCptHeaderProps) {
   const { headers, processed } = data;
 
   return (
-    <div className="bg-white border border-gray-300 rounded-sm p-4 mb-6">
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 text-sm">
-        <CompactHeaderLeftColumn filename={filename} data={data} />
-        <CompactHeaderRightColumn processed={processed}>
-          <CptCompactInfo processed={processed} lastScan={headers.LASTSCAN} />
-        </CompactHeaderRightColumn>
-      </div>
-    </div>
+    <HeaderContainer>
+      <CompactHeaderLeftColumn filename={filename} data={data} />
+      <CompactHeaderRightColumn processed={processed}>
+        <CptCompactInfo
+          processed={processed}
+          lastScan={headers.LASTSCAN}
+          childCount={headers.CHILD?.length ?? 0}
+        />
+      </CompactHeaderRightColumn>
+    </HeaderContainer>
   );
-}
-
-function getCptProjectInfo(
-  processed: ProcessedMetadata,
-  t: TFunction,
-  locale: string,
-): Array<HeaderItem> {
-  const items: Array<HeaderItem> = [];
-
-  if (processed.projectId) {
-    items.push({ label: t("projectId"), value: processed.projectId });
-  }
-  if (processed.testId) {
-    items.push({ label: t("testId"), value: processed.testId });
-  }
-
-  if (processed.companyName) {
-    items.push({ label: t("company"), value: processed.companyName });
-  }
-
-  if (processed.companyAddress) {
-    items.push({ label: t("address"), value: processed.companyAddress });
-  }
-
-  if (processed.companyCountryCode) {
-    const countryKey =
-      countryCodeTranslationMap[
-        processed.companyCountryCode as keyof typeof countryCodeTranslationMap
-      ];
-
-    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-    if (countryKey) {
-      items.push({
-        label: t("country"),
-        value: t(countryKey),
-      });
-    }
-  }
-
-  const measurementTextItems = filterMeasurementTextsByCategories(
-    processed,
-    [
-      "project_info",
-      "standards",
-      "location",
-      "personnel",
-      "data_management",
-      "related_investigations",
-    ],
-    locale,
-  );
-
-  return items.concat(measurementTextItems);
 }
 
 function getCptTestInfo(
@@ -222,73 +185,6 @@ function getCptTestInfo(
       });
     }
   });
-
-  return items;
-}
-
-function getCptCoordinatesInfo(
-  processed: ProcessedMetadata,
-  t: TFunction,
-  locale: string,
-): Array<HeaderItem> {
-  const items: Array<HeaderItem> = [];
-
-  items.push(
-    ...filterMeasurementTextsByCategories(
-      processed,
-      [
-        "coordinates",
-        "reference_system",
-        "elevation_determination",
-        "position_determination",
-      ],
-      locale,
-    ),
-  );
-
-  if (processed.coordinateSystem) {
-    items.push({
-      label: t("coordinateSystem"),
-      value: `${processed.coordinateSystem.name} ${processed.coordinateSystem.epsg}`,
-    });
-
-    if (
-      processed.originalX !== undefined &&
-      processed.xUncertainty !== undefined
-    ) {
-      items.push({
-        label: t("xCoordinate"),
-        value: `${processed.originalX} m ± ${processed.xUncertainty}`,
-      });
-    }
-
-    if (
-      processed.originalY !== undefined &&
-      processed.yUncertainty !== undefined
-    ) {
-      items.push({
-        label: t("yCoordinate"),
-        value: `${processed.originalY} m ± ${processed.yUncertainty}`,
-      });
-    }
-  }
-
-  if (processed.heightSystem) {
-    items.push({
-      label: t("heightSystem"),
-      value: processed.heightSystem.name,
-    });
-
-    if (
-      processed.surfaceElevation !== undefined &&
-      processed.elevationUncertainty !== undefined
-    ) {
-      items.push({
-        label: t("surfaceLevel"),
-        value: `${processed.surfaceElevation} m ± ${processed.elevationUncertainty}`,
-      });
-    }
-  }
 
   return items;
 }
@@ -348,6 +244,66 @@ function getCptEquipmentInfo(
   });
 
   return items;
+}
+
+function getChildFilesInfo(
+  headers: GefCptHeaders,
+  t: TFunction,
+): Array<HeaderItem> {
+  if (!headers.CHILD || headers.CHILD.length === 0) {
+    return [];
+  }
+
+  return [
+    {
+      label: t("childGefFilesCount", { count: headers.CHILD.length }),
+      value: (
+        <table>
+          <thead>
+            <tr>
+              <th className="border border-gray-300 px-2 py-1 text-left">
+                #
+              </th>
+              <th className="border border-gray-300 px-2 py-1 text-left">
+                {t("reference")}
+              </th>
+              <th className="border border-gray-300 px-2 py-1 text-left">
+                {t("depth")}
+              </th>
+              <th className="border border-gray-300 px-2 py-1 text-left">
+                {t("description")}
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+            {headers.CHILD.map((child) => (
+              <tr key={child.index}>
+                <td className="border border-gray-300 px-2 py-1">
+                  {child.index}
+                </td>
+                <td className="border border-gray-300 px-2 py-1">
+                  {child.reference}
+                </td>
+                <td
+                  className="border border-gray-300 px-2 py-1 text-right"
+                  style={{ fontVariantNumeric: "tabular-nums" }}
+                >
+                  {child.value != null
+                    ? `${child.value} ${child.unit ?? ""}`
+                    : ""}
+                </td>
+                <td className="border border-gray-300 px-2 py-1">
+                  {[child.quantity, child.explanation]
+                    .filter(Boolean)
+                    .join(" - ")}
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      ),
+    },
+  ];
 }
 
 function getExtensionInfo(
@@ -454,7 +410,7 @@ export function DetailedCptHeaders({ data }: DetailedCptHeaderProps) {
     {
       id: "project",
       title: t("projectInformation"),
-      items: getCptProjectInfo(processed, t, locale),
+      items: getProjectInfo(processed, t, locale),
     },
     {
       id: "test_info",
@@ -464,7 +420,7 @@ export function DetailedCptHeaders({ data }: DetailedCptHeaderProps) {
     {
       id: "coordinates",
       title: t("coordinatesLocation"),
-      items: getCptCoordinatesInfo(processed, t, locale),
+      items: getCoordinatesInfo(processed, t, locale),
     },
     {
       id: "equipment",
@@ -513,6 +469,11 @@ export function DetailedCptHeaders({ data }: DetailedCptHeaderProps) {
       title: t("extension"),
       items: getExtensionInfo(headers, extension, t),
     },
+    {
+      id: "child",
+      title: t("childGefFiles"),
+      items: getChildFilesInfo(headers, t),
+    },
   ].filter((section) => section.items.length > 0);
 
   return (
@@ -521,92 +482,4 @@ export function DetailedCptHeaders({ data }: DetailedCptHeaderProps) {
       <HeaderDisclosurePanels sections={allSections} />
     </div>
   );
-}
-
-function getDataStructure(headers: GefCptHeaders, t: TFunction) {
-  const items: Array<{ label: string; value: ReactNode }> = [];
-
-  if (headers.COLUMN) {
-    items.push({ label: t("numberOfColumns"), value: String(headers.COLUMN) });
-  }
-
-  if (headers.LASTSCAN) {
-    items.push({ label: t("numberOfScans"), value: String(headers.LASTSCAN) });
-  }
-
-  if (headers.DATAFORMAT) {
-    items.push({ label: t("dataFormat"), value: headers.DATAFORMAT });
-  }
-
-  if (headers.COLUMNINFO) {
-    const minMaxEntries = headers.COLUMNMINMAX?.map(
-      ({ columnNumber, min, max }) => [columnNumber, { min, max }] as const,
-    );
-    const minMaxMap = new Map<number, { min: number; max: number }>(
-      minMaxEntries,
-    );
-
-    items.push({
-      label: t("dataColumns"),
-      value: (
-        <table>
-          <thead>
-            <tr>
-              <th className="border border-gray-300 px-2 py-1 text-left">
-                {t("name")}
-              </th>
-              <th className="border border-gray-300 px-2 py-1 text-left">
-                {t("unit")}
-              </th>
-              {minMaxMap.size > 0 && (
-                <>
-                  <th className="border border-gray-300 px-2 py-1 text-left">
-                    Min
-                  </th>
-                  <th className="border border-gray-300 px-2 py-1 text-left">
-                    Max
-                  </th>
-                </>
-              )}
-            </tr>
-          </thead>
-          <tbody>
-            {headers.COLUMNINFO.map((col, index) => {
-              const colNum = index + 1;
-              const minMax = minMaxMap.get(colNum);
-              return (
-                <tr key={col.name}>
-                  <td className="border border-gray-300 px-2 py-1">
-                    {col.name}
-                  </td>
-                  <td className="border border-gray-300 px-2 py-1">
-                    {col.unit}
-                  </td>
-                  {minMax && (
-                    <>
-                      <td
-                        className="border border-gray-300 px-2 py-1 text-right"
-                        style={{ fontVariantNumeric: "tabular-nums" }}
-                      >
-                        {minMax.min}
-                      </td>
-
-                      <td
-                        className="border border-gray-300 px-2 py-1 text-right"
-                        style={{ fontVariantNumeric: "tabular-nums" }}
-                      >
-                        {minMax.max}
-                      </td>
-                    </>
-                  )}
-                </tr>
-              );
-            })}
-          </tbody>
-        </table>
-      ),
-    });
-  }
-
-  return items;
 }

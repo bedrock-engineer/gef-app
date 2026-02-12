@@ -3,7 +3,7 @@ export default {
     // App title and description
     appTitle: "Bedrock.engineer GEF Viewer",
     appDescription:
-      "View and analyze GEF (Geotechnical Exchange Format) files for CPT and borehole data in your browser.",
+      "View and analyze GEF (Geotechnical Exchange Format) files for CPT, dissipation tests, and geotechnical borehole data in your browser.",
     privacyNote: "Your data never leaves your browser.",
     offlineNote: "This app also works offline.",
     installInstructionsDesktop:
@@ -39,8 +39,6 @@ export default {
       "File '{{filename}}' has {{count}} COLUMNINFO {{entry}} missing quantity number (4th element per GEF spec). Defaulting to quantity 0 (unknown). This may cause data columns to be misinterpreted or not displayed correctly.",
     missingColumnInfoQuantity_entry: "entry",
     missingColumnInfoQuantity_entry_plural: "entries",
-    dissipationTestNotSupported:
-      "GEF-DISS-Report (dissipation test) files are not supported",
     sieveTestNotSupported: "GEF-SIEVE files are not supported",
     name: "Name",
     unit: "Unit",
@@ -118,6 +116,13 @@ export default {
     operatingSystem: "Operating System",
     extensionType: "Extension Type",
     comment: "Comment",
+
+    // DISS-specific
+    parentFile: "Parent CPT:",
+    dissipationDepth: "Test depth:",
+    porePressure: "Pore Pressure",
+    coneResistance: "Cone Resistance",
+    parentInformation: "Parent File",
 
     // Plot labels
     columns: "Columns",
@@ -200,5 +205,13 @@ export default {
     // Disclaimer
     disclaimer:
       "This tool is provided for informational purposes only. All geotechnical data should be verified by a qualified geotechnical professional. No rights can be derived from the use of this tool.",
+
+    childGefFiles: "Child GEF files",
+    childGefFile: "Child GEF file",
+    childGefFilesCount: "{{count}} child file",
+    childGefFilesCount_plural: "{{count}} child files",
+    dissTests: "Dissipation tests:",
+    reference: "Reference",
+    description: "Description",
   },
 } as const;
