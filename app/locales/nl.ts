@@ -119,7 +119,7 @@ export default {
     comment: "Opmerking",
 
     // DISS-specific
-    parentCpt: "Bijborende CPT",
+    parentCpt: "Bijbehorende CPT",
     dissipationDepth: "Testdiepte:",
     porePressure: "Waterspanning",
     coneResistance: "Conusweerstand",
