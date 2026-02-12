@@ -119,11 +119,10 @@ export default {
     comment: "Opmerking",
 
     // DISS-specific
-    parentFile: "Ouder CPT:",
+    parentCpt: "Bijborende CPT",
     dissipationDepth: "Testdiepte:",
     porePressure: "Waterspanning",
     coneResistance: "Conusweerstand",
-    parentInformation: "Ouder bestand",
 
     // Plot labels
     columns: "Kolommen",

@@ -118,11 +118,10 @@ export default {
     comment: "Comment",
 
     // DISS-specific
-    parentFile: "Parent CPT:",
+    parentCpt: "Parent CPT",
     dissipationDepth: "Test depth:",
     porePressure: "Pore Pressure",
     coneResistance: "Cone Resistance",
-    parentInformation: "Parent File",
 
     // Plot labels
     columns: "Columns",
