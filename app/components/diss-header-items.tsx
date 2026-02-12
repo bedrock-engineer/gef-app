@@ -34,7 +34,7 @@ function DissCompactInfo({ data }: { data: GefDissData }) {
     <>
       {parent.reference && (
         <>
-          <dt className="text-gray-500">{t("parentFile")}</dt>
+          <dt className="text-gray-500">{t("parentCpt")}</dt>
           <dd>{parent.reference}</dd>
         </>
       )}
@@ -74,7 +74,7 @@ function getDissParentInfo(
   const { parent } = data;
 
   if (parent?.reference) {
-    items.push({ label: t("parentFile"), value: parent.reference });
+    items.push({ label: t("parentCpt"), value: parent.reference });
   }
   if (parent?.value != null) {
     const unit = parent.unit ?? "m";
@@ -102,7 +102,7 @@ export function DetailedDissHeaders({ data }: DetailedDissHeadersProps) {
   const allSections: Array<HeaderSection> = [
     {
       id: "parent",
-      title: t("parentInformation"),
+      title: t("parentCpt"),
       items: getDissParentInfo(data, t),
     },
     {
