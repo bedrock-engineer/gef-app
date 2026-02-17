@@ -118,6 +118,12 @@ export default {
     extensionType: "Extensietype",
     comment: "Opmerking",
 
+    // Time scale options
+    timeScale: "Tijdas",
+    scaleSqrt: "√t",
+    scaleLog: "log",
+    scaleLinear: "lineair",
+
     // DISS-specific
     parentCpt: "Bijbehorende CPT",
     dissipationDepth: "Testdiepte:",

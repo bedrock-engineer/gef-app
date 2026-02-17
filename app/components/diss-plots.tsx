@@ -4,11 +4,14 @@ import {
   type DissRow,
 } from "@bedrock-engineer/gef-parser";
 import * as Plot from "@observablehq/plot";
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
+import { Label, Radio, RadioGroup } from "react-aria-components";
 import { useTranslation } from "react-i18next";
 import { getColumnDisplayName, getUnitCode } from "~/util/chart-axes";
 import { Card, CardTitle } from "./card";
 import { PlotDownloadButtons } from "./plot-download-buttons";
+
+type TimeScale = "log" | "sqrt" | "linear";
 
 // GEF quantity numbers for DISS columns
 const QTY_TIME = 12;
@@ -18,6 +21,20 @@ const QTY_PORE_PRESSURE_U2 = 6;
 const QTY_PORE_PRESSURE_U3 = 7;
 
 const PORE_PRESSURE_COLORS = ["steelblue", "orange", "#16a34a"];
+
+function getXScaleConfig(scale: TimeScale, label: string): Plot.ScaleOptions {
+  switch (scale) {
+    case "log": {
+      return { type: "log", label, grid: true };
+    }
+    case "sqrt": {
+      return { type: "pow", exponent: 0.5, label: `√ ${label}`, grid: true };
+    }
+    case "linear": {
+      return { label, grid: true };
+    }
+  }
+}
 
 interface DissPlotProps {
   data: Array<DissRow>;
@@ -35,6 +52,7 @@ export function DissPlots({
   baseFilename,
 }: DissPlotProps) {
   const { t } = useTranslation();
+  const [timeScale, setTimeScale] = useState<TimeScale>("sqrt");
 
   const timeCol = findColumnByQuantity(columnInfo, QTY_TIME);
   const qcCol = findColumnByQuantity(columnInfo, QTY_CONE_RESISTANCE);
@@ -51,6 +69,35 @@ export function DissPlots({
   return (
     <Card>
       <CardTitle>{t("graphs")}</CardTitle>
+      <RadioGroup
+        value={timeScale}
+        onChange={(v) => {
+          setTimeScale(v as TimeScale);
+        }}
+        orientation="horizontal"
+        className="flex items-center gap-3 mb-3"
+      >
+        <Label className="text-sm font-medium text-gray-700">
+          {t("timeScale")}
+        </Label>
+        <div className="flex gap-1">
+          {(
+            [
+              { value: "log", label: t("scaleLog") },
+              { value: "sqrt", label: t("scaleSqrt") },
+              { value: "linear", label: t("scaleLinear") },
+            ] as const
+          ).map((option) => (
+            <Radio
+              key={option.value}
+              value={option.value}
+              className="cursor-pointer rounded-sm border border-gray-300 px-2.5 py-1 text-sm text-gray-700 transition-colors data-selected:border-blue-600 data-selected:bg-blue-600 data-selected:text-white hover:bg-gray-50 data-selected:hover:bg-blue-700"
+            >
+              {option.label}
+            </Radio>
+          ))}
+        </div>
+      </RadioGroup>
       <div className="space-y-6">
         {porePressureCols.length > 0 && (
           <div>
@@ -60,6 +107,7 @@ export function DissPlots({
               height={height}
               width={width}
               timeCol={timeCol}
+              timeScale={timeScale}
               porePressureCols={porePressureCols}
             />
             <PlotDownloadButtons
@@ -77,6 +125,7 @@ export function DissPlots({
               height={height}
               width={width}
               timeCol={timeCol}
+              timeScale={timeScale}
               qcCol={qcCol}
             />
             <PlotDownloadButtons
@@ -96,6 +145,7 @@ interface DissPorePressurePlotProps {
   height: number;
   plotId: string;
   timeCol: ColumnInfo;
+  timeScale: TimeScale;
   porePressureCols: Array<ColumnInfo>;
 }
 
@@ -105,6 +155,7 @@ function DissPorePressurePlot({
   data,
   plotId,
   timeCol,
+  timeScale,
   porePressureCols,
 }: DissPorePressurePlotProps) {
   const { t } = useTranslation();
@@ -127,11 +178,16 @@ function DissPorePressurePlot({
     }> = [];
 
     for (const row of data) {
+      const time = row[timeKey];
+      // Filter out t<=0 for non-linear scales (log/sqrt can't represent 0)
+      if (time == null || (typeof time === "number" && timeScale !== "linear" && time <= 0)) {
+        continue;
+      }
       for (const col of porePressureCols) {
         const value = row[col.name];
         if (value != null) {
           longData.push({
-            time: row[timeKey] ?? null,
+            time,
             value,
             series: col.name,
           });
@@ -139,6 +195,7 @@ function DissPorePressurePlot({
       }
     }
 
+    const xLabel = `${getColumnDisplayName(timeCol)} (${timeUnit})`;
     const plot = Plot.plot({
       height,
       width,
@@ -147,10 +204,7 @@ function DissPorePressurePlot({
         backgroundColor: "white",
         overflow: "visible",
       },
-      x: {
-        label: `${getColumnDisplayName(timeCol)} (${timeUnit})`,
-        grid: true,
-      },
+      x: getXScaleConfig(timeScale, xLabel),
       y: {
         grid: true,
         label: `${t("porePressure")} (${ppUnit})`,
@@ -187,7 +241,7 @@ function DissPorePressurePlot({
     return () => {
       plot.remove();
     };
-  }, [data, width, height, t, timeCol, porePressureCols]);
+  }, [data, width, height, t, timeCol, timeScale, porePressureCols]);
 
   return <div id={plotId} ref={containerRef}></div>;
 }
@@ -198,6 +252,7 @@ interface DissConeResistancePlotProps {
   height: number;
   plotId: string;
   timeCol: ColumnInfo;
+  timeScale: TimeScale;
   qcCol: ColumnInfo;
 }
 
@@ -207,6 +262,7 @@ function DissConeResistancePlot({
   data,
   plotId,
   timeCol,
+  timeScale,
   qcCol,
 }: DissConeResistancePlotProps) {
   const { t } = useTranslation();
@@ -221,6 +277,15 @@ function DissConeResistancePlot({
     const timeUnit = getUnitCode(timeCol.unit);
     const qcUnit = getUnitCode(qcCol.unit);
 
+    // Filter out t<=0 for non-linear scales (log/sqrt can't represent 0)
+    const filteredData = timeScale !== "linear"
+      ? data.filter((row) => {
+          const time = row[timeKey];
+          return time != null && typeof time === "number" && time > 0;
+        })
+      : data;
+
+    const xLabel = `${getColumnDisplayName(timeCol)} (${timeUnit})`;
     const plot = Plot.plot({
       height,
       width,
@@ -229,21 +294,18 @@ function DissConeResistancePlot({
         backgroundColor: "white",
         overflow: "visible",
       },
-      x: {
-        label: `${getColumnDisplayName(timeCol)} (${timeUnit})`,
-        grid: true,
-      },
+      x: getXScaleConfig(timeScale, xLabel),
       y: {
         grid: true,
         label: `${getColumnDisplayName(qcCol)} (${qcUnit})`,
       },
       marks: [
         Plot.frame(),
-        Plot.line(data, {
+        Plot.line(filteredData, {
           x: timeKey,
           y: qcCol.name,
         }),
-        Plot.crosshair(data, {
+        Plot.crosshair(filteredData, {
           x: timeKey,
           y: qcCol.name,
         }),
@@ -263,7 +325,7 @@ function DissConeResistancePlot({
     return () => {
       plot.remove();
     };
-  }, [data, width, height, t, timeCol, qcCol]);
+  }, [data, width, height, t, timeCol, timeScale, qcCol]);
 
   return <div id={plotId} ref={containerRef}></div>;
 }
