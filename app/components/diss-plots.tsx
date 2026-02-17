@@ -52,7 +52,7 @@ export function DissPlots({
   baseFilename,
 }: DissPlotProps) {
   const { t } = useTranslation();
-  const [timeScale, setTimeScale] = useState<TimeScale>("sqrt");
+  const [timeScale, setTimeScale] = useState<TimeScale>("log");
 
   const timeCol = findColumnByQuantity(columnInfo, QTY_TIME);
   const qcCol = findColumnByQuantity(columnInfo, QTY_CONE_RESISTANCE);
