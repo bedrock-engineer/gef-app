@@ -75,17 +75,11 @@ export function Layout({ children, loaderData }: LayoutProps) {
         {process.env.NODE_ENV === "production" && (
           <>
             <script
-              id="init-counterscale"
-              dangerouslySetInnerHTML={{
-                __html:
-                  '(function () { window.counterscale = { q: [["set", "siteId", "gef.bedrock.engineer"], ["trackPageview"]], };})();',
-              }}
-            />
-            <script
               id="counterscale-script"
-              src="https://counterscale.julesb.workers.dev/tracker.js"
+              data-site-id="gef-app"
+              src="https://counterscale.jhngevaert.workers.dev.workers.dev/tracker.js"
               defer
-            />
+            ></script>
           </>
         )}
         <meta charSet="utf-8" />
