@@ -77,7 +77,7 @@ export function Layout({ children, loaderData }: LayoutProps) {
             <script
               id="counterscale-script"
               data-site-id="gef-app"
-              src="https://counterscale.jhngevaert.workers.dev/tracker.js"
+              src="https://counterscale.bedrock-engineer.workers.dev/tracker.js"
               defer
             ></script>
           </>
