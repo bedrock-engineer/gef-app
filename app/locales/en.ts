@@ -135,6 +135,8 @@ export default {
     boreLog: "Borehole Log",
     graphs: "Graphs",
     legend: "Legend",
+    soilComposition: "Composition",
+    groundwater: "GWL",
     depthM: "Depth (m)",
     downloadSvg: "Download SVG",
     downloadPng: "Download PNG",
