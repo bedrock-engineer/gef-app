@@ -9,6 +9,7 @@ import {
   formatSpecimenCode,
 } from "@bedrock-engineer/gef-parser";
 import { decodeBoreCode } from "@bedrock-engineer/gef-parser";
+import { decodeNenCode, parseNenCode } from "~/util/nen-code";
 import { Card, CardTitle } from "./card";
 import { PlotDownloadButtons } from "./plot-download-buttons";
 
@@ -23,10 +24,9 @@ const SVG_NS = "http://www.w3.org/2000/svg";
 const PLOT_MARGIN = { left: 50, right: 220, bottom: 44 };
 const RIGHT_MARGIN_DX = PLOT_MARGIN.right - 10;
 
-// Main NEN 5104 soil types, in legend display order (lithology, light→organic,
-// matching brodata). Drives both code parsing and the legend ordering.
+// Legend display order for the main soils (lithology, light→organic, matching
+// brodata). Soils not listed here are appended after these.
 const SOIL_ORDER = ["V", "K", "L", "Z", "G"];
-const MAIN_SOILS = new Set(SOIL_ORDER);
 
 // Hatch pattern shape per soil type (mirrors brodata's conventions:
 // peat "-", clay "/", silt "\", sand ".", gravel "o"). Shared between the
@@ -85,49 +85,38 @@ interface SoilComponent {
   hatch?: string;
 }
 
-// Split a NEN 5104 soil code (e.g. "Kz3g2") into its main soil plus admixtures,
-// each with a colour, hatch and relative width weight. Special codes (NBE, GM,
-// or anything not starting with a main soil) become a single plain band.
+// Turn a NEN 5104 soil code into coloured composition bands: the main soil plus
+// admixtures, each with a colour, hatch and width fraction. Special codes (NBE,
+// GM, anything not starting with a main soil) become a single plain band.
 function parseSoilComposition(
   soilCode: string | undefined,
 ): Array<SoilComponent> {
-  const main = soilCode?.[0] ?? "";
-  const second = soilCode?.[1];
-  const isComposite =
-    soilCode != null &&
-    MAIN_SOILS.has(main) &&
-    // second char lowercase => admixtures follow; uppercase => special code
-    (second === undefined || second === second.toLowerCase());
+  const { raw, main, isComposite, admixtures } = parseNenCode(soilCode ?? "");
 
   if (!isComposite) {
-    const soil = soilCode ?? "";
-    return [{ soil, color: getSoilColor(soil), fraction: 1 }];
+    return [{ soil: raw, color: getSoilColor(raw), fraction: 1 }];
   }
 
   // Collect admixtures first so the main soil can take the remaining fraction.
-  const admixtures: Array<SoilComponent> = [];
-  const re = /([a-z])([1-4])?/g;
-  let m: RegExpExecArray | null;
-  while ((m = re.exec(soilCode.slice(1))) !== null) {
-    const letter = m[1] ?? "";
-    const soil = ADMIX_SOIL[letter];
+  const admix: Array<SoilComponent> = [];
+  for (const a of admixtures) {
+    const soil = ADMIX_SOIL[a.letter];
     if (!soil) {
       continue; // qualifier like 'm' (mineraalarm) — no extra band
     }
-    const grade = m[2] ? Number(m[2]) : 1;
-    admixtures.push({
+    admix.push({
       soil,
       color: getSoilColor(soil),
-      fraction: ADMIX_FRACTION[grade] ?? 0.2,
+      fraction: ADMIX_FRACTION[a.grade] ?? 0.2,
       hatch: plotHatchId(soil),
     });
   }
 
   // Scale admixtures down if together they'd leave the main soil too thin.
-  const admixTotal = admixtures.reduce((sum, a) => sum + a.fraction, 0);
+  const admixTotal = admix.reduce((sum, a) => sum + a.fraction, 0);
   if (admixTotal > MAX_ADMIX_TOTAL) {
     const scale = MAX_ADMIX_TOTAL / admixTotal;
-    for (const a of admixtures) {
+    for (const a of admix) {
       a.fraction *= scale;
     }
   }
@@ -140,7 +129,7 @@ function parseSoilComposition(
       fraction: mainFraction,
       hatch: plotHatchId(main),
     },
-    ...admixtures,
+    ...admix,
   ];
 }
 
@@ -452,7 +441,7 @@ function formatBoreLayerTitle({
   description,
 }: BoreLayer) {
   const codes = [soilCode, ...additionalCodes].join(" ");
-  const decodedSoil = decodeBoreCode(soilCode);
+  const decodedSoil = decodeNenCode(soilCode);
   let tooltip = `${depthTop} – ${depthBottom} m\n${codes}`;
 
   if (decodedSoil !== soilCode) {
