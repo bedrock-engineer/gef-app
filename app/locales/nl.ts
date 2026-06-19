@@ -136,6 +136,8 @@ export default {
     boreLog: "Boorstaat",
     graphs: "Grafieken",
     legend: "Legenda",
+    soilComposition: "Samenstelling",
+    groundwater: "GWS",
     depthM: "Diepte (m)",
     downloadSvg: "Download SVG",
     downloadPng: "Download PNG",

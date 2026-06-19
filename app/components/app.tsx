@@ -387,6 +387,10 @@ export function App() {
                 <BorePlot
                   layers={selectedFile.layers}
                   specimens={selectedFile.specimens}
+                  groundwaterLevel={
+                    selectedFile.processed.measurements
+                      .grondwaterstandTijdensBoren?.value
+                  }
                   baseFilename={selectedFileName.replace(/\.gef$/i, "")}
                 />
 
