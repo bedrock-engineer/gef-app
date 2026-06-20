@@ -21,7 +21,7 @@ import {
   SECONDARY_COLORS,
   SHELL_CONTENT,
   STRATIGRAPHIC_UNITS,
-} from "@bedrock-engineer/gef-parser";
+} from "@bedrock-engineer/gef-parser/bore-codes";
 import type { GefData } from "@bedrock-engineer/gef-parser";
 import { downloadFile } from "./download";
 
@@ -71,6 +71,7 @@ function decodeCode(code: string): DecodedCode {
  */
 function convertGefDataToJson(gefData: GefData) {
   const { processed } = gefData;
+  const { location, elevation, company } = processed;
 
   // Build base structure
   const json: Record<string, unknown> = {
@@ -79,31 +80,31 @@ function convertGefDataToJson(gefData: GefData) {
     fileType: gefData.fileType,
     metadata: {
       filename: processed.filename,
-      companyName: processed.companyName ?? null,
+      companyName: company?.name ?? null,
       startDate: processed.startDate ?? null,
       startTime: processed.startTime ?? null,
-      coordinates: processed.coordinateSystem
+      coordinates: location?.coordinateSystem
         ? {
             system: {
-              name: processed.coordinateSystem.name,
-              epsg: processed.coordinateSystem.epsg,
+              name: location.coordinateSystem.name,
+              epsg: location.coordinateSystem.epsg,
             },
-            x: processed.originalX ?? null,
-            y: processed.originalY ?? null,
-            wgs84: processed.wgs84
+            x: location.originalX ?? null,
+            y: location.originalY ?? null,
+            wgs84: location.wgs84
               ? {
-                  lat: processed.wgs84.lat,
-                  lon: processed.wgs84.lon,
+                  lat: location.wgs84.lat,
+                  lon: location.wgs84.lon,
                 }
               : null,
           }
         : null,
-      elevation: processed.heightSystem
+      elevation: elevation?.heightSystem
         ? {
-            value: processed.surfaceElevation ?? null,
+            value: elevation.surfaceElevation ?? null,
             system: {
-              name: processed.heightSystem.name,
-              epsg: processed.heightSystem.epsg,
+              name: elevation.heightSystem.name,
+              epsg: elevation.heightSystem.epsg,
             },
           }
         : null,
@@ -123,13 +124,25 @@ function convertGefDataToJson(gefData: GefData) {
     json.data = cptData.data;
 
     // Add pre-excavation layers if present
-    if (cptData.preExcavationLayers.length > 0) {
-      json.preExcavationLayers = cptData.preExcavationLayers.map((layer) => ({
+    const preExcavationLayers = cptData.processed.preExcavationLayers;
+    if (preExcavationLayers.length > 0) {
+      json.preExcavationLayers = preExcavationLayers.map((layer) => ({
         depthTop: layer.depthTop,
         depthBottom: layer.depthBottom,
         description: layer.description,
       }));
     }
+  } else if (gefData.fileType === "DISS") {
+    const dissData = gefData;
+
+    // Add columns metadata
+    json.columns = dissData.columnInfo.map((col) => ({
+      name: col.name,
+      unit: col.unit,
+    }));
+
+    // Add data
+    json.data = dissData.data;
   } else {
     // BORE file
     const boreData = gefData;
@@ -144,8 +157,9 @@ function convertGefDataToJson(gefData: GefData) {
     }));
 
     // Add specimens if present
-    if (boreData.specimens.length > 0) {
-      json.specimens = boreData.specimens.map((specimen) => ({
+    const { specimens } = boreData.processed;
+    if (specimens.length > 0) {
+      json.specimens = specimens.map((specimen) => ({
         specimenNumber: specimen.specimenNumber,
         depthTop: specimen.depthTop,
         depthBottom: specimen.depthBottom,

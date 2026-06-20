@@ -88,7 +88,7 @@ export function FileTable({
         case "DISS": {
           testDate = data.processed.startDate ?? null;
 
-          finalDepth = data.parent?.value ?? null;
+          finalDepth = data.processed.parent?.value ?? null;
           break;
         }
       }

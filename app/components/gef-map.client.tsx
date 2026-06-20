@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
-import type { GefData, ProcessedMetadata } from "@bedrock-engineer/gef-parser";
+import type { GefData } from "@bedrock-engineer/gef-parser";
 import type { CircleMarker, Map as LeafletMap } from "leaflet";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
@@ -26,12 +26,21 @@ export function GefMap({
   const mapInstanceRef = useRef<LeafletMap>(null);
   const markersRef = useRef<Map<string, CircleMarker>>(new Map());
 
-  // Extract processed metadata from GEF data
-  const locations: Array<ProcessedMetadata> = useMemo(
+  // Extract located GEF files, flattening the nested location sub-object into
+  // the flat shape the marker rendering below consumes.
+  const locations = useMemo(
     () =>
       Object.values(gefData)
         .map((data) => data.processed)
-        .filter((meta) => meta.wgs84 !== null),
+        .filter((meta) => meta.location?.wgs84 != null)
+        .map((meta) => ({
+          filename: meta.filename,
+          fileType: meta.fileType,
+          wgs84: meta.location!.wgs84!,
+          originalX: meta.location!.originalX,
+          originalY: meta.location!.originalY,
+          coordinateSystem: meta.location!.coordinateSystem,
+        })),
     [gefData],
   );
 
@@ -43,8 +52,8 @@ export function GefMap({
     // Create or update map
     if (!mapInstanceRef.current) {
       // Calculate bounds
-      const lats = locations.map((l) => l.wgs84!.lat);
-      const lngs = locations.map((l) => l.wgs84!.lon);
+      const lats = locations.map((l) => l.wgs84.lat);
+      const lngs = locations.map((l) => l.wgs84.lon);
       const bounds: [[number, number], [number, number]] = [
         [Math.min(...lats), Math.min(...lngs)],
         [Math.max(...lats), Math.max(...lngs)],
@@ -82,7 +91,7 @@ export function GefMap({
             ? "#16a34a"
             : "#ea580c";
 
-      const marker = L.circleMarker([loc.wgs84!.lat, loc.wgs84!.lon], {
+      const marker = L.circleMarker([loc.wgs84.lat, loc.wgs84.lon], {
         radius: 8,
         fillColor: color,
         color: "#fff",
@@ -97,7 +106,7 @@ export function GefMap({
             <div class="text-xs">
               <strong>${loc.filename}</strong><br/>
               ${coordSysName}: ${loc.originalX?.toFixed(2)}, ${loc.originalY?.toFixed(2)}<br/>
-              Lat/Lng: ${loc.wgs84!.lat.toFixed(6)}, ${loc.wgs84!.lon.toFixed(6)}
+              Lat/Lng: ${loc.wgs84.lat.toFixed(6)}, ${loc.wgs84.lon.toFixed(6)}
             </div>
           `);
 

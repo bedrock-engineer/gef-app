@@ -7,6 +7,8 @@ export function downloadGefDataAsCsv(gefData: GefData, filename: string): void {
 
   if (gefData.fileType === "CPT") {
     csvContent = csvFormat(gefData.data);
+  } else if (gefData.fileType === "DISS") {
+    csvContent = csvFormat(gefData.data);
   } else {
     // Convert BORE layers to CSV format
     const boreData = gefData;

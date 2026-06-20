@@ -3,7 +3,7 @@ import type { BoreSpecimen } from "@bedrock-engineer/gef-parser";
 import {
   SPECIMEN_CODES,
   formatSpecimenCode,
-} from "@bedrock-engineer/gef-parser";
+} from "@bedrock-engineer/gef-parser/bore";
 import { CardTitle } from "./card";
 
 interface SpecimenTableProps {

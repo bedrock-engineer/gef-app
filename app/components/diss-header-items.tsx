@@ -24,7 +24,7 @@ import {
 
 function DissCompactInfo({ data }: { data: GefDissData }) {
   const { t } = useTranslation();
-  const { parent } = data;
+  const { parent } = data.processed;
 
   if (!parent?.reference && parent?.value == null) {
     return null;
@@ -71,7 +71,7 @@ function getDissParentInfo(
   t: TFunction,
 ): Array<HeaderItem> {
   const items: Array<HeaderItem> = [];
-  const { parent } = data;
+  const { parent } = data.processed;
 
   if (parent?.reference) {
     items.push({ label: t("parentCpt"), value: parent.reference });

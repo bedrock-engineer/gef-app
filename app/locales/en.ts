@@ -140,9 +140,9 @@ export default {
     depthM: "Depth (m)",
     downloadSvg: "Download SVG",
     downloadPng: "Download PNG",
-    madeWithBedrockGefViewer: "Made with Bedrock GEF Viewer",
+    madeWithBedrockGefViewer: "Made with Bedrock.engineer GEF Viewer",
 
-    selectDownloadFormat: "Selecteer download formaat",
+    selectDownloadFormat: "Select download format",
 
     // Soil types
     sand: "Sand",

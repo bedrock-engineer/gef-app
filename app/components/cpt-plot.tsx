@@ -1,4 +1,4 @@
-import type { ColumnInfo, Row, ZID } from "@bedrock-engineer/gef-parser";
+import type { ColumnInfo, CptRow, ZID } from "@bedrock-engineer/gef-parser";
 import * as Plot from "@observablehq/plot";
 import { useEffect, useRef, useState } from "react";
 import {
@@ -29,7 +29,7 @@ function isDepthColumn(col: ChartColumn): boolean {
 }
 
 interface CptPlotProps {
-  data: Array<Row>;
+  data: Array<CptRow>;
   columnInfo: Array<ColumnInfo>;
   zid: ZID | undefined;
   width?: number;
@@ -205,7 +205,7 @@ export function CptPlots({
 }
 
 interface CptPlotInternalProps {
-  data: Array<Row>;
+  data: Array<CptRow>;
   xAxis: ChartColumn;
   yAxis: ChartColumn;
   width: number;
@@ -276,7 +276,7 @@ function CptPlot({
               Plot.text(dataWithComments, {
                 x: maxX,
                 y: yAxis.key,
-                text: (d: Row) => String(d.comment),
+                text: (d: CptRow) => String(d.comment),
                 dx: 5,
                 textAnchor: "start",
                 fill: "black",
