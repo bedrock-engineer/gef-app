@@ -3,8 +3,8 @@ import { max } from "d3-array";
 import { useEffect, useRef } from "react";
 import { useTranslation } from "react-i18next";
 import type { PreExcavationLayer } from "@bedrock-engineer/gef-parser";
-import { getSoilColor } from "@bedrock-engineer/gef-parser";
-import { getSoilCodeFromDescription } from "@bedrock-engineer/gef-parser";
+import { getSoilColor } from "@bedrock-engineer/gef-parser/bore";
+import { getSoilCodeFromDescription } from "@bedrock-engineer/gef-parser/bore-codes";
 import { PlotDownloadButtons } from "./plot-download-buttons";
 import { Card, CardTitle } from "./card";
 

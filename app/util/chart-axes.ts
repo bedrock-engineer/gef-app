@@ -8,12 +8,10 @@
 
 import {
   findColumnByQuantity,
-  HEIGHT_SYSTEMS,
-  type ColumnInfo,
-  type Row,
-  type ZID,
-} from "@bedrock-engineer/gef-parser";
-import { cptColumnQuantities } from "node_modules/@bedrock-engineer/gef-parser/dist/gef-cpt-spec";
+  cptColumnQuantities,
+} from "@bedrock-engineer/gef-parser/cpt";
+import { HEIGHT_SYSTEMS } from "@bedrock-engineer/gef-parser/coordinates";
+import type { ColumnInfo, CptRow, ZID } from "@bedrock-engineer/gef-parser";
 
 export const DEPTH_KEYWORDS = [
   "penetration",
@@ -77,7 +75,7 @@ export function getColumnDisplayName(col: ColumnInfo): string {
  */
 export function detectCptChartAxes(
   columnInfo: Array<ColumnInfo>,
-  data: Array<Row>,
+  data: Array<CptRow>,
   zid: ZID | undefined,
 ): ChartAxes {
   // Y-axis: prefer quantity 1 (penetration length), then corrected depth (11), then keyword fallback

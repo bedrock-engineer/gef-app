@@ -200,18 +200,18 @@ export function getProjectInfo(
     items.push({ label: t("testId"), value: processed.testId });
   }
 
-  if (processed.companyName) {
-    items.push({ label: t("company"), value: processed.companyName });
+  if (processed.company?.name) {
+    items.push({ label: t("company"), value: processed.company.name });
   }
 
-  if (processed.companyAddress) {
-    items.push({ label: t("address"), value: processed.companyAddress });
+  if (processed.company?.address) {
+    items.push({ label: t("address"), value: processed.company.address });
   }
 
-  if (processed.companyCountryCode) {
+  if (processed.company?.countryCode) {
     const countryKey =
       countryCodeTranslationMap[
-        processed.companyCountryCode as keyof typeof countryCodeTranslationMap
+        processed.company.countryCode as keyof typeof countryCodeTranslationMap
       ];
 
     // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
@@ -259,46 +259,48 @@ export function getCoordinatesInfo(
     ),
   );
 
-  if (processed.coordinateSystem) {
+  const { location, elevation } = processed;
+
+  if (location?.coordinateSystem) {
     items.push({
       label: t("coordinateSystem"),
-      value: `${processed.coordinateSystem.name} ${processed.coordinateSystem.epsg}`,
+      value: `${location.coordinateSystem.name} ${location.coordinateSystem.epsg}`,
     });
 
     if (
-      processed.originalX !== undefined &&
-      processed.xUncertainty !== undefined
+      location.originalX !== undefined &&
+      location.xUncertainty !== undefined
     ) {
       items.push({
         label: t("xCoordinate"),
-        value: `${processed.originalX} m ± ${processed.xUncertainty}`,
+        value: `${location.originalX} m ± ${location.xUncertainty}`,
       });
     }
 
     if (
-      processed.originalY !== undefined &&
-      processed.yUncertainty !== undefined
+      location.originalY !== undefined &&
+      location.yUncertainty !== undefined
     ) {
       items.push({
         label: t("yCoordinate"),
-        value: `${processed.originalY} m ± ${processed.yUncertainty}`,
+        value: `${location.originalY} m ± ${location.yUncertainty}`,
       });
     }
   }
 
-  if (processed.heightSystem) {
+  if (elevation?.heightSystem) {
     items.push({
       label: t("heightSystem"),
-      value: processed.heightSystem.name,
+      value: elevation.heightSystem.name,
     });
 
     if (
-      processed.surfaceElevation !== undefined &&
-      processed.elevationUncertainty !== undefined
+      elevation.surfaceElevation !== undefined &&
+      elevation.uncertainty !== undefined
     ) {
       items.push({
         label: t("surfaceLevel"),
-        value: `${processed.surfaceElevation} m ± ${processed.elevationUncertainty}`,
+        value: `${elevation.surfaceElevation} m ± ${elevation.uncertainty}`,
       });
     }
   }

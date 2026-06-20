@@ -1,16 +1,22 @@
 import type { TFunction } from "i18next";
 import { useTranslation } from "react-i18next";
-import type { GefCptHeaders } from "@bedrock-engineer/gef-parser";
 import {
   belgianMeasurementTextVariables,
   belgianMeasurementVariables,
+  broMeasurementTextVariables,
+  broMeasurementVariables,
   detectGefExtension,
-  dutchMeasurementTextVariables,
-  dutchMeasurementVariables,
   findCptMeasurementVariable,
-  type GefCptData,
-  type GefExtension,
-  type ProcessedMetadata,
+  klasse1MeasurementTextVariables,
+  klasse1MeasurementVariables,
+  votbMeasurementTextVariables,
+  votbMeasurementVariables,
+} from "@bedrock-engineer/gef-parser/cpt";
+import type { GefExtension } from "@bedrock-engineer/gef-parser/cpt";
+import type {
+  GefCptData,
+  GefCptHeaders,
+  ProcessedMetadata,
 } from "@bedrock-engineer/gef-parser";
 import { CardTitle } from "./card";
 import {
@@ -44,6 +50,7 @@ function getCalibrationData(
   const items: Array<{ label: string; value: string }> = [];
 
   headers.MEASUREMENTVAR?.forEach(({ id, value, unit }) => {
+    if (value === undefined) {return;}
     const varInfo = findCptMeasurementVariable(id, extension);
 
     if (varInfo?.category === "calibration" && value !== 0) {
@@ -159,6 +166,7 @@ function getCptTestInfo(
   }
 
   headers.MEASUREMENTVAR?.forEach(({ id, value, unit }) => {
+    if (value === undefined) {return;}
     const varInfo = findCptMeasurementVariable(id, extension);
 
     if (
@@ -211,6 +219,7 @@ function getCptEquipmentInfo(
   );
 
   headers.MEASUREMENTVAR?.forEach(({ id, value, unit }) => {
+    if (value === undefined) {return;}
     const varInfo = findCptMeasurementVariable(id, extension);
     if (
       !varInfo ||
@@ -306,87 +315,90 @@ function getChildFilesInfo(
   ];
 }
 
+// Per-dialect MEASUREMENTVAR/TEXT interpretation tables and display label.
+// The GEF-CPT "extension" selects which applies; "standard" has no extra
+// header fields. (Replaces the old lumped "dutch" branch, now split by BRO
+// into bro / votb / klasse1.)
+interface MeasurementInfo {
+  description?: string;
+  descriptionNl?: string;
+  descriptionEn?: string;
+}
+type MeasurementTable = Record<number, MeasurementInfo>;
+
+// Var and text spec tables carry inconsistent description fields (vars have
+// description/descriptionNl, texts have descriptionNl/descriptionEn), so fall
+// back across all three for the active locale.
+function describeMeasurement(info: MeasurementInfo, locale: string): string {
+  if (locale === "nl") {
+    return info.descriptionNl ?? info.description ?? info.descriptionEn ?? "";
+  }
+  return info.description ?? info.descriptionEn ?? info.descriptionNl ?? "";
+}
+
+const EXTENSION_SPECS: Partial<
+  Record<
+    GefExtension,
+    { label: string; vars: MeasurementTable; texts: MeasurementTable }
+  >
+> = {
+  bro: {
+    label: "Basis Registratie Ondergrond (BRO)",
+    vars: broMeasurementVariables,
+    texts: broMeasurementTextVariables,
+  },
+  votb: {
+    label: "VOTB (GEF-CPT v1.1.3)",
+    vars: votbMeasurementVariables,
+    texts: votbMeasurementTextVariables,
+  },
+  klasse1: {
+    label: "Klasse 1",
+    vars: klasse1MeasurementVariables,
+    texts: klasse1MeasurementTextVariables,
+  },
+  belgian: {
+    label: "Databank Ondergrond Vlaanderen",
+    vars: belgianMeasurementVariables,
+    texts: belgianMeasurementTextVariables,
+  },
+};
+
 function getExtensionInfo(
   headers: GefCptHeaders,
   extension: GefExtension,
   t: TFunction,
+  locale: string,
 ): Array<HeaderItem> {
-  if (extension === "standard") {
-    return [];
+  const spec = EXTENSION_SPECS[extension];
+  if (!spec) {
+    return []; // "standard" — no dialect-specific header fields
   }
 
-  const items: Array<HeaderItem> = [];
+  const items: Array<HeaderItem> = [
+    { label: t("extensionType"), value: spec.label },
+  ];
 
-  if (extension === "dutch") {
-    items.push({
-      label: t("extensionType"),
-      value: "Basis Registratie Ondergrond / VOTB (GEF-CPT v1.1.3)",
-    });
+  headers.MEASUREMENTTEXT?.forEach(({ id, text }) => {
+    const varInfo = spec.texts[id];
+    if (varInfo) {
+      items.push({ label: describeMeasurement(varInfo, locale), value: text });
+    }
+  });
 
-    // Add Dutch MEASUREMENTTEXT fields with values
-    headers.MEASUREMENTTEXT?.forEach(({ id, text }) => {
-      const varInfo =
-        dutchMeasurementTextVariables[
-          id as keyof typeof dutchMeasurementTextVariables
-        ];
-      if (varInfo) {
-        items.push({
-          label: varInfo.description,
-          value: text,
-        });
-      }
-    });
-
-    // Add Dutch MEASUREMENTVAR fields with values
-    headers.MEASUREMENTVAR?.forEach(({ id, value, unit }) => {
-      const varInfo =
-        dutchMeasurementVariables[id as keyof typeof dutchMeasurementVariables];
-      if (varInfo) {
-        const displayValue = formatNumericValue(value);
-        items.push({
-          label: varInfo.description,
-          value:
-            unit && unit !== "-" ? `${displayValue} ${unit}` : displayValue,
-        });
-      }
-    });
-    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-  } else if (extension === "belgian") {
-    items.push({
-      label: t("extensionType"),
-      value: "Databank Ondergrond Vlaanderen",
-    });
-
-    // Add Belgian MEASUREMENTTEXT fields with values
-    headers.MEASUREMENTTEXT?.forEach(({ id, text }) => {
-      const varInfo =
-        belgianMeasurementTextVariables[
-          id as keyof typeof belgianMeasurementTextVariables
-        ];
-      if (varInfo) {
-        items.push({
-          label: varInfo.description,
-          value: text,
-        });
-      }
-    });
-
-    // Add Belgian MEASUREMENTVAR fields with values
-    headers.MEASUREMENTVAR?.forEach(({ id, value, unit }) => {
-      const varInfo =
-        belgianMeasurementVariables[
-          id as keyof typeof belgianMeasurementVariables
-        ];
-      if (varInfo) {
-        const displayValue = formatNumericValue(value);
-        items.push({
-          label: varInfo.description,
-          value:
-            unit && unit !== "-" ? `${displayValue} ${unit}` : displayValue,
-        });
-      }
-    });
-  }
+  headers.MEASUREMENTVAR?.forEach(({ id, value, unit }) => {
+    if (value === undefined) {
+      return;
+    }
+    const varInfo = spec.vars[id];
+    if (varInfo) {
+      const displayValue = formatNumericValue(value);
+      items.push({
+        label: describeMeasurement(varInfo, locale),
+        value: unit && unit !== "-" ? `${displayValue} ${unit}` : displayValue,
+      });
+    }
+  });
 
   return items;
 }
@@ -467,7 +479,7 @@ export function DetailedCptHeaders({ data }: DetailedCptHeaderProps) {
     {
       id: "extension",
       title: t("extension"),
-      items: getExtensionInfo(headers, extension, t),
+      items: getExtensionInfo(headers, extension, t, locale),
     },
     {
       id: "child",

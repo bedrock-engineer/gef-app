@@ -38,7 +38,7 @@ export function CompactHeaderLeftColumn({
 
       <p className="text-gray-600 mb-2">{filename}</p>
 
-      {(processed.projectId ?? processed.companyName) && (
+      {(processed.projectId ?? processed.company?.name) && (
         <dl className="text-sm space-y-1">
           {processed.projectId && (
             <div className="flex items-center gap-1">
@@ -46,10 +46,10 @@ export function CompactHeaderLeftColumn({
               <dd className="text-gray-700">{processed.projectId}</dd>
             </div>
           )}
-          {processed.companyName && (
+          {processed.company?.name && (
             <div className="flex items-center gap-1">
               <dt className="text-gray-500">{t("company")}:</dt>
-              <dd className="text-gray-700">{processed.companyName}</dd>
+              <dd className="text-gray-700">{processed.company.name}</dd>
             </div>
           )}
         </dl>
@@ -87,14 +87,16 @@ export function CompactHeaderRightColumn({
 }: CompactHeaderRightColumnProps) {
   const { t } = useTranslation();
 
+  const { location, elevation } = processed;
+
   const dateTimeStr =
     processed.startDate && processed.startTime
       ? `${processed.startDate} ${processed.startTime}`
       : processed.startDate;
 
-  const elevationValue = processed.surfaceElevation ?? null;
+  const elevationValue = elevation?.surfaceElevation ?? null;
   const elevationDisplay = elevationValue
-    ? `${elevationValue}m ${processed.heightSystem?.name}`
+    ? `${elevationValue}m ${elevation?.heightSystem?.name}`
     : null;
 
   return (
@@ -112,39 +114,39 @@ export function CompactHeaderRightColumn({
         </>
       )}
 
-      {processed.coordinateSystem && (
+      {location?.coordinateSystem && (
         <>
           <dt className="text-gray-500">{t("locationLabel")}</dt>
           <dd>
             <div>
               <span className="font-semibold">
-                {processed.coordinateSystem.name}
+                {location.coordinateSystem.name}
               </span>
               <span className="text-gray-400 text-sm">
                 {" "}
-                ({processed.coordinateSystem.epsg})
+                ({location.coordinateSystem.epsg})
               </span>
             </div>
 
             <div className="flex items-center gap-1">
-              {processed.originalX}, {processed.originalY}
+              {location.originalX}, {location.originalY}
               <CopyButton
-                value={`${processed.originalX}, ${processed.originalY}`}
+                value={`${location.originalX}, ${location.originalY}`}
                 label={t("copyCoordinates")}
               />
             </div>
 
-            {processed.wgs84 && (
+            {location.wgs84 && (
               <>
                 <div className="mt-2">
                   <span className="font-semibold">WGS84</span>
                   <span className="text-gray-400 text-sm"> (EPSG:4326)</span>
                 </div>
                 <div className="flex items-center gap-1">
-                  {processed.wgs84.lat.toFixed(6)},{" "}
-                  {processed.wgs84.lon.toFixed(6)}
+                  {location.wgs84.lat.toFixed(6)},{" "}
+                  {location.wgs84.lon.toFixed(6)}
                   <CopyButton
-                    value={`${processed.wgs84.lat.toFixed(6)}, ${processed.wgs84.lon.toFixed(6)}`}
+                    value={`${location.wgs84.lat.toFixed(6)}, ${location.wgs84.lon.toFixed(6)}`}
                     label={t("copyWgs84")}
                   />
                 </div>

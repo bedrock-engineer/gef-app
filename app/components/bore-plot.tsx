@@ -7,9 +7,11 @@ import {
   getSoilColor,
   SPECIMEN_CODES,
   formatSpecimenCode,
-} from "@bedrock-engineer/gef-parser";
-import { decodeBoreCode } from "@bedrock-engineer/gef-parser";
-import { decodeNenCode, parseNenCode } from "~/util/nen-code";
+} from "@bedrock-engineer/gef-parser/bore";
+import {
+  decodeBoreCode,
+  parseSoilCode,
+} from "@bedrock-engineer/gef-parser/bore-codes";
 import { Card, CardTitle } from "./card";
 import { PlotDownloadButtons } from "./plot-download-buttons";
 
@@ -91,10 +93,11 @@ interface SoilComponent {
 function parseSoilComposition(
   soilCode: string | undefined,
 ): Array<SoilComponent> {
-  const { raw, main, isComposite, admixtures } = parseNenCode(soilCode ?? "");
+  const { lithology, main, admixtures } = parseSoilCode(soilCode ?? "");
 
-  if (!isComposite) {
-    return [{ soil: raw, color: getSoilColor(raw), fraction: 1 }];
+  // Special/unknown codes (NBE, GM, …) have no main soil: one plain band.
+  if (!main) {
+    return [{ soil: lithology, color: getSoilColor(lithology), fraction: 1 }];
   }
 
   // Collect admixtures first so the main soil can take the remaining fraction.
@@ -107,7 +110,7 @@ function parseSoilComposition(
     admix.push({
       soil,
       color: getSoilColor(soil),
-      fraction: ADMIX_FRACTION[a.grade] ?? 0.2,
+      fraction: ADMIX_FRACTION[a.grade ?? 1] ?? 0.2,
       hatch: plotHatchId(soil),
     });
   }
@@ -441,7 +444,7 @@ function formatBoreLayerTitle({
   description,
 }: BoreLayer) {
   const codes = [soilCode, ...additionalCodes].join(" ");
-  const decodedSoil = decodeNenCode(soilCode);
+  const decodedSoil = decodeBoreCode(soilCode);
   let tooltip = `${depthTop} – ${depthBottom} m\n${codes}`;
 
   if (decodedSoil !== soilCode) {

@@ -13,12 +13,17 @@ function createGeoJSON(gefData: Record<string, GefData>): FeatureCollection {
         data,
       ): data is GefData & {
         processed: ProcessedMetadata & {
-          wgs84: NonNullable<ProcessedMetadata["wgs84"]>;
+          location: NonNullable<ProcessedMetadata["location"]> & {
+            wgs84: NonNullable<
+              NonNullable<ProcessedMetadata["location"]>["wgs84"]
+            >;
+          };
         };
-      } => data.processed.wgs84 !== null,
+      } => data.processed.location?.wgs84 != null,
     )
     .map((data) => {
       const meta = data.processed;
+      const { location, elevation, company } = meta;
       const finalDepth =
         meta.measurements.endDepthOfPenetrationTest?.value ?? null;
 
@@ -26,23 +31,23 @@ function createGeoJSON(gefData: Record<string, GefData>): FeatureCollection {
         type: "Feature" as const,
         geometry: {
           type: "Point" as const,
-          coordinates: [meta.wgs84.lon, meta.wgs84.lat],
+          coordinates: [location.wgs84.lon, location.wgs84.lat],
         },
         properties: {
           filename: meta.filename,
           fileType: meta.fileType,
           projectId: meta.projectId,
           testId: meta.testId,
-          companyName: meta.companyName,
+          companyName: company?.name,
           startDate: meta.startDate,
           startTime: meta.startTime,
-          surfaceElevation: meta.surfaceElevation,
-          heightSystem: meta.heightSystem?.name,
-          heightSystemEpsg: meta.heightSystem?.epsg,
-          coordinateSystem: meta.coordinateSystem?.name,
-          epsg: meta.coordinateSystem?.epsg,
-          easting: meta.originalX,
-          northing: meta.originalY,
+          surfaceElevation: elevation?.surfaceElevation,
+          heightSystem: elevation?.heightSystem?.name,
+          heightSystemEpsg: elevation?.heightSystem?.epsg,
+          coordinateSystem: location.coordinateSystem?.name,
+          epsg: location.coordinateSystem?.epsg,
+          easting: location.originalX,
+          northing: location.originalY,
           finalDepth,
         },
       };

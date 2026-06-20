@@ -1,8 +1,5 @@
-import {
-  findColumnByQuantity,
-  type ColumnInfo,
-  type DissRow,
-} from "@bedrock-engineer/gef-parser";
+import { findColumnByQuantity } from "@bedrock-engineer/gef-parser/cpt";
+import type { ColumnInfo, DissRow } from "@bedrock-engineer/gef-parser";
 import * as Plot from "@observablehq/plot";
 import { useEffect, useRef, useState } from "react";
 import { Label, Radio, RadioGroup } from "react-aria-components";
@@ -162,13 +159,14 @@ function DissPorePressurePlot({
   const containerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    if (containerRef.current === null || data.length === 0) {
+    const firstPpCol = porePressureCols[0];
+    if (containerRef.current === null || data.length === 0 || !firstPpCol) {
       return;
     }
 
     const timeKey = timeCol.name;
     const timeUnit = getUnitCode(timeCol.unit);
-    const ppUnit = getUnitCode(porePressureCols[0].unit);
+    const ppUnit = getUnitCode(firstPpCol.unit);
 
     // Transform to long format for multi-series legend support
     const longData: Array<{

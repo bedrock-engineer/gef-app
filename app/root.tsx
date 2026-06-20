@@ -28,8 +28,7 @@ export async function loader({ context }: Route.LoaderArgs) {
   );
 }
 
-export const links: Route.LinksFunction = (args) => {
-  const loaderData = args?.data as { locale: string } | undefined;
+export const links: Route.LinksFunction = () => {
   return [
     { rel: "preconnect", href: "https://fonts.googleapis.com" },
     {
@@ -54,7 +53,7 @@ export const links: Route.LinksFunction = (args) => {
     { rel: "apple-touch-icon", href: "/favicon-180x180.png" },
     {
       rel: "manifest",
-      href: `${import.meta.env.BASE_URL}manifest.${loaderData?.locale ?? "nl"}.json`,
+      href: `${import.meta.env.BASE_URL}manifest.nl.json`,
     },
     { rel: "canonical", href: "https://gef.bedrock.engineer/" },
   ];

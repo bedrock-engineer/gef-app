@@ -1,4 +1,8 @@
-import { parseGefFile, type GefData } from "@bedrock-engineer/gef-parser";
+import {
+  parseGefFile,
+  type GefData,
+  type GefWarning,
+} from "@bedrock-engineer/gef-parser";
 import type { TFunction } from "i18next";
 import {
   ChevronDownIcon,
@@ -32,38 +36,54 @@ import { InstallInstructions } from "./install-instructions";
 import { PreExcavationPlot } from "./preexcavation-plot";
 import { SpecimenTable } from "./specimen-table";
 
-function translateWarning(warning: string, t: TFunction): string {
-  const parts = warning.split(":");
-  const key = parts[0];
-
-  switch (key) {
-    case "missingZidHeader":
-      return t("missingZidHeader", { filename: parts[1] });
+function translateWarning(warning: GefWarning, t: TFunction): string {
+  switch (warning.type) {
+    case "missingHeader":
+      return warning.header === "ZID"
+        ? t("missingZidHeader", { filename: warning.filename })
+        : t("missingXyidHeader", { filename: warning.filename });
     case "unknownHeightSystem":
       return t("unknownHeightSystem", {
-        filename: parts[1],
-        heightCode: parts[2],
+        filename: warning.filename,
+        heightCode: warning.heightCode,
       });
     case "zidWithoutHeight":
-      return t("zidWithoutHeight", { filename: parts[1] });
-    case "missingXyidHeader":
-      return t("missingXyidHeader", { filename: parts[1] });
+      return t("zidWithoutHeight", { filename: warning.filename });
     case "missingColumnInfoQuantity": {
-      const count = parseInt(parts[2] ?? "0");
       const entry = t(
-        count === 1
+        warning.count === 1
           ? "missingColumnInfoQuantity_entry"
           : "missingColumnInfoQuantity_entry_plural",
       );
 
       return t("missingColumnInfoQuantity", {
-        filename: parts[1],
-        count,
+        filename: warning.filename,
+        count: warning.count,
         entry,
       });
     }
-    default:
-      return warning;
+    case "invalidNumber":
+      return `Invalid number for column "${warning.column}" (value "${warning.rawValue}") at record ${String(warning.record)}, line ${String(warning.line)}.`;
+    case "missingColumnTextHeader":
+      return `Missing column text header for value "${warning.textValue}" at record ${String(warning.record)}, line ${String(warning.line)}.`;
+    case "missingColumns":
+      return `Missing columns at record ${String(warning.record)}, line ${String(warning.line)}: found ${String(warning.found)}, expected ${String(warning.expected)}.`;
+    case "extraColumns":
+      return `Extra columns at record ${String(warning.record)}, line ${String(warning.line)}: found ${String(warning.found)}, expected ${String(warning.expected)}.`;
+    case "invalidDepth":
+      return `Invalid depth at record ${String(warning.record)}, line ${String(warning.line)}: top ${String(warning.depthTop)}, bottom ${String(warning.depthBottom)}.`;
+    case "invertedDepth":
+      return `Inverted depth at record ${String(warning.record)}, line ${String(warning.line)}: top ${String(warning.depthTop)}, bottom ${String(warning.depthBottom)}.`;
+    case "duplicateQuantity":
+      return `Duplicate quantity ${String(warning.quantityNumber)} ("${warning.quantityName}") in file '${warning.filename}'.`;
+    case "missingRequiredColumn":
+      return `Missing required column for quantity ${String(warning.quantityNumber)} ("${warning.quantityName}") in file '${warning.filename}'.`;
+    case "columnMinMaxExceeded":
+      return `Column "${warning.columnName}" in file '${warning.filename}' exceeds declared range [${String(warning.declaredMin)}, ${String(warning.declaredMax)}] with actual [${String(warning.actualMin)}, ${String(warning.actualMax)}].`;
+    default: {
+      warning satisfies never;
+      return "";
+    }
   }
 }
 
@@ -106,15 +126,22 @@ export function App() {
 
     if (files.length > 0) {
       const results = await Promise.allSettled(
-        files.map((file) => parseGefFile(file)),
+        files.map(async (file) => parseGefFile(await file.text(), file.name)),
       );
 
       const parsedGefFiles: Array<[string, GefData]> = [];
       const failed: Array<{ name: string; error: string }> = [];
 
       for (let i = 0; i < results.length; i++) {
-        const result = results[i]!;
-        const file = files[i]!;
+        const result = results[i];
+        const file = files[i];
+
+        if (!result) {
+          continue;
+        }
+        if (!file) {
+          continue;
+        }
 
         if (result.status === "fulfilled") {
           parsedGefFiles.push([file.name, result.value]);
@@ -366,9 +393,9 @@ export function App() {
                   baseFilename={selectedFileName.replace(/\.gef$/i, "")}
                 />
 
-                {selectedFile.preExcavationLayers.length > 0 && (
+                {selectedFile.processed.preExcavationLayers.length > 0 && (
                   <PreExcavationPlot
-                    layers={selectedFile.preExcavationLayers}
+                    layers={selectedFile.processed.preExcavationLayers}
                     baseFilename={selectedFileName.replace(/\.gef$/i, "")}
                   />
                 )}
@@ -386,7 +413,7 @@ export function App() {
 
                 <BorePlot
                   layers={selectedFile.layers}
-                  specimens={selectedFile.specimens}
+                  specimens={selectedFile.processed.specimens}
                   groundwaterLevel={
                     selectedFile.processed.measurements
                       .grondwaterstandTijdensBoren?.value
@@ -394,8 +421,8 @@ export function App() {
                   baseFilename={selectedFileName.replace(/\.gef$/i, "")}
                 />
 
-                {selectedFile.specimens.length > 0 && (
-                  <SpecimenTable specimens={selectedFile.specimens} />
+                {selectedFile.processed.specimens.length > 0 && (
+                  <SpecimenTable specimens={selectedFile.processed.specimens} />
                 )}
 
                 <DetailedBoreHeaders data={selectedFile} />
