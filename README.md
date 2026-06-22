@@ -1,4 +1,4 @@
-# Bedrock GEF Viewer
+# Bedrock.engineer GEF Viewer
 
 Free, open-source web application for viewing and visualizing GEF (Geotechnical Exchange Format) files.
 GEF is an outdated format, however GEF files are still ubiquitous in geotechnical engineering in the Netherlands and Flanders for CPT and bore data.
@@ -9,7 +9,7 @@ GEF is an outdated format, however GEF files are still ubiquitous in geotechnica
 
 ## About
 
-<img src="/public/bedrock.svg" width="300px" alt="Bedrock Logo" />
+<img src="/public/bedrock.svg" width="300px" alt="Bedrock.engineer Logo" />
 
 This is a free web application by [Bedrock](https://bedrock.engineer) that provides a fast, modern interface for viewing and analyzing GEF files directly in your browser.
 It also let's you download data from the GEF files as CSV or JSON, and the locations of multiple GEF files as GeoJSON.
@@ -105,4 +105,4 @@ This project is licensed under the Apache License 2.0 - see the [LICENSE](LICENS
 - **Issues**: Report bugs or request features via [GitHub Issues](https://github.com/bedrock-engineer/gef-webapp/issues) 
 - **Live App**: Try it at [gef.bedrock.engineer](https://gef.bedrock.engineer)
 
-[Bedrock](https://bedrock.engineer)
+[Bedrock.engineer](https://bedrock.engineer)

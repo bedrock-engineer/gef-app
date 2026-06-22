@@ -1,5 +1,5 @@
 {
-  "name": "Bedrock GEF File Viewer - CPT & Borehole Visualization",
+  "name": "Bedrock.engineer GEF File Viewer - CPT & Borehole Visualization",
   "short_name": "GEF Viewer",
   "description": "Free online GEF viewer for geotechnical engineers. View CPT sounding data and borehole profiles from BRO and DOV. Supports GEF-CPT and GEF-BORE formats.",
   "start_url": "/",

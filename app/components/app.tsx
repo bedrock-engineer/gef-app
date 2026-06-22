@@ -543,7 +543,7 @@ function Footer() {
                 src="/bedrock.svg"
                 width="16px"
                 height="16px"
-                alt="Bedrock logo"
+                alt="Bedrock.engineer logo"
               />
               Bedrock.engineer
             </a>
@@ -552,7 +552,7 @@ function Footer() {
               className="text-blue-400 hover:underline flex gap-1 items-center text-sm mt-2"
               href="https://bro.bedrock.engineer"
             >
-              Bedrock BRO/XML viewer
+              Bedrock.engineer BRO/XML viewer
             </a>
           </div>
 

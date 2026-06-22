@@ -95,7 +95,7 @@ export function Layout({ children, loaderData }: LayoutProps) {
           name="apple-mobile-web-app-status-bar-style"
           content="black-translucent"
         />
-        <meta name="apple-mobile-web-app-title" content="Bedrock GEF Viewer" />
+        <meta name="apple-mobile-web-app-title" content="Bedrock.engineer GEF Viewer" />
         {/* iOS Splash Screens */}
         <link
           rel="apple-touch-startup-image"
