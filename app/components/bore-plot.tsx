@@ -1,8 +1,8 @@
 import { useEffect, useRef } from "react";
 import { useTranslation } from "react-i18next";
 import type { BoreLayer, BoreSpecimen } from "@bedrock-engineer/gef-parser";
-import { getSoilColor } from "@bedrock-engineer/gef-parser/bore";
 import { decodeBoreCode } from "@bedrock-engineer/gef-parser/bore-codes";
+import { getSoilColor } from "../util/soil-colors";
 import { Card, CardTitle } from "./card";
 import { PlotDownloadButtons } from "./plot-download-buttons";
 import {
