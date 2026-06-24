@@ -3,7 +3,6 @@ import { max, min } from "d3-array";
 import type { TFunction } from "i18next";
 import type { BoreLayer, BoreSpecimen } from "@bedrock-engineer/gef-parser";
 import {
-  getSoilColor,
   SPECIMEN_CODES,
   formatSpecimenCode,
 } from "@bedrock-engineer/gef-parser/bore";
@@ -11,6 +10,7 @@ import {
   decodeBoreCode,
   parseSoilCode,
 } from "@bedrock-engineer/gef-parser/bore-codes";
+import { getSoilColor } from "../util/soil-colors";
 
 const MIN_LAYER_HEIGHT_PX = 15; // minimum pixel height to show label
 
