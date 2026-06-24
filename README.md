@@ -10,10 +10,10 @@ GEF is an outdated format, however GEF files are still ubiquitous in geotechnica
 ## About
 
 <a href="https://bedrock.engineer">
-<img src="https://bedrock.engineer/Bedrock_TextRight.png" width="300px" alt="Bedrock Logo" />
+<img src="https://bedrock.engineer/Bedrock_TextRight.png" width="300px" alt="Bedrock.engineer Logo" />
 </a>
 
-This is a free web application by [Bedrock](https://bedrock.engineer) that provides a fast, modern interface for viewing and analyzing GEF files directly in your browser.
+This is a free web application by [Bedrock.engineer](https://bedrock.engineer) that provides a fast, modern interface for viewing and analyzing GEF files directly in your browser.
 It also let's you download data from the GEF files as CSV or JSON, and the locations of multiple GEF files as GeoJSON.
 
 ### Supported GEF Types
