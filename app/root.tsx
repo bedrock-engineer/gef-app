@@ -84,10 +84,7 @@ export function Layout({ children, loaderData }: LayoutProps) {
         <meta charSet="utf-8" />
         <meta name="author" content="Jules Blom @ Bedrock.engineer" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
-        <meta
-          name="description"
-          content="View and visualize GEF (Geotechnical Exchange Format) files in your browser. Analyze CPT data and Bore charts instantly."
-        />
+ 
         <meta name="format-detection" content="telephone=no" />
         <meta name="theme-color" content="#5d7a5a" />
         <meta name="mobile-web-app-capable" content="yes" />
