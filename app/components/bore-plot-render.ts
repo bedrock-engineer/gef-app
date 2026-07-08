@@ -7,12 +7,13 @@ import {
   formatSpecimenCode,
 } from "@bedrock-engineer/gef-parser/bore";
 import {
+  NEN5104_ADMIXTURES,
   decodeBoreCode,
   parseSoilCode,
 } from "@bedrock-engineer/gef-parser/bore-codes";
 import { getSoilColor } from "../util/soil-colors";
 
-const MIN_LAYER_HEIGHT_PX = 15; // minimum pixel height to show label
+export const MIN_LAYER_HEIGHT_PX = 15; // minimum pixel height to show label
 
 const SVG_NS = "http://www.w3.org/2000/svg";
 
@@ -51,17 +52,6 @@ function plotHatchId(soil: string): string | undefined {
   return HATCH_SHAPE[soil] ? `bore-hatch-${soil}` : undefined;
 }
 
-// Lowercase admixture letter (toevoeging) -> representative main soil, used
-// for the sub-band colour and hatch. s (siltig) maps to leem/silt, h (humeus)
-// to the organic/peat colour.
-const ADMIX_SOIL: Record<string, string> = {
-  z: "Z",
-  s: "L",
-  g: "G",
-  k: "K",
-  h: "V",
-};
-
 // Fraction of the layer taken by an admixture, per NEN 5104 grade
 // (1 zwak … 4 uiterst). Values follow pygef's curated GEF→fraction table
 // (zwak 0.2, matig 0.3, sterk 0.4, uiterst 0.5); the main soil takes the
@@ -99,7 +89,9 @@ function parseSoilComposition(
   // Collect admixtures first so the main soil can take the remaining fraction.
   const admix: Array<SoilComponent> = [];
   for (const a of admixtures) {
-    const soil = ADMIX_SOIL[a.letter];
+    // The related main soil drives the sub-band colour and hatch (s siltig ->
+    // leem/silt, h humeus -> the organic/peat colour).
+    const soil = NEN5104_ADMIXTURES[a.letter]?.soil;
     if (!soil) {
       continue; // qualifier like 'm' (mineraalarm) — no extra band
     }
@@ -132,9 +124,18 @@ function parseSoilComposition(
   ];
 }
 
+// Minimal layer shape the band/legend machinery needs; satisfied by both
+// BoreLayer and PreExcavationLayer (whose soilCode is derived from its
+// description by the parser).
+export interface SoilCodedLayer {
+  depthTop: number;
+  depthBottom: number;
+  soilCode: string;
+}
+
 // Distinct soils actually present across the layers, in a stable display order.
 // Used to build a legend tied to the chart's data instead of a fixed list.
-export function collectLegendSoils(layers: Array<BoreLayer>): Array<string> {
+export function collectLegendSoils(layers: Array<SoilCodedLayer>): Array<string> {
   const seen = new Set<string>();
   for (const layer of layers) {
     for (const c of parseSoilComposition(layer.soilCode)) {
@@ -148,7 +149,7 @@ export function collectLegendSoils(layers: Array<BoreLayer>): Array<string> {
   return [...ordered, ...extras];
 }
 
-interface Band {
+export interface Band {
   x1: number;
   x2: number;
   y1: number;
@@ -158,7 +159,7 @@ interface Band {
 }
 
 // Flatten layers into horizontally-stacked composition bands spanning x ∈ [0, 1].
-function buildBands(layers: Array<BoreLayer>): Array<Band> {
+export function buildBands(layers: Array<SoilCodedLayer>): Array<Band> {
   return layers.flatMap((layer) => {
     const comps = parseSoilComposition(layer.soilCode);
     let x = 0;
@@ -179,7 +180,7 @@ function buildBands(layers: Array<BoreLayer>): Array<Band> {
 
 // Inject hatch <pattern> defs into the plot's SVG (idempotent). Strokes are
 // semi-transparent so the underlying soil colour shows through.
-function injectHatchPatterns(svg: SVGElement) {
+export function injectHatchPatterns(svg: SVGElement) {
   if (svg.querySelector("#bore-hatch-Z")) {
     return;
   }
