@@ -1,12 +1,18 @@
+import type { PreExcavationLayer } from "@bedrock-engineer/gef-parser";
 import * as Plot from "@observablehq/plot";
 import { max } from "d3-array";
-import { useEffect, useRef } from "react";
 import { useTranslation } from "react-i18next";
-import type { PreExcavationLayer } from "@bedrock-engineer/gef-parser";
-import { getSoilCodeFromDescription } from "@bedrock-engineer/gef-parser/bore-codes";
-import { getSoilColor } from "../util/soil-colors";
-import { PlotDownloadButtons } from "./plot-download-buttons";
+import { usePlot } from "../util/use-plot";
 import { Card, CardTitle } from "./card";
+import { PlotDownloadButtons } from "./plot-download-buttons";
+import { SoilLegend } from "./soil-legend";
+import {
+  MIN_LAYER_HEIGHT_PX,
+  buildBands,
+  collectLegendSoils,
+  injectHatchPatterns,
+  type Band,
+} from "./bore-plot-render";
 
 interface PreExcavationPlotProps {
   layers: Array<PreExcavationLayer>;
@@ -15,8 +21,6 @@ interface PreExcavationPlotProps {
   baseFilename: string;
 }
 
-const MIN_LAYER_HEIGHT_PX = 15; // minimum pixel height to show label
-
 export function PreExcavationPlot({
   layers,
   width = 150,
@@ -24,12 +28,11 @@ export function PreExcavationPlot({
   baseFilename,
 }: PreExcavationPlotProps) {
   const { t } = useTranslation();
-  const containerRef = useRef<HTMLDivElement>(null);
 
-  useEffect(
-    function initExcavationPlot() {
-      if (containerRef.current === null || layers.length === 0) {
-        return;
+  const containerRef = usePlot(
+    function buildExcavationPlot() {
+      if (layers.length === 0) {
+        return null;
       }
 
       // Calculate the depth range and pixels per meter
@@ -46,6 +49,12 @@ export function PreExcavationPlot({
         return layerHeightPx >= MIN_LAYER_HEIGHT_PX;
       });
 
+      // Split each layer into proportional composition bands (main soil +
+      // admixtures), same as the bore plot; soilCode is derived from the
+      // free-text description by the parser.
+      const bands = buildBands(layers);
+      const hatchedBands = bands.filter((b) => b.hatch);
+
       const plot = Plot.plot({
         style: {
           overflow: "visible",
@@ -57,6 +66,8 @@ export function PreExcavationPlot({
         marginRight: 20,
         marginTop,
         marginBottom,
+        // Use fill values verbatim (hex colours and url(#pattern) refs)
+        color: { type: "identity" },
         x: {
           axis: null,
           domain: [0, 1],
@@ -68,37 +79,51 @@ export function PreExcavationPlot({
           domain: [0, maxDepth],
         },
         marks: [
-          // Layer rectangles with soil-type-specific colors
+          // Soil composition bands: main soil + admixtures, widths proportional
+          // to the NEN 5104 admixture grades (e.g. "klei sterk zandig" ≈ Kz3).
+          Plot.rect(bands, {
+            x1: "x1",
+            x2: "x2",
+            y1: "y1",
+            y2: "y2",
+            fill: "color",
+            stroke: "white",
+            strokeWidth: 0.5,
+          }),
+          // Hatch overlay per band (second visual channel beyond colour)
+          Plot.rect(hatchedBands, {
+            x1: "x1",
+            x2: "x2",
+            y1: "y1",
+            y2: "y2",
+            fill: (d: Band) => `url(#${d.hatch})`,
+            stroke: null,
+          }),
+          // Transparent full-width overlay carrying the per-layer tooltip
           Plot.rect(layers, {
             x1: 0,
             x2: 1,
             y1: "depthTop",
             y2: "depthBottom",
-            fill: (d: PreExcavationLayer) => {
-              const soilCode = getSoilCodeFromDescription(d.description);
-              return getSoilColor(soilCode);
-            },
-            stroke: "white",
-            strokeWidth: 0.5,
-            title: (d: PreExcavationLayer) =>
-              `${d.depthTop.toFixed(2)} – ${d.depthBottom.toFixed(2)} m\n${
-                d.description
-              }`,
+            fill: "transparent",
+            title: formatPreExcavationTitle,
             tip: true,
           }),
-          // Description labels for layers tall enough in pixels
+          // Description labels for layers tall enough in pixels, wrapped to the
+          // band column with a white halo so they stay legible over the colours.
           Plot.text(layersWithLabels, {
             x: 0.5,
             y: (d: PreExcavationLayer) =>
               d.depthTop + (d.depthBottom - d.depthTop) / 2,
-            text: ({ description }: PreExcavationLayer) => {
-              return description.length > 20
-                ? description.slice(0, 18) + "…"
-                : description;
-            },
+            text: ({ description }: PreExcavationLayer) => description,
             fill: "black",
+            stroke: "white",
+            strokeWidth: 1.5,
+            paintOrder: "stroke",
             fontSize: 9,
             textAnchor: "middle",
+            lineWidth: 8,
+            lineHeight: 1,
           }),
           Plot.frame(),
           // Watermark
@@ -112,12 +137,15 @@ export function PreExcavationPlot({
         ],
       });
 
-      // @ts-expect-error TS2345: Argument of type 'SVGElement' is not assignable to parameter of type 'Node'.
-      containerRef.current.append(plot);
+      // Plot returns the <svg> directly (no Plot-generated legend with
+      // identity color); the hatch patterns must be injected into its <defs>.
+      const svg =
+        plot.tagName.toLowerCase() === "svg" ? plot : plot.querySelector("svg");
+      if (svg) {
+        injectHatchPatterns(svg as SVGElement);
+      }
 
-      return () => {
-        plot.remove();
-      };
+      return plot;
     },
     [layers, width, height, t],
   );
@@ -126,10 +154,14 @@ export function PreExcavationPlot({
     return null;
   }
 
+  // Legend entries reflect only the soils actually present in these layers.
+  const legendSoils = collectLegendSoils(layers);
+
   const id = "pre-excavation-plot";
   return (
     <Card>
       <CardTitle>{t("preExcavation")}</CardTitle>
+
       <p className="text-sm text-gray-600 mb-4">
         {t("preExcavationDescription")}
       </p>
@@ -138,10 +170,42 @@ export function PreExcavationPlot({
         <div id={id} ref={containerRef}></div>
       </div>
 
+      <SoilLegend soils={legendSoils} idPrefix="pre-excavation-legend" />
+
       <PlotDownloadButtons
         plotId={id}
         filename={`${baseFilename}-pre-excavation`}
       />
     </Card>
   );
+}
+
+// Case- and punctuation-insensitive comparison ("leem zwak zandig" matches
+// "Leem, zwak zandig") to decide whether the NEN reading adds information.
+function normalizeSoilWords(text: string): string {
+  return text
+    .toLowerCase()
+    .replace(/[^a-zà-ÿ]+/g, " ")
+    .trim();
+}
+
+function formatPreExcavationTitle({
+  depthTop,
+  depthBottom,
+  description,
+  soilCode,
+  soilText,
+}: PreExcavationLayer) {
+  let tooltip = `${depthTop.toFixed(2)} – ${depthBottom.toFixed(2)} m\n${description}`;
+
+  if (soilCode !== "NBE" && soilText !== soilCode) {
+    if (normalizeSoilWords(soilText) === normalizeSoilWords(description)) {
+      // Description already is the NEN phrasing — just tag on the code.
+      tooltip += ` (${soilCode})`;
+    } else {
+      tooltip += `\n${soilText} (${soilCode})`;
+    }
+  }
+
+  return tooltip;
 }

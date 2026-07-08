@@ -1,10 +1,11 @@
-import { findColumnByQuantity } from "@bedrock-engineer/gef-parser/cpt";
 import type { ColumnInfo, DissRow } from "@bedrock-engineer/gef-parser";
+import { findColumnByQuantity } from "@bedrock-engineer/gef-parser/cpt";
 import * as Plot from "@observablehq/plot";
-import { useEffect, useRef, useState } from "react";
+import { useState } from "react";
 import { Label, Radio, RadioGroup } from "react-aria-components";
 import { useTranslation } from "react-i18next";
 import { getColumnDisplayName, getUnitCode } from "~/util/chart-axes";
+import { usePlot } from "../util/use-plot";
 import { Card, CardTitle } from "./card";
 import { PlotDownloadButtons } from "./plot-download-buttons";
 
@@ -156,12 +157,11 @@ function DissPorePressurePlot({
   porePressureCols,
 }: DissPorePressurePlotProps) {
   const { t } = useTranslation();
-  const containerRef = useRef<HTMLDivElement>(null);
 
-  useEffect(() => {
+  const containerRef = usePlot(() => {
     const firstPpCol = porePressureCols[0];
-    if (containerRef.current === null || data.length === 0 || !firstPpCol) {
-      return;
+    if (data.length === 0 || !firstPpCol) {
+      return null;
     }
 
     const timeKey = timeCol.name;
@@ -234,11 +234,7 @@ function DissPorePressurePlot({
       ],
     });
 
-    // @ts-expect-error TS2345: Argument of type 'SVGElement' is not assignable to parameter of type 'Node'.
-    containerRef.current.append(plot);
-    return () => {
-      plot.remove();
-    };
+    return plot;
   }, [data, width, height, t, timeCol, timeScale, porePressureCols]);
 
   return <div id={plotId} ref={containerRef}></div>;
@@ -264,11 +260,10 @@ function DissConeResistancePlot({
   qcCol,
 }: DissConeResistancePlotProps) {
   const { t } = useTranslation();
-  const containerRef = useRef<HTMLDivElement>(null);
 
-  useEffect(() => {
-    if (containerRef.current === null || data.length === 0) {
-      return;
+  const containerRef = usePlot(() => {
+    if (data.length === 0) {
+      return null;
     }
 
     const timeKey = timeCol.name;
@@ -318,11 +313,7 @@ function DissConeResistancePlot({
       ],
     });
 
-    // @ts-expect-error TS2345: Argument of type 'SVGElement' is not assignable to parameter of type 'Node'.
-    containerRef.current.append(plot);
-    return () => {
-      plot.remove();
-    };
+    return plot;
   }, [data, width, height, t, timeCol, timeScale, qcCol]);
 
   return <div id={plotId} ref={containerRef}></div>;

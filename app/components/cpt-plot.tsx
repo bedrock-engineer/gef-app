@@ -1,6 +1,6 @@
 import type { ColumnInfo, CptRow, ZID } from "@bedrock-engineer/gef-parser";
 import * as Plot from "@observablehq/plot";
-import { useEffect, useRef, useState } from "react";
+import { useState } from "react";
 import {
   Button,
   Checkbox,
@@ -18,6 +18,7 @@ import {
   detectCptChartAxes,
   type ChartColumn,
 } from "~/util/chart-axes";
+import { usePlot } from "../util/use-plot";
 import { Card, CardTitle } from "./card";
 import { PlotDownloadButtons } from "./plot-download-buttons";
 
@@ -226,11 +227,10 @@ function CptPlot({
   plotId,
 }: CptPlotInternalProps) {
   const { t } = useTranslation();
-  const containerRef = useRef<HTMLDivElement>(null);
 
-  useEffect(() => {
-    if (containerRef.current === null || data.length === 0) {
-      return;
+  const containerRef = usePlot(() => {
+    if (data.length === 0) {
+      return null;
     }
 
     // Filter rows that have comments
@@ -295,11 +295,7 @@ function CptPlot({
       ],
     });
 
-    // @ts-expect-error TS2345: Argument of type 'SVGElement' is not assignable to parameter of type 'Node'.
-    containerRef.current.append(plot);
-    return () => {
-      plot.remove();
-    };
+    return plot;
   }, [data, xAxis, yAxis, width, height, reverseY, showComments, t]);
 
   return <div id={plotId} ref={containerRef}></div>;
