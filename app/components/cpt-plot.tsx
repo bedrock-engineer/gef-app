@@ -112,6 +112,7 @@ export function CptPlots({
           <span className="block text-sm font-medium text-gray-700 mb-1">
             {t("yAxisVertical")}
           </span>
+          
           {chartAxes.yAxisOptions.length > 1 ? (
             <Select
               aria-label={t("yAxisVertical")}

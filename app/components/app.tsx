@@ -497,7 +497,11 @@ function Header() {
           className="text-3xl flex gap-2 items-center"
           style={{ fontFamily: "var(--font-condensed)" }}
         >
-          <img src="bedrock.svg" width={30} /> {t("appTitle")}
+          <img src="bedrock.svg" width={30} />
+          <span style={{ color: "hsl(110 3% 53%)" }}>
+            Bedrock.engineer
+          </span>{" "}
+          {t("appTitle")}
         </h1>
 
         <button
@@ -531,9 +535,7 @@ function Footer() {
 
             <p className="text-sm">{t("appDescription")}</p>
 
-            <p className="text-sm">
-              {t("privacyNote")} {t("offlineNote")}{" "}
-            </p>
+            <p className="text-sm">{t("privacyNote")}</p>
 
             <p>
               <Suspense fallback="Checking...">
