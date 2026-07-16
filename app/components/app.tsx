@@ -12,7 +12,7 @@ import {
   TrashIcon,
   UploadIcon,
 } from "lucide-react";
-import { Suspense, useState, useTransition } from "react";
+import { lazy, Suspense, useState, useTransition } from "react";
 import {
   Button,
   Disclosure,
@@ -31,10 +31,15 @@ import { CompactDissHeader, DetailedDissHeaders } from "./diss-header-items";
 import { DissPlots } from "./diss-plots";
 import { DownloadGeoJSONButton } from "./download-geojson-button";
 import { FileTable } from "./file-table";
-import { GefMap } from "./gef-map.client";
 import { InstallInstructions } from "./install-instructions";
 import { PreExcavationPlot } from "./preexcavation-plot";
 import { SpecimenTable } from "./specimen-table";
+
+// Lazy so maplibre-gl only loads once a file with location data is
+// open; it would otherwise dominate the initial chunk (~1 MB minified).
+const GefMap = lazy(() =>
+  import("./gef-map.client").then((module) => ({ default: module.GefMap })),
+);
 
 function translateWarning(warning: GefWarning, t: TFunction): string {
   switch (warning.type) {

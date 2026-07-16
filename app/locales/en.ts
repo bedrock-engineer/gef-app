@@ -183,6 +183,15 @@ export default {
     noValidLocations: "No valid locations to display",
     noLocationData: "No GEF files with location data",
     unknownCoordinateSystem: "Unknown",
+    mapSearchPlaceholder: "Search address or place in the Netherlands…",
+    mapSearchTypeToSearch: "Type to search…",
+    mapSearchSearching: "Searching…",
+    mapSearchNoResults: "No matches",
+    mapBasemapLabel: "Basemap",
+    mapBasemapOsm: "OpenStreetMap",
+    mapBasemapTopo: "BRT (NL)",
+    mapBasemapAerial: "Aerial photo (NL)",
+    mapBasemapGrb: "GRB (Flanders)",
 
     // File table columns
     filename: "Filename",

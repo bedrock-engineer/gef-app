@@ -183,6 +183,15 @@ export default {
     noValidLocations: "Geen geldige locaties om weer te geven",
     noLocationData: "Geen GEF-bestanden met locatiegegevens",
     unknownCoordinateSystem: "Onbekend",
+    mapSearchPlaceholder: "Zoek adres of plaats in Nederland…",
+    mapSearchTypeToSearch: "Typ om te zoeken…",
+    mapSearchSearching: "Zoeken…",
+    mapSearchNoResults: "Geen resultaten",
+    mapBasemapLabel: "Ondergrond",
+    mapBasemapOsm: "OpenStreetMap",
+    mapBasemapTopo: "BRT (NL)",
+    mapBasemapAerial: "Luchtfoto (NL)",
+    mapBasemapGrb: "GRB (Vlaanderen)",
 
     // File table columns
     filename: "Bestandsnaam",

@@ -1,7 +1,7 @@
 import { reactRouter } from "@react-router/dev/vite";
 import { cloudflare } from "@cloudflare/vite-plugin";
 import tailwindcss from "@tailwindcss/vite";
-import { defineConfig } from "vite";
+import { defineConfig, searchForWorkspaceRoot } from "vite";
 import { VitePWA } from "vite-plugin-pwa";
 import tsconfigPaths from "vite-tsconfig-paths";
 
@@ -73,6 +73,13 @@ export default defineConfig({
     }),
   ],
   assetsInclude: ["**/*.wasm"],
+  server: {
+    fs: {
+      // Serve the gef-parser wasm binary when the package is file:-linked to
+      // the sibling repo during local development (dev-only setting).
+      allow: [searchForWorkspaceRoot(process.cwd()), "../gef-parser-js"],
+    },
+  },
   optimizeDeps: {
     exclude: ["@bedrock-engineer/gef-parser"],
     esbuildOptions: {
