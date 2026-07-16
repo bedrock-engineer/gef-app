@@ -262,6 +262,12 @@ export function GefMap({
           if (!location || !wgs84) {
             return [];
           }
+          // 0,0 source coordinates are a placeholder (privacy or simply
+          // not filled in); treat the file as having no location rather
+          // than plotting the projected origin (somewhere in France).
+          if (location.originalX === 0 && location.originalY === 0) {
+            return [];
+          }
           return [
             {
               filename: meta.filename,
