@@ -1,19 +1,49 @@
 import { reactRouter } from "@react-router/dev/vite";
 import { cloudflare } from "@cloudflare/vite-plugin";
+import react, { reactCompilerPreset } from "@vitejs/plugin-react";
+import babel from "@rolldown/plugin-babel";
 import tailwindcss from "@tailwindcss/vite";
 import { defineConfig, searchForWorkspaceRoot } from "vite";
 import { VitePWA } from "vite-plugin-pwa";
-import tsconfigPaths from "vite-tsconfig-paths";
 
 export default defineConfig({
   build: {
     outDir: "build/client",
+    // maplibre-gl is a single indivisible library (~1 MB minified, ~270 kB
+    // gzipped) that is already lazy-loaded behind a dynamic import.
+    chunkSizeWarningLimit: 1100,
+    rolldownOptions: {
+      output: {
+        codeSplitting: {
+          groups: [
+            { name: "maplibre", test: /node_modules\/maplibre-gl\// },
+            {
+              name: "plot",
+              test: /node_modules\/(@observablehq\/plot|d3-|delaunator|robust-predicates|internmap|isoformat)/,
+            },
+            {
+              name: "react-aria",
+              test: /node_modules\/(react-aria|react-stately|@react-aria|@react-stately|@internationalized)/,
+            },
+            {
+              name: "gef-parser",
+              test: /node_modules\/@bedrock-engineer\/gef-parser\//,
+            },
+            {
+              name: "i18n",
+              test: /node_modules\/(i18next|react-i18next|i18next-browser-languagedetector|remix-i18next)/,
+            },
+          ],
+        },
+      },
+    },
   },
   plugins: [
     cloudflare({ viteEnvironment: { name: "ssr" } }),
     tailwindcss(),
     reactRouter(),
-    tsconfigPaths(),
+    react(),
+    babel({ presets: [reactCompilerPreset()] }),
     VitePWA({
       registerType: "autoUpdate",
       outDir: "build/client",
@@ -73,6 +103,9 @@ export default defineConfig({
     }),
   ],
   assetsInclude: ["**/*.wasm"],
+  resolve: {
+    tsconfigPaths: true,
+  },
   server: {
     fs: {
       // Serve the gef-parser wasm binary when the package is file:-linked to
@@ -82,10 +115,5 @@ export default defineConfig({
   },
   optimizeDeps: {
     exclude: ["@bedrock-engineer/gef-parser"],
-    esbuildOptions: {
-      supported: {
-        "top-level-await": true,
-      },
-    },
   },
 });
