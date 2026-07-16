@@ -1,11 +1,10 @@
 export default {
   translation: {
     // App title and description
-    appTitle: "Bedrock.engineer GEF Viewer",
+    appTitle: "GEF Viewer",
     appDescription:
       "View and analyze GEF (Geotechnical Exchange Format) files for CPT, dissipation tests, and geotechnical borehole data in your browser.",
     privacyNote: "Your data never leaves your browser.",
-    offlineNote: "This app also works offline.",
     installInstructionsDesktop:
       "Click the install icon in your browser's address bar to install.",
     installInstructionsIOS: "Tap Share, then 'Add to Home Screen' to install.",

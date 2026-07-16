@@ -104,7 +104,7 @@ export function CompactHeaderRightColumn({
       className="text-gray-700 space-y-1 grid gap-x-2"
       style={{ gridTemplateColumns: "auto 1fr" }}
     >
-      {dateTimeStr && (
+      {dateTimeStr ? (
         <>
           <dt className="text-gray-500">{t("date")}</dt>
           <dd className="flex items-center gap-1">
@@ -112,9 +112,9 @@ export function CompactHeaderRightColumn({
             <CopyButton value={dateTimeStr} label={t("copyDate")} />
           </dd>
         </>
-      )}
+      ) : null}
 
-      {location?.coordinateSystem && (
+      {location?.coordinateSystem ? (
         <>
           <dt className="text-gray-500">{t("locationLabel")}</dt>
           <dd>
@@ -154,9 +154,9 @@ export function CompactHeaderRightColumn({
             )}
           </dd>
         </>
-      )}
+      ) : null}
 
-      {elevationDisplay && (
+      {elevationDisplay ? (
         <>
           <dt className="text-gray-500">{t("groundLevel")}</dt>
           <dd className="flex items-center gap-1">
@@ -166,7 +166,7 @@ export function CompactHeaderRightColumn({
             )}
           </dd>
         </>
-      )}
+      ) : null}
 
       {children}
     </dl>

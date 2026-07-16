@@ -21,6 +21,16 @@ export const DEPTH_KEYWORDS = [
   "lengte",
 ];
 
+// HEIGHT_SYSTEMS only provides full names ("Normaal Amsterdams Peil");
+// axis labels need the standard datum abbreviations
+const HEIGHT_SYSTEM_ABBREVIATIONS: Record<string, string> = {
+  "00000": "local",
+  "00001": "LLWS",
+  "31000": "NAP",
+  "32001": "TAW",
+  "49000": "NN",
+};
+
 const CPT_QUANTITY = {
   LENGTH: 1,
   CONE_RESISTANCE: 2,
@@ -139,12 +149,13 @@ export function detectCptChartAxes(
   // Add elevation if ZID is available
   const hasElevation = data.length > 0 && data[0]?.elevation !== undefined;
   if (hasElevation && zid) {
-    const heightSystem = HEIGHT_SYSTEMS[zid.code].name;
+    const heightSystem =
+      HEIGHT_SYSTEM_ABBREVIATIONS[zid.code] ?? HEIGHT_SYSTEMS[zid.code].name;
 
     yAxisOptions.push({
       key: "elevation",
       unit: `m ${heightSystem}`,
-      name: `Elevation (${heightSystem})`,
+      name: "Elevation",
     });
   }
 
