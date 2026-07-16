@@ -1,6 +1,6 @@
 import { reactRouter } from "@react-router/dev/vite";
 import { cloudflare } from "@cloudflare/vite-plugin";
-import react, { reactCompilerPreset } from "@vitejs/plugin-react";
+import { reactCompilerPreset } from "@vitejs/plugin-react";
 import babel from "@rolldown/plugin-babel";
 import tailwindcss from "@tailwindcss/vite";
 import { defineConfig, searchForWorkspaceRoot } from "vite";
@@ -42,7 +42,6 @@ export default defineConfig({
     cloudflare({ viteEnvironment: { name: "ssr" } }),
     tailwindcss(),
     reactRouter(),
-    react(),
     babel({ presets: [reactCompilerPreset()] }),
     VitePWA({
       registerType: "autoUpdate",
