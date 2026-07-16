@@ -451,6 +451,7 @@ function MarketingMessage() {
 
       <div className="text-sm text-gray-500">
         <p className="mb-2">{t("freeToolByBedrock")}</p>
+        <p className="mb-2">{t("weBuild")}</p>
 
         <ul className="list-disc list-inside space-y-1 ">
           <li>{t("customWebApps")}</li>

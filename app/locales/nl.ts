@@ -141,6 +141,7 @@ export default {
     depthM: "Diepte (m)",
     downloadSvg: "Download SVG",
     downloadPng: "Download PNG",
+    showComments: "Toon opmerkingen",
     madeWithBedrockGefViewer: "Gemaakt met Bedrock.engineer GEF Viewer",
     selectDownloadFormat: "Select download format",
 
@@ -212,7 +213,8 @@ export default {
     contactUs: "Neem contact op",
 
     // Empty state CTA
-    freeToolByBedrock: "Gratis tool van Bedrock.engineer. Wij bouwen:",
+    freeToolByBedrock: "Gratis tool van Bedrock.engineer.",
+    weBuild: "Wij bouwen:",
     customWebApps: "Webapps op maat voor geotechnische workflows",
     pythonAutomation: "Geotechnische workflow automatisering met Python",
     bimCadIntegrations:
