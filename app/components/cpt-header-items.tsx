@@ -50,7 +50,9 @@ function getCalibrationData(
   const items: Array<{ label: string; value: string }> = [];
 
   headers.MEASUREMENTVAR?.forEach(({ id, value, unit }) => {
-    if (value === undefined) {return;}
+    if (value === undefined) {
+      return;
+    }
     const varInfo = findCptMeasurementVariable(id, extension);
 
     if (varInfo?.category === "calibration" && value !== 0) {
@@ -87,7 +89,7 @@ function CptCompactInfo({
 
   return (
     <>
-      {waterLevelDisplay && (
+      {waterLevelDisplay ? (
         <>
           <dt className="text-gray-500">{t("waterLevel")}</dt>
           <dd className="flex items-center gap-1">
@@ -95,28 +97,28 @@ function CptCompactInfo({
             <CopyButton value={waterLevelDisplay} label={t("copyWaterLevel")} />
           </dd>
         </>
-      )}
+      ) : null}
 
-      {finalDepth && (
+      {finalDepth ? (
         <>
           <dt className="text-gray-500">{t("depth")}</dt>
           <dd>{finalDepth.value}m</dd>
         </>
-      )}
+      ) : null}
 
-      {lastScan && (
+      {lastScan ? (
         <>
           <dt className="text-gray-500">{t("scanNumber")}</dt>
           <dd>{lastScan}</dd>
         </>
-      )}
+      ) : null}
 
-      {childCount > 0 && (
+      {childCount > 0 ? (
         <>
           <dt className="text-gray-500">{t("dissTests")}</dt>
           <dd>{childCount}</dd>
         </>
-      )}
+      ) : null}
     </>
   );
 }
@@ -166,7 +168,9 @@ function getCptTestInfo(
   }
 
   headers.MEASUREMENTVAR?.forEach(({ id, value, unit }) => {
-    if (value === undefined) {return;}
+    if (value === undefined) {
+      return;
+    }
     const varInfo = findCptMeasurementVariable(id, extension);
 
     if (
@@ -219,7 +223,9 @@ function getCptEquipmentInfo(
   );
 
   headers.MEASUREMENTVAR?.forEach(({ id, value, unit }) => {
-    if (value === undefined) {return;}
+    if (value === undefined) {
+      return;
+    }
     const varInfo = findCptMeasurementVariable(id, extension);
     if (
       !varInfo ||
@@ -270,9 +276,7 @@ function getChildFilesInfo(
         <table>
           <thead>
             <tr>
-              <th className="border border-gray-300 px-2 py-1 text-left">
-                #
-              </th>
+              <th className="border border-gray-300 px-2 py-1 text-left">#</th>
               <th className="border border-gray-300 px-2 py-1 text-left">
                 {t("reference")}
               </th>
