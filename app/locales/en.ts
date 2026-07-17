@@ -142,6 +142,13 @@ export default {
     showComments: "Show comments",
     madeWithBedrockGefViewer: "Made with Bedrock.engineer GEF Viewer",
 
+    // Derived CPT chart columns (measured columns are named via the GEF
+    // parser spec, which carries its own Dutch names)
+    cptColumn: {
+      trueDepth: "True Depth (inclination corrected)",
+      elevation: "Elevation",
+    },
+
     selectDownloadFormat: "Select download format",
 
     // Soil types

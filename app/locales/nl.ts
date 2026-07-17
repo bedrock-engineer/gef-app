@@ -142,6 +142,13 @@ export default {
     downloadPng: "Download PNG",
     showComments: "Toon opmerkingen",
     madeWithBedrockGefViewer: "Gemaakt met Bedrock.engineer GEF Viewer",
+
+    // Derived CPT chart columns (measured columns are named via the GEF
+    // parser spec, which carries its own Dutch names)
+    cptColumn: {
+      trueDepth: "Werkelijke diepte (gecorrigeerd voor helling)",
+      elevation: "Hoogte",
+    },
     selectDownloadFormat: "Select download format",
 
     // Soil types

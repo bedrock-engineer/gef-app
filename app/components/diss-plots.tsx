@@ -156,7 +156,7 @@ function DissPorePressurePlot({
   timeScale,
   porePressureCols,
 }: DissPorePressurePlotProps) {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
 
   const containerRef = usePlot(() => {
     const firstPpCol = porePressureCols[0];
@@ -193,7 +193,7 @@ function DissPorePressurePlot({
       }
     }
 
-    const xLabel = `${getColumnDisplayName(timeCol)} (${timeUnit})`;
+    const xLabel = `${getColumnDisplayName(timeCol, i18n.language)} (${timeUnit})`;
     const plot = Plot.plot({
       height,
       width,
@@ -259,7 +259,7 @@ function DissConeResistancePlot({
   timeScale,
   qcCol,
 }: DissConeResistancePlotProps) {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
 
   const containerRef = usePlot(() => {
     if (data.length === 0) {
@@ -278,7 +278,7 @@ function DissConeResistancePlot({
         })
       : data;
 
-    const xLabel = `${getColumnDisplayName(timeCol)} (${timeUnit})`;
+    const xLabel = `${getColumnDisplayName(timeCol, i18n.language)} (${timeUnit})`;
     const plot = Plot.plot({
       height,
       width,
@@ -290,7 +290,7 @@ function DissConeResistancePlot({
       x: getXScaleConfig(timeScale, xLabel),
       y: {
         grid: true,
-        label: `${getColumnDisplayName(qcCol)} (${qcUnit})`,
+        label: `${getColumnDisplayName(qcCol, i18n.language)} (${qcUnit})`,
       },
       marks: [
         Plot.frame(),
