@@ -47,8 +47,8 @@ export function CptPlots({
   height = 800,
   baseFilename,
 }: CptPlotProps) {
-  const { t } = useTranslation();
-  const chartAxes = detectCptChartAxes(columnInfo, data, zid);
+  const { t, i18n } = useTranslation();
+  const chartAxes = detectCptChartAxes(columnInfo, data, zid, i18n);
 
   const [selectedAxes, setSelectedAxes] = useState([chartAxes.xAxis?.key ?? ""]);
   const [selectedYAxis, setSelectedYAxis] = useState(chartAxes.yAxis?.key ?? "");

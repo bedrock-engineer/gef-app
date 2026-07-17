@@ -12,6 +12,7 @@ import {
 } from "@bedrock-engineer/gef-parser/cpt";
 import { HEIGHT_SYSTEMS } from "@bedrock-engineer/gef-parser/coordinates";
 import type { ColumnInfo, CptRow, ZID } from "@bedrock-engineer/gef-parser";
+import type { i18n as I18n } from "i18next";
 
 export const DEPTH_KEYWORDS = [
   "penetration",
@@ -63,14 +64,18 @@ export function getUnitCode(unit: string): string {
 }
 
 /**
- * Get standardized display name for a column based on its quantity number
+ * Get standardized display name for a column based on its quantity number.
+ * The GEF spec carries its own Dutch names, so translation happens here
+ * rather than through the locale files.
  */
-export function getColumnDisplayName(col: ColumnInfo): string {
+export function getColumnDisplayName(
+  col: ColumnInfo,
+  language?: string,
+): string {
   const quantity = cptColumnQuantities[col.quantityNumber];
   if (quantity) {
-    return quantity.symbol
-      ? `${quantity.name} (${quantity.symbol})`
-      : quantity.name;
+    const name = language?.startsWith("nl") ? quantity.nameNl : quantity.name;
+    return quantity.symbol ? `${name} (${quantity.symbol})` : name;
   }
   return col.name;
 }
@@ -87,7 +92,9 @@ export function detectCptChartAxes(
   columnInfo: Array<ColumnInfo>,
   data: Array<CptRow>,
   zid: ZID | undefined,
+  i18n: I18n,
 ): ChartAxes {
+  const language = i18n.language;
   // Y-axis: prefer quantity 1 (penetration length), then corrected depth (11), then keyword fallback
   const yColumn =
     findColumnByQuantity(columnInfo, CPT_QUANTITY.LENGTH) ??
@@ -118,7 +125,7 @@ export function detectCptChartAxes(
     yAxisOptions.push({
       key: yColumn.name,
       unit: getUnitCode(yColumn.unit),
-      name: getColumnDisplayName(yColumn),
+      name: getColumnDisplayName(yColumn, language),
     });
   }
 
@@ -132,7 +139,7 @@ export function detectCptChartAxes(
     yAxisOptions.push({
       key: correctedDepthCol.name,
       unit: getUnitCode(correctedDepthCol.unit),
-      name: getColumnDisplayName(correctedDepthCol),
+      name: getColumnDisplayName(correctedDepthCol, language),
     });
   }
 
@@ -142,7 +149,7 @@ export function detectCptChartAxes(
     yAxisOptions.push({
       key: "trueDepth",
       unit: "m",
-      name: "True Depth (inclination corrected)",
+      name: i18n.t("cptColumn.trueDepth"),
     });
   }
 
@@ -155,14 +162,14 @@ export function detectCptChartAxes(
     yAxisOptions.push({
       key: "elevation",
       unit: `m ${heightSystem}`,
-      name: "Elevation",
+      name: i18n.t("cptColumn.elevation"),
     });
   }
 
   const availableColumns = columnInfo.map((col) => ({
     key: col.name,
     unit: getUnitCode(col.unit),
-    name: getColumnDisplayName(col),
+    name: getColumnDisplayName(col, language),
   }));
 
   return {
@@ -171,7 +178,7 @@ export function detectCptChartAxes(
       ? {
           key: xColumn.name,
           unit: getUnitCode(xColumn.unit),
-          name: getColumnDisplayName(xColumn),
+          name: getColumnDisplayName(xColumn, language),
         }
       : null,
     availableColumns,
