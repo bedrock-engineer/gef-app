@@ -1,4 +1,5 @@
-import { useEffect } from "react";
+import * as Sentry from "@sentry/react-router/cloudflare";
+import { useEffect, useRef, useState } from "react";
 import { I18nProvider } from "react-aria-components";
 import { useTranslation } from "react-i18next";
 import {
@@ -391,10 +392,57 @@ export default function App({ loaderData: { locale } }: Route.ComponentProps) {
   );
 }
 
+function ErrorFeedbackButton() {
+  const { t } = useTranslation();
+  const buttonRef = useRef<HTMLButtonElement>(null);
+  // Hidden until Sentry's feedback integration is attached (client-side,
+  // production only), so SSR and non-Sentry builds render no dead button.
+  const [attached, setAttached] = useState(false);
+
+  useEffect(
+    function attachFeedbackForm() {
+      const feedback = Sentry.getFeedback();
+      if (!feedback || !buttonRef.current) return;
+      const unsubscribe = feedback.attachTo(buttonRef.current, {
+        formTitle: t("feedbackFormTitle"),
+        nameLabel: t("feedbackNameLabel"),
+        namePlaceholder: t("feedbackNamePlaceholder"),
+        emailLabel: t("feedbackEmailLabel"),
+        emailPlaceholder: t("feedbackEmailPlaceholder"),
+        messageLabel: t("feedbackMessageLabel"),
+        messagePlaceholder: t("feedbackMessagePlaceholder"),
+        submitButtonLabel: t("feedbackSubmitButtonLabel"),
+        cancelButtonLabel: t("feedbackCancelButtonLabel"),
+        confirmButtonLabel: t("feedbackConfirmButtonLabel"),
+        successMessageText: t("feedbackSuccessMessageText"),
+        isRequiredLabel: t("feedbackIsRequiredLabel"),
+        addScreenshotButtonLabel: t("feedbackAddScreenshotButtonLabel"),
+        removeScreenshotButtonLabel: t("feedbackRemoveScreenshotButtonLabel"),
+      });
+      setAttached(true);
+      return unsubscribe;
+    },
+    [t],
+  );
+
+  return (
+    <button
+      ref={buttonRef}
+      type="button"
+      hidden={!attached}
+      className="mt-4 px-3 py-2 bg-white border border-gray-300 rounded-sm text-sm text-gray-700 hover:bg-gray-50"
+    >
+      {t("reportProblem")}
+    </button>
+  );
+}
+
 export function ErrorBoundary({ error }: Route.ErrorBoundaryProps) {
   let message = "Error";
   let details = "An unexpected error occurred.";
   let stack: string | undefined;
+
+  const isNotFound = isRouteErrorResponse(error) && error.status === 404;
 
   if (isRouteErrorResponse(error)) {
     message = error.status === 404 ? "404" : "Error";
@@ -411,6 +459,7 @@ export function ErrorBoundary({ error }: Route.ErrorBoundaryProps) {
     <main className="pt-16 p-4 container mx-auto">
       <h1 className="text-xl">{message}</h1>
       <p>{details}</p>
+      {!isNotFound && <ErrorFeedbackButton />}
       {stack && (
         <pre className="w-full p-4 overflow-x-auto">
           <code>{stack}</code>
