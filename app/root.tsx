@@ -16,6 +16,7 @@ import {
   i18nextMiddleware,
   localeCookie,
 } from "~/middleware/i18next";
+import { useNonce } from "~/util/nonce";
 import type { Route } from "./+types/root";
 import "./app.css";
 
@@ -68,6 +69,7 @@ interface LayoutProps {
 export function Layout({ children, loaderData }: LayoutProps) {
   const { i18n } = useTranslation();
   const locale = loaderData?.locale ?? i18n.language;
+  const nonce = useNonce();
 
   return (
     <html lang={locale}>
@@ -319,6 +321,7 @@ export function Layout({ children, loaderData }: LayoutProps) {
         <Links />
         <script
           type="application/ld+json"
+          nonce={nonce}
           dangerouslySetInnerHTML={{
             __html: JSON.stringify({
               "@context": "https://schema.org",
@@ -366,8 +369,8 @@ export function Layout({ children, loaderData }: LayoutProps) {
       </head>
       <body>
         {children}
-        <ScrollRestoration />
-        <Scripts />
+        <ScrollRestoration nonce={nonce} />
+        <Scripts nonce={nonce} />
       </body>
     </html>
   );

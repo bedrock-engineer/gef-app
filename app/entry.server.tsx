@@ -3,6 +3,8 @@ import { isbot } from "isbot";
 import { renderToReadableStream } from "react-dom/server";
 import type { EntryContext, HandleErrorFunction } from "react-router";
 import { ServerRouter } from "react-router";
+import { contentSecurityPolicy } from "~/util/csp";
+import { NonceContext } from "~/util/nonce";
 
 export const handleError: HandleErrorFunction = (error, { request }) => {
   // Aborted requests (e.g. the user navigated away mid-load) are not errors.
@@ -21,10 +23,16 @@ export default async function handleRequest(
 ) {
   let shellRendered = false;
   const userAgent = request.headers.get("user-agent");
+  const nonce = crypto.randomUUID();
 
   const body = await renderToReadableStream(
-    <ServerRouter context={routerContext} url={request.url} />,
+    <NonceContext.Provider value={nonce}>
+      <ServerRouter context={routerContext} url={request.url} />
+    </NonceContext.Provider>,
     {
+      // React stamps this nonce on the inline scripts it injects while
+      // streaming suspense boundaries.
+      nonce,
       onError(error: unknown) {
         responseStatusCode = 500;
         // Log streaming rendering errors from inside the shell.  Don't log
@@ -46,6 +54,14 @@ export default async function handleRequest(
   }
 
   responseHeaders.set("Content-Type", "text/html");
+  // Dev is excluded: Vite and react-refresh inject inline scripts without
+  // a nonce, so the policy would break the dev server.
+  if (import.meta.env.PROD) {
+    responseHeaders.set(
+      "Content-Security-Policy",
+      contentSecurityPolicy(nonce),
+    );
+  }
 
   return new Response(body, {
     headers: responseHeaders,
