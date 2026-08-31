@@ -238,5 +238,28 @@ export default {
     dissTests: "Dissipatie testen:",
     reference: "Referentie",
     description: "Beschrijving",
+
+    // Error page feedback form (Sentry user feedback widget)
+    reportProblem: "Probleem melden",
+    feedbackFormTitle: "Probleem melden",
+    feedbackNameLabel: "Naam",
+    feedbackNamePlaceholder: "Je naam",
+    feedbackEmailLabel: "E-mailadres",
+    feedbackEmailPlaceholder: "jouw.email@voorbeeld.nl",
+    feedbackMessageLabel: "Omschrijving",
+    feedbackMessagePlaceholder: "Wat ging er mis? Wat had je verwacht?",
+    feedbackSubmitButtonLabel: "Melding versturen",
+    feedbackCancelButtonLabel: "Annuleren",
+    feedbackConfirmButtonLabel: "Bevestigen",
+    feedbackSuccessMessageText: "Bedankt voor je melding!",
+    feedbackIsRequiredLabel: "(verplicht)",
+    feedbackAddScreenshotButtonLabel: "Screenshot toevoegen",
+    feedbackRemoveScreenshotButtonLabel: "Screenshot verwijderen",
+
+    // Parse failure report prompt
+    parseErrorReportPrompt:
+      "Hoort dit bestand gewoon te werken? Help de GEF Viewer te verbeteren door",
+    parseErrorReportIssue: "een GitHub-issue te openen",
+    parseErrorReportEmail: "het bestand naar ons te mailen",
   },
 } as const;

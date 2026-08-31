@@ -1,3 +1,4 @@
+import * as Sentry from "@sentry/cloudflare";
 import { createRequestHandler, RouterContextProvider } from "react-router";
 
 declare module "react-router" {
@@ -14,13 +15,19 @@ const requestHandler = createRequestHandler(
   import.meta.env.MODE
 );
 
-export default {
-  async fetch(request, env, ctx) {
-    const context = new RouterContextProvider();
-    // Use Object.assign to preserve existing context access pattern
-    Object.assign(context, {
-      cloudflare: { env, ctx },
-    });
-    return requestHandler(request, context);
-  },
-} satisfies ExportedHandler<Env>;
+export default Sentry.withSentry(
+  () => ({
+    dsn: import.meta.env.VITE_SENTRY_DSN,
+    enabled: import.meta.env.PROD,
+  }),
+  {
+    async fetch(request, env, ctx) {
+      const context = new RouterContextProvider();
+      // Use Object.assign to preserve existing context access pattern
+      Object.assign(context, {
+        cloudflare: { env, ctx },
+      });
+      return requestHandler(request, context);
+    },
+  } satisfies ExportedHandler<Env>,
+);

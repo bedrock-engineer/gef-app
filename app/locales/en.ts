@@ -238,5 +238,29 @@ export default {
     dissTests: "Dissipation tests:",
     reference: "Reference",
     description: "Description",
+
+    // Error page feedback form (Sentry user feedback widget)
+    reportProblem: "Report a problem",
+    feedbackFormTitle: "Report a problem",
+    feedbackNameLabel: "Name",
+    feedbackNamePlaceholder: "Your name",
+    feedbackEmailLabel: "Email",
+    feedbackEmailPlaceholder: "your.email@example.org",
+    feedbackMessageLabel: "Description",
+    feedbackMessagePlaceholder:
+      "What went wrong? What did you expect to happen?",
+    feedbackSubmitButtonLabel: "Send report",
+    feedbackCancelButtonLabel: "Cancel",
+    feedbackConfirmButtonLabel: "Confirm",
+    feedbackSuccessMessageText: "Thank you for your report!",
+    feedbackIsRequiredLabel: "(required)",
+    feedbackAddScreenshotButtonLabel: "Add a screenshot",
+    feedbackRemoveScreenshotButtonLabel: "Remove screenshot",
+
+    // Parse failure report prompt
+    parseErrorReportPrompt:
+      "Think this file should work? Help improve the GEF Viewer by",
+    parseErrorReportIssue: "opening a GitHub issue",
+    parseErrorReportEmail: "emailing us the file",
   },
 } as const;

@@ -269,6 +269,25 @@ export function App() {
                     </li>
                   ))}
                 </ul>
+                <p className="text-sm text-red-700 mt-3">
+                  {t("parseErrorReportPrompt")}{" "}
+                  <a
+                    href="https://github.com/bedrock-engineer/gef-app/issues"
+                    target="_blank"
+                    rel="noreferrer"
+                    className="underline font-medium hover:text-red-900"
+                  >
+                    {t("parseErrorReportIssue")}
+                  </a>{" "}
+                  {t("or")}{" "}
+                  <a
+                    href="mailto:jules.blom@bedrock.engineer?subject=GEF%20Viewer%3A%20file%20fails%20to%20parse"
+                    className="underline font-medium hover:text-red-900"
+                  >
+                    {t("parseErrorReportEmail")}
+                  </a>
+                  .
+                </p>
               </DisclosurePanel>
             </Disclosure>
           )}
