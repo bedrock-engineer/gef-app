@@ -3,7 +3,7 @@ import { isbot } from "isbot";
 import { renderToReadableStream } from "react-dom/server";
 import type { EntryContext, HandleErrorFunction } from "react-router";
 import { ServerRouter } from "react-router";
-import { contentSecurityPolicy } from "~/util/csp";
+import { contentSecurityPolicy, sentryReportEndpoint } from "~/util/csp";
 import { NonceContext } from "~/util/nonce";
 
 export const handleError: HandleErrorFunction = (error, { request }) => {
@@ -27,7 +27,7 @@ export default async function handleRequest(
 
   const body = await renderToReadableStream(
     <NonceContext.Provider value={nonce}>
-      <ServerRouter context={routerContext} url={request.url} />
+      <ServerRouter context={routerContext} url={request.url} nonce={nonce} />
     </NonceContext.Provider>,
     {
       // React stamps this nonce on the inline scripts it injects while
@@ -61,6 +61,15 @@ export default async function handleRequest(
       "Content-Security-Policy",
       contentSecurityPolicy(nonce),
     );
+    // Resolves the policy's report-to directive for browsers that use the
+    // Reporting API (Chromium); others fall back to report-uri.
+    const reportEndpoint = sentryReportEndpoint();
+    if (reportEndpoint) {
+      responseHeaders.set(
+        "Reporting-Endpoints",
+        `csp-endpoint="${reportEndpoint}"`,
+      );
+    }
   }
 
   return new Response(body, {

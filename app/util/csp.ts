@@ -4,7 +4,23 @@
  * added elsewhere in the app needs a matching entry or the browser blocks
  * the request (check the console for CSP violation reports).
  */
+/**
+ * Sentry's CSP-violation ingest endpoint, derived from the DSN:
+ * https://<key>@<host>/<projectId> → https://<host>/api/<projectId>/security/
+ * Referenced by both the report-uri/report-to CSP directives and the
+ * Reporting-Endpoints response header set in entry.server.
+ */
+export function sentryReportEndpoint(): string | undefined {
+  const dsn = import.meta.env.VITE_SENTRY_DSN;
+  if (!dsn) {
+    return undefined;
+  }
+  const { username, host, pathname } = new URL(dsn);
+  return `https://${host}/api/${pathname.slice(1)}/security/?sentry_key=${username}`;
+}
+
 export function contentSecurityPolicy(nonce: string): string {
+  const reportEndpoint = sentryReportEndpoint();
   return [
     "default-src 'self'",
     // The nonce covers React Router's inline hydration scripts and the
@@ -33,5 +49,10 @@ export function contentSecurityPolicy(nonce: string): string {
     "base-uri 'self'",
     "form-action 'self'",
     "frame-ancestors 'none'",
+    // report-uri is deprecated but the only mechanism Firefox and Safari
+    // support; Chrome prefers report-to, resolved via Reporting-Endpoints.
+    ...(reportEndpoint
+      ? [`report-uri ${reportEndpoint}`, "report-to csp-endpoint"]
+      : []),
   ].join("; ");
 }
