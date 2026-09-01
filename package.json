@@ -30,7 +30,7 @@
   "dependencies": {
     "@bedrock-engineer/gef-parser": "^0.4.0",
     "@observablehq/plot": "^0.6.17",
-    "@react-router/node": "^7.18.0",
+    "@react-router/node": "^7.18.3",
     "@sentry/cloudflare": "^10.72.0",
     "@sentry/react-router": "^10.72.0",
     "d3-array": "^3.2.4",
@@ -45,14 +45,14 @@
     "react-aria-components": "^1.19.0",
     "react-dom": "^19.2.4",
     "react-i18next": "^16.3.5",
-    "react-router": "^7.18",
+    "react-router": "^7.18.3",
     "remix-i18next": "^7.4.2",
     "svg-crowbar": "^0.7.0"
   },
   "devDependencies": {
     "@cloudflare/vite-plugin": "^1.45.0",
     "@eslint/js": "^9.39.1",
-    "@react-router/dev": "^7.18.0",
+    "@react-router/dev": "^7.18.3",
     "@rolldown/plugin-babel": "^0.2.3",
     "@tailwindcss/vite": "^4.3.1",
     "@types/d3-array": "^3.2.1",
