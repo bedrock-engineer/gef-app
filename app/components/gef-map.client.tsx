@@ -12,8 +12,17 @@ import {
   NavigationControl,
   Popup,
   ScaleControl,
+  setWorkerUrl,
 } from "maplibre-gl";
 import "maplibre-gl/dist/maplibre-gl.css";
+// MapLibre v6 resolves its worker via `new URL(..., import.meta.url)`,
+// which Vite cannot rewrite (404 from .vite/deps in dev, missing asset
+// in the build), so point it at a Vite-bundled worker explicitly. Use
+// `?worker&url` rather than plain `?url`: the dist worker imports its
+// sibling maplibre-gl-shared.mjs, which only `?worker` bundles in.
+import maplibreWorkerUrl from "maplibre-gl/dist/maplibre-gl-worker.mjs?worker&url";
+
+setWorkerUrl(maplibreWorkerUrl);
 import {
   use,
   useEffect,
@@ -411,7 +420,7 @@ export function GefMap({
       return;
     }
 
-    map.getSource<GeoJSONSource>("locations")?.setData(geojson);
+    void map.getSource<GeoJSONSource>("locations")?.setData(geojson);
 
     const known = knownFilenamesRef.current;
     const added = locations.filter((loc) => !known.has(loc.filename));
