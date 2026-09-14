@@ -256,6 +256,13 @@ export default {
     feedbackAddScreenshotButtonLabel: "Screenshot toevoegen",
     feedbackRemoveScreenshotButtonLabel: "Screenshot verwijderen",
 
+    // Cookie consent banner
+    cookieBannerLabel: "Cookietoestemming",
+    cookieBannerText:
+      "Mogen we cookies gebruiken voor anonieme gebruiksstatistieken? Dit helpt de GEF Viewer te verbeteren. Als je weigert, wordt er niets op je apparaat opgeslagen.",
+    cookieBannerAccept: "Accepteren",
+    cookieBannerDecline: "Weigeren",
+
     // Parse failure report prompt
     parseErrorReportPrompt:
       "Hoort dit bestand gewoon te werken? Help de GEF Viewer te verbeteren door",

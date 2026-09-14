@@ -16,11 +16,13 @@ import {
   i18nextMiddleware,
   localeCookie,
 } from "~/middleware/i18next";
+import { CookieBanner } from "~/components/cookie-banner";
+import { posthogMiddleware } from "~/middleware/posthog";
 import { useNonce } from "~/util/nonce";
 import type { Route } from "./+types/root";
 import "./app.css";
 
-export const middleware = [i18nextMiddleware];
+export const middleware = [posthogMiddleware, i18nextMiddleware];
 
 export async function loader({ context }: Route.LoaderArgs) {
   const locale = getLocale(context);
@@ -391,6 +393,7 @@ export default function App({ loaderData: { locale } }: Route.ComponentProps) {
   return (
     <I18nProvider locale={i18n.language}>
       <Outlet />
+      <CookieBanner />
     </I18nProvider>
   );
 }

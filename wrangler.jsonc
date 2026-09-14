@@ -6,8 +6,8 @@
 	"$schema": "node_modules/wrangler/config-schema.json",
 	"name": "gef-app",
 	"compatibility_date": "2025-04-04",
-	// AsyncLocalStorage, required by @sentry/cloudflare
-	"compatibility_flags": ["nodejs_als"],
+	// Node APIs for PostHog plus AsyncLocalStorage required by both SDKs.
+	"compatibility_flags": ["nodejs_compat", "nodejs_als"],
 	"main": "./workers/app.ts",
 	"vars": {
 	},

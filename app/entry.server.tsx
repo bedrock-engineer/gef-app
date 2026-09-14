@@ -2,13 +2,15 @@ import * as Sentry from "@sentry/cloudflare";
 import { isbot } from "isbot";
 import { renderToReadableStream } from "react-dom/server";
 import type { EntryContext, HandleErrorFunction } from "react-router";
-import { ServerRouter } from "react-router";
+import { isRouteErrorResponse, ServerRouter } from "react-router";
 import { contentSecurityPolicy, sentryReportEndpoint } from "~/util/csp";
 import { NonceContext } from "~/util/nonce";
 
 export const handleError: HandleErrorFunction = (error, { request }) => {
-  // Aborted requests (e.g. the user navigated away mid-load) are not errors.
-  if (!request.signal.aborted) {
+  // Aborted requests (e.g. the user navigated away mid-load) are not errors,
+  // and route error responses (404s from typos and vulnerability scanners
+  // probing /.env and the like) are expected traffic — report neither.
+  if (!request.signal.aborted && !isRouteErrorResponse(error)) {
     Sentry.captureException(error);
     console.error(error);
   }
@@ -23,7 +25,11 @@ export default async function handleRequest(
 ) {
   let shellRendered = false;
   const userAgent = request.headers.get("user-agent");
-  const nonce = crypto.randomUUID();
+  // Only minted in prod: the nonce exists for the prod-only CSP header below,
+  // and without that header browsers keep the nonce attribute in the DOM,
+  // where the nonce-less client render reports it as a hydration mismatch
+  // (visible in dev on react-router's critical CSS link).
+  const nonce = import.meta.env.PROD ? crypto.randomUUID() : undefined;
 
   const body = await renderToReadableStream(
     <NonceContext.Provider value={nonce}>
@@ -56,7 +62,7 @@ export default async function handleRequest(
   responseHeaders.set("Content-Type", "text/html");
   // Dev is excluded: Vite and react-refresh inject inline scripts without
   // a nonce, so the policy would break the dev server.
-  if (import.meta.env.PROD) {
+  if (nonce) {
     responseHeaders.set(
       "Content-Security-Policy",
       contentSecurityPolicy(nonce),

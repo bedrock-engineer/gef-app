@@ -1,5 +1,6 @@
 import type { Feature, FeatureCollection } from "geojson";
 import { DownloadIcon } from "lucide-react";
+import { usePostHog } from "@posthog/react";
 import { Button } from "react-aria-components";
 import { useTranslation } from "react-i18next";
 import type { GefData } from "@bedrock-engineer/gef-parser";
@@ -71,12 +72,19 @@ interface DownloadGeoJSONButtonProps {
 
 export function DownloadGeoJSONButton({ gefData }: DownloadGeoJSONButtonProps) {
   const { t } = useTranslation();
+  const posthog = usePostHog();
 
   return (
     <Button
       className="button mt-2 ml-auto"
       onPress={() => {
         downloadAsGeoJSON(gefData);
+        const files = Object.values(gefData);
+        posthog.capture("locations_geojson_downloaded", {
+          file_count: files.length,
+          location_count: createGeoJSON(gefData).features.length,
+          file_types: [...new Set(files.map((file) => file.fileType))],
+        });
       }}
       isDisabled={Object.keys(gefData).length === 0}
     >

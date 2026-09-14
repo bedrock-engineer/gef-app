@@ -257,6 +257,13 @@ export default {
     feedbackAddScreenshotButtonLabel: "Add a screenshot",
     feedbackRemoveScreenshotButtonLabel: "Remove screenshot",
 
+    // Cookie consent banner
+    cookieBannerLabel: "Cookie consent",
+    cookieBannerText:
+      "May we use cookies for anonymous usage statistics? This helps improve the GEF Viewer. If you decline, nothing is stored on your device.",
+    cookieBannerAccept: "Accept",
+    cookieBannerDecline: "Decline",
+
     // Parse failure report prompt
     parseErrorReportPrompt:
       "Think this file should work? Help improve the GEF Viewer by",
