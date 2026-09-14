@@ -3,6 +3,7 @@ import {
   type GefData,
   type GefWarning,
 } from "@bedrock-engineer/gef-parser";
+import { usePostHog } from "@posthog/react";
 import type { TFunction } from "i18next";
 import {
   ChevronDownIcon,
@@ -101,6 +102,7 @@ function translateError(error: string, t: TFunction): string {
 
 export function App() {
   const { t } = useTranslation();
+  const posthog = usePostHog();
   const [isPending, startTransition] = useTransition();
   const [gefData, setGefData] = useState<Record<string, GefData>>({});
   const [selectedFileName, setSelectedFileName] = useState("");
@@ -123,10 +125,13 @@ export function App() {
       }),
     );
 
-    await handleFiles(files);
+    await handleFiles(files, "sample");
   }
 
-  async function handleFiles(fileList: FileList | Array<File> | null) {
+  async function handleFiles(
+    fileList: FileList | Array<File> | null,
+    source: "drop" | "sample" | "upload",
+  ) {
     const files = Array.from(fileList ?? []);
 
     if (files.length > 0) {
@@ -162,6 +167,19 @@ export function App() {
       }
 
       const gef = Object.fromEntries(parsedGefFiles) as Record<string, GefData>;
+      const parsedFiles = parsedGefFiles.map(([, data]) => data);
+
+      posthog.capture("files_processed", {
+        source,
+        file_count: files.length,
+        successful_file_count: parsedGefFiles.length,
+        failed_file_count: failed.length,
+        file_types: [...new Set(parsedFiles.map((file) => file.fileType))],
+        warning_count: parsedFiles.reduce(
+          (total, file) => total + file.warnings.length,
+          0,
+        ),
+      });
 
       startTransition(() => {
         setGefData((prev) => ({ ...prev, ...gef }));
@@ -189,7 +207,7 @@ export function App() {
               acceptedFileTypes={[".gef", ".GEF"]}
               allowsMultiple
               onSelect={(fileList) => {
-                handleFiles(fileList).catch((error: unknown) => {
+                handleFiles(fileList, "upload").catch((error: unknown) => {
                   console.error(error);
                 });
               }}
@@ -297,11 +315,20 @@ export function App() {
             selectedFileName={selectedFileName}
             onSelectionChange={setSelectedFileName}
             onFileDrop={(files) => {
-              handleFiles(files).catch((error: unknown) => {
+              handleFiles(files, "drop").catch((error: unknown) => {
                 console.error(error);
               });
             }}
             onFileRemove={(filename) => {
+              const removedFile = gefData[filename];
+              posthog.capture("file_removed", {
+                file_type: removedFile?.fileType,
+                remaining_file_count: Math.max(
+                  Object.keys(gefData).length - 1,
+                  0,
+                ),
+              });
+
               setGefData((prev) => {
                 // eslint-disable-next-line @typescript-eslint/no-unused-vars
                 const { [filename]: _, ...rest } = prev;
@@ -321,6 +348,14 @@ export function App() {
             <Button
               className="button mt-2 ml-auto transition-colors"
               onPress={() => {
+                const loadedFiles = Object.values(gefData);
+                posthog.capture("files_cleared", {
+                  file_count: loadedFiles.length,
+                  file_types: [
+                    ...new Set(loadedFiles.map((file) => file.fileType)),
+                  ],
+                  failed_file_count: failedFiles.length,
+                });
                 setGefData({});
                 setSelectedFileName("");
                 setFailedFiles([]);

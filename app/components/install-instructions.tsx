@@ -1,12 +1,11 @@
+import { use } from "react";
+import { browser } from "react-dom";
 import { useTranslation } from "react-i18next";
 
 export function InstallInstructions() {
   const { t } = useTranslation();
 
-  if (typeof window === "undefined") {
-    // throw Error("InstallInstructions should only render on the client.");
-    return t("installInstructionsDesktop");
-  }
+  use(browser());
 
   const ua = navigator.userAgent;
   const isIOS = /iPad|iPhone|iPod/.test(ua);

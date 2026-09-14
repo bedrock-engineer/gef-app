@@ -1,5 +1,6 @@
+import { usePostHog } from "@posthog/react";
+import * as maplibregl from "maplibre-gl";
 import type { IControl, Map as MlMap } from "maplibre-gl";
-import maplibregl from "maplibre-gl";
 import { useEffect, useRef, useState, type Key, type RefObject } from "react";
 import {
   ComboBox,
@@ -118,6 +119,7 @@ interface SearchBoxProps {
  */
 export function SearchBox({ mapRef }: SearchBoxProps) {
   const { t } = useTranslation();
+  const posthog = usePostHog();
   const [query, setQuery] = useState("");
   const { suggestions, loading } = useAddressSuggest(query);
   const lookupAbortRef = useRef<AbortController | null>(null);
@@ -162,6 +164,10 @@ export function SearchBox({ mapRef }: SearchBoxProps) {
         .setLngLat([place.longitude, place.latitude])
         .addTo(map);
     }
+
+    posthog.capture("map_address_selected", {
+      result_type: picked?.type,
+    });
 
     map.flyTo({
       center: [place.longitude, place.latitude],

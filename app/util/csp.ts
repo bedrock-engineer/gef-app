@@ -21,6 +21,8 @@ export function sentryReportEndpoint(): string | undefined {
 
 export function contentSecurityPolicy(nonce: string): string {
   const reportEndpoint = sentryReportEndpoint();
+  const posthogHost = import.meta.env.VITE_PUBLIC_POSTHOG_HOST;
+  const posthogOrigin = posthogHost ? new URL(posthogHost).origin : undefined;
   return [
     "default-src 'self'",
     // The nonce covers React Router's inline hydration scripts and the
@@ -42,6 +44,7 @@ export function contentSecurityPolicy(nonce: string): string {
       "https://geo.api.vlaanderen.be", // GRB basemap tiles for Flanders
       "https://counterscale.bedrock-engineer.workers.dev",
       "https://*.sentry.io", // error + feedback ingest
+      ...(posthogOrigin ? [posthogOrigin] : []),
     ].join(" "),
     // 'self' for the PWA service worker, blob: for MapLibre's bundled worker.
     "worker-src 'self' blob:",

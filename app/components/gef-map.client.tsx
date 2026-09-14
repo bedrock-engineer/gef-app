@@ -1,4 +1,5 @@
 import type { GefData } from "@bedrock-engineer/gef-parser";
+import { usePostHog } from "@posthog/react";
 import type {
   GeoJSONSource,
   LngLatBoundsLike,
@@ -13,9 +14,16 @@ import {
   ScaleControl,
 } from "maplibre-gl";
 import "maplibre-gl/dist/maplibre-gl.css";
-import { useEffect, useEffectEvent, useMemo, useRef, useState } from "react";
+import {
+  use,
+  useEffect,
+  useEffectEvent,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import { RadioButton, RadioField, RadioGroup } from "react-aria-components";
-import { createPortal } from "react-dom";
+import { browser, createPortal } from "react-dom";
 import { useTranslation } from "react-i18next";
 import { PortalControl, SearchBox } from "./map-search.client";
 
@@ -232,9 +240,7 @@ export function GefMap({
   selectedFileName,
   onMarkerClick,
 }: GefMapProps) {
-  if (typeof window === "undefined") {
-    throw new Error("GefMap should only render on the client.");
-  }
+  use(browser());
 
   const { t } = useTranslation();
   const containerRef = useRef<HTMLDivElement>(null);
@@ -460,11 +466,17 @@ function BasemapPanel({
   onChange: (id: BasemapId) => void;
 }) {
   const { t } = useTranslation();
+  const posthog = usePostHog();
 
   return (
     <RadioGroup
       value={value}
-      onChange={onChange}
+      onChange={(basemapId) => {
+        posthog.capture("map_basemap_changed", {
+          basemap: basemapId,
+        });
+        onChange(basemapId);
+      }}
       aria-label={t("mapBasemapLabel")}
       className="rounded-sm border border-gray-300 bg-white/90 px-2 py-1.5 text-xs space-y-0.5"
     >
