@@ -504,7 +504,16 @@ function MarketingMessage() {
       <p className="text-gray-600 mb-4">{t("uploadGefFile")}</p>
 
       <div className="text-sm text-gray-500">
-        <p className="mb-2">{t("freeToolByBedrock")}</p>
+        <p className="mb-2">
+          {t("freeToolByBedrock")}{" "}
+          <a
+            href="https://bedrock.engineer"
+            className="text-blue-500 hover:underline font-medium"
+          >
+            Bedrock.engineer
+          </a>
+          .
+        </p>
         <p className="mb-2">{t("weBuild")}</p>
 
         <ul className="list-disc list-inside space-y-1 ">

@@ -219,7 +219,7 @@ export default {
     contactUs: "Neem contact op",
 
     // Empty state CTA
-    freeToolByBedrock: "Gratis tool van Bedrock.engineer.",
+    freeToolByBedrock: "Gratis tool van",
     weBuild: "Wij bouwen:",
     customWebApps: "Webapps op maat voor geotechnische workflows",
     pythonAutomation: "Geotechnische workflow automatisering met Python",

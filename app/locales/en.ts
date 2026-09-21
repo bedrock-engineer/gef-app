@@ -218,7 +218,7 @@ export default {
     contactUs: "Contact us",
 
     // Empty state CTA
-    freeToolByBedrock: "Free tool by Bedrock.engineer.",
+    freeToolByBedrock: "Free tool by",
     weBuild: "We build:",
 
     customWebApps: "Custom web apps for geotechnical workflows",
