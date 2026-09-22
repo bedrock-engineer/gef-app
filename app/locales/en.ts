@@ -260,7 +260,7 @@ export default {
     // Cookie consent banner
     cookieBannerLabel: "Cookie consent",
     cookieBannerText:
-      "May we use cookies for anonymous usage statistics? This helps improve the GEF Viewer. If you decline, nothing is stored on your device.",
+      "May we use cookies for anonymous usage statistics? This helps improve the GEF Viewer.",
     cookieBannerAccept: "Accept",
     cookieBannerDecline: "Decline",
 
