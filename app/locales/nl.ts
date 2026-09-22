@@ -259,7 +259,7 @@ export default {
     // Cookie consent banner
     cookieBannerLabel: "Cookietoestemming",
     cookieBannerText:
-      "Mogen we cookies gebruiken voor anonieme gebruiksstatistieken? Dit helpt de GEF Viewer te verbeteren. Als je weigert, wordt er niets op je apparaat opgeslagen.",
+      "Mogen we cookies gebruiken voor anonieme gebruiksstatistieken? Dit helpt de GEF Viewer te verbeteren.",
     cookieBannerAccept: "Accepteren",
     cookieBannerDecline: "Weigeren",
 
