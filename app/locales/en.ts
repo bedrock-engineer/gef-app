@@ -199,6 +199,10 @@ export default {
     mapBasemapTopo: "BRT (NL)",
     mapBasemapAerial: "Aerial photo (NL)",
     mapBasemapGrb: "GRB (Flanders)",
+    mapBasemapFailedFallback:
+      "{{failed}} could not load. Showing {{fallback}} instead.",
+    mapBasemapFailed: "{{failed}} could not load. Choose another basemap.",
+    mapBasemapNoticeDismiss: "Dismiss",
 
     // File table columns
     filename: "Filename",
