@@ -21,10 +21,10 @@ export default {
     or: "of",
 
     // Errors and warnings
-    failedToParse: "Kon {{count}} bestand niet parsen:",
-    failedToParse_plural: "Kon {{count}} bestanden niet parsen:",
-    warning: "{{count}} waarschuwing:",
-    warning_plural: "{{count}} waarschuwingen:",
+    failedToParse_one: "Kon {{count}} bestand niet parsen:",
+    failedToParse_other: "Kon {{count}} bestanden niet parsen:",
+    warning_one: "{{count}} waarschuwing:",
+    warning_other: "{{count}} waarschuwingen:",
 
     // Header validation warnings
     missingZidHeader:
@@ -37,8 +37,8 @@ export default {
       "Bestand '{{filename}}' mist XYID header (coördinaat informatie). Locatie is onbekend, kan niet op de kaart weergeven of converteren naar WGS84.",
     missingColumnInfoQuantity:
       "Bestand '{{filename}}' heeft {{count}} COLUMNINFO {{entry}} die het quantity nummer missen (4e element volgens GEF spec). Standaard ingesteld op quantity 0 (onbekend). Dit kan ervoor zorgen dat data kolommen verkeerd worden geïnterpreteerd of niet correct worden weergegeven.",
-    missingColumnInfoQuantity_entry: "item",
-    missingColumnInfoQuantity_entry_plural: "items",
+    missingColumnInfoQuantity_entry_one: "item",
+    missingColumnInfoQuantity_entry_other: "items",
     sieveTestNotSupported: "GEF-SIEVE bestanden worden niet ondersteund",
 
     // Location
@@ -233,8 +233,8 @@ export default {
 
     childGefFiles: "Child GEF bestanden",
     childGefFile: "Child GEF bestand",
-    childGefFilesCount: "{{count}} child bestand",
-    childGefFilesCount_plural: "{{count}} child bestanden",
+    childGefFilesCount_one: "{{count}} child bestand",
+    childGefFilesCount_other: "{{count}} child bestanden",
     dissTests: "Dissipatie testen:",
     reference: "Referentie",
     description: "Beschrijving",
@@ -268,6 +268,46 @@ export default {
       "Hoort dit bestand gewoon te werken? Help de GEF Viewer te verbeteren door",
     parseErrorReportIssue: "een GitHub-issue te openen",
     parseErrorReportEmail: "het bestand naar ons te mailen",
+
+    // Readable parse errors and grouped data block warnings
+    parseErrorInvalidValues:
+      "Het bestand bevat waarden die de viewer niet kan lezen.",
+    parseErrorInvalidValuesIn:
+      "Het bestand bevat waarden die de viewer niet kan lezen in: {{fields}}.",
+    parseErrorUnsupportedFileType:
+      "Dit type GEF-bestand wordt niet ondersteund.",
+    parseErrorUnknown: "De viewer kan dit bestand niet lezen.",
+    showTechnicalDetails: "Technische details",
+    showAffectedRecords: "Toon betreffende regels",
+    moreRecordWarnings_one: "…en nog {{count}}.",
+    moreRecordWarnings_other: "…en nog {{count}}.",
+    warningGroupInvalidNumber_one:
+      "{{count}} waarde is geen geldig getal (kolommen: {{columns}}).",
+    warningGroupInvalidNumber_other:
+      "{{count}} waarden zijn geen geldig getal (kolommen: {{columns}}).",
+    warningGroupMissingColumnTextHeader_one:
+      "{{count}} regel bevat tekst, maar het bestand heeft geen COLUMNTEXT-header.",
+    warningGroupMissingColumnTextHeader_other:
+      "{{count}} regels bevatten tekst, maar het bestand heeft geen COLUMNTEXT-header.",
+    warningGroupMissingColumns_one:
+      "{{count}} regel heeft minder kolommen dan de header aangeeft.",
+    warningGroupMissingColumns_other:
+      "{{count}} regels hebben minder kolommen dan de header aangeeft.",
+    warningGroupExtraColumns_one:
+      "{{count}} regel heeft meer kolommen dan de header aangeeft.",
+    warningGroupExtraColumns_other:
+      "{{count}} regels hebben meer kolommen dan de header aangeeft.",
+    warningGroupInvalidDepth_one:
+      "{{count}} laag heeft een ongeldige diepte. De viewer toont deze niet.",
+    warningGroupInvalidDepth_other:
+      "{{count}} lagen hebben een ongeldige diepte. De viewer toont deze niet.",
+    warningGroupInvertedDepth_one:
+      "{{count}} laag heeft een onderkant boven de bovenkant. De viewer toont deze niet.",
+    warningGroupInvertedDepth_other:
+      "{{count}} lagen hebben een onderkant boven de bovenkant. De viewer toont deze niet.",
+    unreadableDataBlockTitle: "De viewer kan de data in dit bestand niet lezen",
+    unreadableDataBlockBody:
+      "{{bad}} van {{total}} regels bevatten fouten, dus de grafieken kunnen leeg of onjuist zijn. Mogelijk gebruikt het datablok een ander kolomscheidingsteken of een andere kolomindeling dan de header aangeeft.",
 
     // Unsupported browser (WASM blocked by CSP on old engines)
     wasmUnsupportedTitle: "Je browser kan de GEF Viewer niet uitvoeren",
