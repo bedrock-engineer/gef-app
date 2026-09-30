@@ -199,6 +199,10 @@ export default {
     mapBasemapTopo: "BRT (NL)",
     mapBasemapAerial: "Luchtfoto (NL)",
     mapBasemapGrb: "GRB (Vlaanderen)",
+    mapBasemapFailedFallback:
+      "{{failed}} kon niet laden. Nu wordt {{fallback}} getoond.",
+    mapBasemapFailed: "{{failed}} kon niet laden. Kies een andere ondergrond.",
+    mapBasemapNoticeDismiss: "Sluiten",
 
     // File table columns
     filename: "Bestandsnaam",

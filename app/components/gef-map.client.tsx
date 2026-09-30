@@ -1,9 +1,12 @@
 import type { GefData } from "@bedrock-engineer/gef-parser";
 import { usePostHog } from "@posthog/react";
+import { XIcon } from "lucide-react";
 import type {
+  ErrorEvent,
   GeoJSONSource,
   LngLatBoundsLike,
   MapMouseEvent,
+  MapSourceDataEvent,
   StyleSpecification,
 } from "maplibre-gl";
 import {
@@ -109,6 +112,18 @@ const basemaps: ReadonlyArray<BasemapDefinition> = [
 type BasemapId = string;
 
 const defaultBasemapId: BasemapId = "osm";
+
+// Some networks block tile.openstreetmap.org; PDOK is the fallback.
+const fallbackBasemapId: BasemapId = "brt";
+
+// Failed tiles, with no loaded tile, before a basemap counts as blocked.
+const basemapFailureThreshold = 3;
+
+const basemapSourcePrefix = "basemap-";
+
+function basemapLabelKey(id: BasemapId) {
+  return basemaps.find((definition) => definition.id === id)?.labelKey;
+}
 
 /**
  * Style with the PDOK BRT achtergrondkaart and the Flemish GRB
@@ -257,6 +272,8 @@ export function GefMap({
   const knownFilenamesRef = useRef<Set<string>>(new Set());
   const [styleReady, setStyleReady] = useState(false);
   const [basemap, setBasemap] = useState<BasemapId>(defaultBasemapId);
+  const [failedBasemap, setFailedBasemap] = useState<BasemapId | null>(null);
+  const posthog = usePostHog();
   // Created once per component instance; the map effect attaches them.
   // React renders the search box and basemap panel into their elements
   // via `createPortal`.
@@ -264,6 +281,22 @@ export function GefMap({
   const [panelControl] = useState(() => new PortalControl());
 
   const markerClick = useEffectEvent(onMarkerClick);
+
+  const basemapFailed = useEffectEvent((failedId: BasemapId) => {
+    if (failedId !== basemap) {
+      return;
+    }
+    const fallbackId =
+      failedId === fallbackBasemapId ? null : fallbackBasemapId;
+    posthog.capture("basemap_tiles_failed", {
+      basemap: failedId,
+      fallback_basemap: fallbackId,
+    });
+    setFailedBasemap(failedId);
+    if (fallbackId) {
+      setBasemap(fallbackId);
+    }
+  });
 
   // Extract located GEF files, flattening the nested location sub-object
   // into the flat shape the map layers consume.
@@ -357,6 +390,58 @@ export function GefMap({
     }
   }, [styleReady, basemap]);
 
+  // Detect a basemap whose tiles never load (e.g. a blocked host, which
+  // gives status 0) and report it once per map instance. MapLibre only
+  // requests tiles for the visible basemap and fires no error for a 404.
+  useEffect(() => {
+    const map = mapRef.current;
+    if (!map) {
+      return;
+    }
+
+    const loadedSources = new Set<string>();
+    const reportedSources = new Set<string>();
+    const failureCounts = new Map<string, number>();
+
+    const handleSourcedata = (event: MapSourceDataEvent) => {
+      if (event.tile && event.sourceId.startsWith(basemapSourcePrefix)) {
+        loadedSources.add(event.sourceId);
+      }
+    };
+
+    const handleError = (event: ErrorEvent) => {
+      const { sourceId, tile } = event as ErrorEvent & {
+        sourceId?: string;
+        tile?: unknown;
+      };
+      if (!tile || !sourceId?.startsWith(basemapSourcePrefix)) {
+        // A listener replaces MapLibre's default logging of errors.
+        console.error(event.error);
+        return;
+      }
+      // An errored tile schedules no render, and MapLibre fires `load`
+      // only on a render, so without this the map never finishes loading.
+      map.triggerRepaint();
+      if (loadedSources.has(sourceId) || reportedSources.has(sourceId)) {
+        return;
+      }
+      const count = (failureCounts.get(sourceId) ?? 0) + 1;
+      failureCounts.set(sourceId, count);
+      if (count >= basemapFailureThreshold) {
+        reportedSources.add(sourceId);
+        basemapFailed(sourceId.slice(basemapSourcePrefix.length));
+      }
+    };
+
+    map.on("sourcedata", handleSourcedata);
+    map.on("error", handleError);
+
+    return () => {
+      map.off("sourcedata", handleSourcedata);
+      map.off("error", handleError);
+    };
+  }, [hasLocations]);
+
   // Hover popup, pointer cursor, and click-to-select. The click handler
   // is an effect event so the listeners never need re-binding.
   useEffect(() => {
@@ -448,15 +533,51 @@ export function GefMap({
     );
   }
 
+  const failedLabelKey = failedBasemap ? basemapLabelKey(failedBasemap) : null;
+  const shownLabelKey = basemapLabelKey(basemap);
+
   return (
     <>
-      <div
-        ref={containerRef}
-        className="w-full h-96 rounded-sm border border-gray-300"
-      />
+      <div className="relative">
+        <div
+          ref={containerRef}
+          className="w-full h-96 rounded-sm border border-gray-300"
+        />
+        {failedLabelKey && shownLabelKey && (
+          <div
+            role="status"
+            className="absolute bottom-8 left-1/2 z-10 flex w-max max-w-[90%] -translate-x-1/2 items-center gap-2 rounded-sm border border-gray-300 bg-white/95 px-2 py-1 text-xs text-gray-700 shadow-sm"
+          >
+            <span>
+              {failedBasemap === basemap
+                ? t("mapBasemapFailed", { failed: t(failedLabelKey) })
+                : t("mapBasemapFailedFallback", {
+                    failed: t(failedLabelKey),
+                    fallback: t(shownLabelKey),
+                  })}
+            </span>
+            <button
+              type="button"
+              onClick={() => {
+                setFailedBasemap(null);
+              }}
+              aria-label={t("mapBasemapNoticeDismiss")}
+              className="shrink-0 cursor-pointer text-gray-500 hover:text-gray-700"
+            >
+              <XIcon className="h-3.5 w-3.5" />
+            </button>
+          </div>
+        )}
+      </div>
       {createPortal(<SearchBox mapRef={mapRef} />, searchControl.element)}
       {createPortal(
-        <BasemapPanel value={basemap} onChange={setBasemap} />,
+        <BasemapPanel
+          value={basemap}
+          onChange={(basemapId) => {
+            setFailedBasemap(null);
+            setBasemap(basemapId);
+          }}
+        />,
         panelControl.element,
       )}
     </>
