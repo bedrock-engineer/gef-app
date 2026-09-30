@@ -34,7 +34,12 @@ import {
   useRef,
   useState,
 } from "react";
-import { RadioButton, RadioField, RadioGroup } from "react-aria-components";
+import {
+  Button,
+  RadioButton,
+  RadioField,
+  RadioGroup,
+} from "react-aria-components";
 import { browser, createPortal } from "react-dom";
 import { useTranslation } from "react-i18next";
 import { PortalControl, SearchBox } from "./map-search.client";
@@ -121,6 +126,10 @@ const basemapFailureThreshold = 3;
 
 const basemapSourcePrefix = "basemap-";
 
+function basemapSourceId(id: BasemapId) {
+  return `${basemapSourcePrefix}${id}`;
+}
+
 function basemapLabelKey(id: BasemapId) {
   return basemaps.find((definition) => definition.id === id)?.labelKey;
 }
@@ -134,7 +143,7 @@ function basemapLabelKey(id: BasemapId) {
 function createMapStyle(): StyleSpecification {
   const basemapSources = Object.fromEntries(
     basemaps.map((definition) => [
-      `basemap-${definition.id}`,
+      basemapSourceId(definition.id),
       {
         type: "raster" as const,
         tiles: [definition.tiles],
@@ -147,9 +156,9 @@ function createMapStyle(): StyleSpecification {
 
   const basemapLayers: StyleSpecification["layers"] = basemaps.map(
     (definition) => ({
-      id: `basemap-${definition.id}`,
+      id: basemapSourceId(definition.id),
       type: "raster",
-      source: `basemap-${definition.id}`,
+      source: basemapSourceId(definition.id),
       layout: {
         visibility: definition.id === defaultBasemapId ? "visible" : "none",
       },
@@ -353,7 +362,9 @@ export function GefMap({
       maxZoom: 18,
     });
 
-    void map.once("load", () => {
+    // Not "load": that waits for every visible tile, and never fires
+    // when all basemap tiles fail.
+    void map.once("style.load", () => {
       setStyleReady(true);
     });
 
@@ -383,7 +394,7 @@ export function GefMap({
     }
     for (const definition of basemaps) {
       map.setLayoutProperty(
-        `basemap-${definition.id}`,
+        basemapSourceId(definition.id),
         "visibility",
         definition.id === basemap ? "visible" : "none",
       );
@@ -400,7 +411,6 @@ export function GefMap({
     }
 
     const loadedSources = new Set<string>();
-    const reportedSources = new Set<string>();
     const failureCounts = new Map<string, number>();
 
     const handleSourcedata = (event: MapSourceDataEvent) => {
@@ -419,16 +429,12 @@ export function GefMap({
         console.error(event.error);
         return;
       }
-      // An errored tile schedules no render, and MapLibre fires `load`
-      // only on a render, so without this the map never finishes loading.
-      map.triggerRepaint();
-      if (loadedSources.has(sourceId) || reportedSources.has(sourceId)) {
+      if (loadedSources.has(sourceId)) {
         return;
       }
       const count = (failureCounts.get(sourceId) ?? 0) + 1;
       failureCounts.set(sourceId, count);
-      if (count >= basemapFailureThreshold) {
-        reportedSources.add(sourceId);
+      if (count === basemapFailureThreshold) {
         basemapFailed(sourceId.slice(basemapSourcePrefix.length));
       }
     };
@@ -534,7 +540,7 @@ export function GefMap({
   }
 
   const failedLabelKey = failedBasemap ? basemapLabelKey(failedBasemap) : null;
-  const shownLabelKey = basemapLabelKey(basemap);
+  const fallbackLabelKey = basemapLabelKey(fallbackBasemapId);
 
   return (
     <>
@@ -543,29 +549,28 @@ export function GefMap({
           ref={containerRef}
           className="w-full h-96 rounded-sm border border-gray-300"
         />
-        {failedLabelKey && shownLabelKey && (
+        {failedLabelKey && fallbackLabelKey && (
           <div
             role="status"
             className="absolute bottom-8 left-1/2 z-10 flex w-max max-w-[90%] -translate-x-1/2 items-center gap-2 rounded-sm border border-gray-300 bg-white/95 px-2 py-1 text-xs text-gray-700 shadow-sm"
           >
             <span>
-              {failedBasemap === basemap
+              {failedBasemap === fallbackBasemapId
                 ? t("mapBasemapFailed", { failed: t(failedLabelKey) })
                 : t("mapBasemapFailedFallback", {
                     failed: t(failedLabelKey),
-                    fallback: t(shownLabelKey),
+                    fallback: t(fallbackLabelKey),
                   })}
             </span>
-            <button
-              type="button"
-              onClick={() => {
+            <Button
+              onPress={() => {
                 setFailedBasemap(null);
               }}
               aria-label={t("mapBasemapNoticeDismiss")}
               className="shrink-0 cursor-pointer text-gray-500 hover:text-gray-700"
             >
               <XIcon className="h-3.5 w-3.5" />
-            </button>
+            </Button>
           </div>
         )}
       </div>
