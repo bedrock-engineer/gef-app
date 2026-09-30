@@ -268,5 +268,10 @@ export default {
       "Hoort dit bestand gewoon te werken? Help de GEF Viewer te verbeteren door",
     parseErrorReportIssue: "een GitHub-issue te openen",
     parseErrorReportEmail: "het bestand naar ons te mailen",
+
+    // Unsupported browser (WASM blocked by CSP on old engines)
+    wasmUnsupportedTitle: "Je browser kan de GEF Viewer niet uitvoeren",
+    wasmUnsupportedBody:
+      "Het inlezen van GEF-bestanden vereist WebAssembly, wat deze browser niet ondersteunt. Werk je browser bij, of open de pagina in de nieuwste Safari, Chrome, Firefox of Edge.",
   },
 } as const;

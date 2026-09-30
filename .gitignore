@@ -24,3 +24,4 @@ worker-configuration.d.ts
 !.dev.vars.example
 !.env.example
 .playwright-mcp
+.env

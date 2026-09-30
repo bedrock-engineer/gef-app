@@ -100,12 +100,41 @@ function translateError(error: string, t: TFunction): string {
   return error;
 }
 
+/**
+ * Detects the failure mode where the browser cannot compile the gef-parser
+ * WASM module. This happens on engines that don't honour the CSP
+ * 'wasm-unsafe-eval' token (Safari < 16.4, iOS ≤ 15, older in-app WebViews):
+ * they require the broad 'unsafe-eval' instead, which we deliberately don't
+ * grant, so WASM compilation is blocked and every parse fails. Rather than
+ * show a cryptic per-file error we surface a single "unsupported browser"
+ * notice. See app/util/csp.ts and the CSP script-src directive.
+ */
+function isWasmUnsupportedError(reason: unknown): boolean {
+  if (typeof WebAssembly === "undefined") {
+    return true;
+  }
+  const message =
+    reason instanceof Error
+      ? `${reason.name}: ${reason.message}`
+      : String(reason);
+  const haystack = message.toLowerCase();
+  return [
+    "webassembly",
+    "wasm",
+    "unsafe-eval",
+    "code generation", // Chrome: "Wasm code generation disallowed by embedder"
+    "content security policy",
+    "compileerror",
+  ].some((needle) => haystack.includes(needle));
+}
+
 export function App() {
   const { t } = useTranslation();
   const posthog = usePostHog();
   const [isPending, startTransition] = useTransition();
   const [gefData, setGefData] = useState<Record<string, GefData>>({});
   const [selectedFileName, setSelectedFileName] = useState("");
+  const [wasmUnsupported, setWasmUnsupported] = useState(false);
   const [failedFiles, setFailedFiles] = useState<
     Array<{ name: string; error: string }>
   >([]);
@@ -141,6 +170,7 @@ export function App() {
 
       const parsedGefFiles: Array<[string, GefData]> = [];
       const failed: Array<{ name: string; error: string }> = [];
+      let wasmBlocked = false;
 
       for (let i = 0; i < results.length; i++) {
         const result = results[i];
@@ -155,6 +185,10 @@ export function App() {
 
         if (result.status === "fulfilled") {
           parsedGefFiles.push([file.name, result.value]);
+        } else if (isWasmUnsupportedError(result.reason)) {
+          // Every file will fail the same way on an unsupported engine, so
+          // flag it once instead of listing a cryptic error per file.
+          wasmBlocked = true;
         } else {
           failed.push({
             name: file.name,
@@ -174,6 +208,7 @@ export function App() {
         file_count: files.length,
         successful_file_count: parsedGefFiles.length,
         failed_file_count: failed.length,
+        wasm_unsupported: wasmBlocked,
         file_types: [...new Set(parsedFiles.map((file) => file.fileType))],
         warning_count: parsedFiles.reduce(
           (total, file) => total + file.warnings.length,
@@ -184,6 +219,9 @@ export function App() {
       startTransition(() => {
         setGefData((prev) => ({ ...prev, ...gef }));
         setFailedFiles((prev) => [...prev, ...failed]);
+        if (wasmBlocked) {
+          setWasmUnsupported(true);
+        }
 
         // Select the first successfully parsed file
         const firstParsed = parsedGefFiles[0];
@@ -262,6 +300,16 @@ export function App() {
               </Button>
             </div>
           </div>
+
+          {wasmUnsupported && (
+            <div
+              role="alert"
+              className="mb-4 p-4 bg-amber-50 border border-amber-200 rounded-sm text-amber-900"
+            >
+              <p className="font-semibold">{t("wasmUnsupportedTitle")}</p>
+              <p className="text-sm mt-1">{t("wasmUnsupportedBody")}</p>
+            </div>
+          )}
 
           {failedFiles.length > 0 && (
             <Disclosure className="mb-4 p-4 bg-red-50 border border-red-200 rounded-sm group">
