@@ -1,12 +1,6 @@
-import {
-  parseGefFile,
-  type GefData,
-  type GefWarning,
-} from "@bedrock-engineer/gef-parser";
+import { parseGefFile, type GefData } from "@bedrock-engineer/gef-parser";
 import { usePostHog } from "@posthog/react";
-import type { TFunction } from "i18next";
 import {
-  ChevronDownIcon,
   GithubIcon,
   LinkedinIcon,
   MailIcon,
@@ -14,13 +8,7 @@ import {
   UploadIcon,
 } from "lucide-react";
 import { lazy, Suspense, useState, useTransition } from "react";
-import {
-  Button,
-  Disclosure,
-  DisclosurePanel,
-  FileTrigger,
-  Heading,
-} from "react-aria-components";
+import { Button, FileTrigger } from "react-aria-components";
 import { useTranslation } from "react-i18next";
 import { useFetcher } from "react-router";
 import { CompactBoreHeader, DetailedBoreHeaders } from "./bore-header-items";
@@ -33,6 +21,12 @@ import { DissPlots } from "./diss-plots";
 import { DownloadGeoJSONButton } from "./download-geojson-button";
 import { FileTable } from "./file-table";
 import { InstallInstructions } from "./install-instructions";
+import {
+  describeParseFailure,
+  FailedFilesPanel,
+  WarningsPanel,
+  type ParseFailure,
+} from "./parse-feedback";
 import { PreExcavationPlot } from "./preexcavation-plot";
 import { SpecimenTable } from "./specimen-table";
 
@@ -41,64 +35,6 @@ import { SpecimenTable } from "./specimen-table";
 const GefMap = lazy(() =>
   import("./gef-map.client").then((module) => ({ default: module.GefMap })),
 );
-
-function translateWarning(warning: GefWarning, t: TFunction): string {
-  switch (warning.type) {
-    case "missingHeader":
-      return warning.header === "ZID"
-        ? t("missingZidHeader", { filename: warning.filename })
-        : t("missingXyidHeader", { filename: warning.filename });
-    case "unknownHeightSystem":
-      return t("unknownHeightSystem", {
-        filename: warning.filename,
-        heightCode: warning.heightCode,
-      });
-    case "zidWithoutHeight":
-      return t("zidWithoutHeight", { filename: warning.filename });
-    case "missingColumnInfoQuantity": {
-      const entry = t(
-        warning.count === 1
-          ? "missingColumnInfoQuantity_entry"
-          : "missingColumnInfoQuantity_entry_plural",
-      );
-
-      return t("missingColumnInfoQuantity", {
-        filename: warning.filename,
-        count: warning.count,
-        entry,
-      });
-    }
-    case "invalidNumber":
-      return `Invalid number for column "${warning.column}" (value "${warning.rawValue}") at record ${String(warning.record)}, line ${String(warning.line)}.`;
-    case "missingColumnTextHeader":
-      return `Missing column text header for value "${warning.textValue}" at record ${String(warning.record)}, line ${String(warning.line)}.`;
-    case "missingColumns":
-      return `Missing columns at record ${String(warning.record)}, line ${String(warning.line)}: found ${String(warning.found)}, expected ${String(warning.expected)}.`;
-    case "extraColumns":
-      return `Extra columns at record ${String(warning.record)}, line ${String(warning.line)}: found ${String(warning.found)}, expected ${String(warning.expected)}.`;
-    case "invalidDepth":
-      return `Invalid depth at record ${String(warning.record)}, line ${String(warning.line)}: top ${String(warning.depthTop)}, bottom ${String(warning.depthBottom)}.`;
-    case "invertedDepth":
-      return `Inverted depth at record ${String(warning.record)}, line ${String(warning.line)}: top ${String(warning.depthTop)}, bottom ${String(warning.depthBottom)}.`;
-    case "duplicateQuantity":
-      return `Duplicate quantity ${String(warning.quantityNumber)} ("${warning.quantityName}") in file '${warning.filename}'.`;
-    case "missingRequiredColumn":
-      return `Missing required column for quantity ${String(warning.quantityNumber)} ("${warning.quantityName}") in file '${warning.filename}'.`;
-    case "columnMinMaxExceeded":
-      return `Column "${warning.columnName}" in file '${warning.filename}' exceeds declared range [${String(warning.declaredMin)}, ${String(warning.declaredMax)}] with actual [${String(warning.actualMin)}, ${String(warning.actualMax)}].`;
-    default: {
-      warning satisfies never;
-      return "";
-    }
-  }
-}
-
-function translateError(error: string, t: TFunction): string {
-  if (error === "sieveTestNotSupported") {
-    return t("sieveTestNotSupported");
-  }
-  return error;
-}
 
 /**
  * Detects the failure mode where the browser cannot compile the gef-parser
@@ -135,9 +71,7 @@ export function App() {
   const [gefData, setGefData] = useState<Record<string, GefData>>({});
   const [selectedFileName, setSelectedFileName] = useState("");
   const [wasmUnsupported, setWasmUnsupported] = useState(false);
-  const [failedFiles, setFailedFiles] = useState<
-    Array<{ name: string; error: string }>
-  >([]);
+  const [failedFiles, setFailedFiles] = useState<Array<ParseFailure>>([]);
 
   async function loadSampleFiles() {
     const sampleFiles = [
@@ -169,7 +103,7 @@ export function App() {
       );
 
       const parsedGefFiles: Array<[string, GefData]> = [];
-      const failed: Array<{ name: string; error: string }> = [];
+      const failed: Array<ParseFailure> = [];
       let wasmBlocked = false;
 
       for (let i = 0; i < results.length; i++) {
@@ -190,13 +124,7 @@ export function App() {
           // flag it once instead of listing a cryptic error per file.
           wasmBlocked = true;
         } else {
-          failed.push({
-            name: file.name,
-            error:
-              result.reason instanceof Error
-                ? result.reason.message
-                : String(result.reason),
-          });
+          failed.push(describeParseFailure(file.name, result.reason));
         }
       }
 
@@ -208,6 +136,7 @@ export function App() {
         file_count: files.length,
         successful_file_count: parsedGefFiles.length,
         failed_file_count: failed.length,
+        failure_reasons: [...new Set(failed.map((failure) => failure.reason))],
         wasm_unsupported: wasmBlocked,
         file_types: [...new Set(parsedFiles.map((file) => file.fileType))],
         warning_count: parsedFiles.reduce(
@@ -312,50 +241,7 @@ export function App() {
           )}
 
           {failedFiles.length > 0 && (
-            <Disclosure className="mb-4 p-4 bg-red-50 border border-red-200 rounded-sm group">
-              <Heading level={2}>
-                <Button
-                  slot="trigger"
-                  className="flex items-center gap-1 text-red-800 font-semibold w-full"
-                >
-                  <ChevronDownIcon
-                    size={16}
-                    className="transition-transform group-data-[expanded]:rotate-180"
-                  />
-                  {t("failedToParse", { count: failedFiles.length })}
-                </Button>
-              </Heading>
-
-              <DisclosurePanel>
-                <ul className="space-y-1 mt-2">
-                  {failedFiles.map(({ name, error }) => (
-                    <li key={name} className="text-sm text-red-700">
-                      <span className="font-medium">{name}</span>:{" "}
-                      {translateError(error, t)}
-                    </li>
-                  ))}
-                </ul>
-                <p className="text-sm text-red-700 mt-3">
-                  {t("parseErrorReportPrompt")}{" "}
-                  <a
-                    href="https://github.com/bedrock-engineer/gef-app/issues"
-                    target="_blank"
-                    rel="noreferrer"
-                    className="underline font-medium hover:text-red-900"
-                  >
-                    {t("parseErrorReportIssue")}
-                  </a>{" "}
-                  {t("or")}{" "}
-                  <a
-                    href="mailto:jules.blom@bedrock.engineer?subject=GEF%20Viewer%3A%20file%20fails%20to%20parse"
-                    className="underline font-medium hover:text-red-900"
-                  >
-                    {t("parseErrorReportEmail")}
-                  </a>
-                  .
-                </p>
-              </DisclosurePanel>
-            </Disclosure>
+            <FailedFilesPanel failedFiles={failedFiles} />
           )}
 
           <FileTable
@@ -443,30 +329,7 @@ export function App() {
         {selectedFile ? (
           <div className="space-y-6 max-w-full">
             {selectedFile.warnings.length > 0 && (
-              <Disclosure className="p-4 bg-amber-50 border border-amber-200 rounded-sm group">
-                <Heading level={2}>
-                  <Button
-                    slot="trigger"
-                    className="flex items-center gap-1 text-amber-800 font-semibold w-full"
-                  >
-                    <ChevronDownIcon
-                      size={16}
-                      className="transition-transform group-data-[expanded]:rotate-180"
-                    />
-                    {t("warning", { count: selectedFile.warnings.length })}
-                  </Button>
-                </Heading>
-
-                <DisclosurePanel>
-                  <ul className="space-y-1 mt-2">
-                    {selectedFile.warnings.map((warning, i) => (
-                      <li key={i} className="text-sm text-amber-700">
-                        {translateWarning(warning, t)}
-                      </li>
-                    ))}
-                  </ul>
-                </DisclosurePanel>
-              </Disclosure>
+              <WarningsPanel file={selectedFile} />
             )}
 
             {selectedFile.fileType === "DISS" && (
