@@ -1,10 +1,5 @@
-import {
-  parseGefFile,
-  type GefData,
-  type GefWarning,
-} from "@bedrock-engineer/gef-parser";
+import { parseGefFile, type GefData } from "@bedrock-engineer/gef-parser";
 import { usePostHog } from "@posthog/react";
-import type { TFunction } from "i18next";
 import {
   GithubIcon,
   LinkedinIcon,
@@ -40,55 +35,6 @@ import { SpecimenTable } from "./specimen-table";
 const GefMap = lazy(() =>
   import("./gef-map.client").then((module) => ({ default: module.GefMap })),
 );
-
-function translateWarning(warning: GefWarning, t: TFunction): string {
-  switch (warning.type) {
-    case "missingHeader":
-      return warning.header === "ZID"
-        ? t("missingZidHeader", { filename: warning.filename })
-        : t("missingXyidHeader", { filename: warning.filename });
-    case "unknownHeightSystem":
-      return t("unknownHeightSystem", {
-        filename: warning.filename,
-        heightCode: warning.heightCode,
-      });
-    case "zidWithoutHeight":
-      return t("zidWithoutHeight", { filename: warning.filename });
-    case "missingColumnInfoQuantity": {
-      const entry = t("missingColumnInfoQuantity_entry", {
-        count: warning.count,
-      });
-
-      return t("missingColumnInfoQuantity", {
-        filename: warning.filename,
-        count: warning.count,
-        entry,
-      });
-    }
-    case "invalidNumber":
-      return `Invalid number for column "${warning.column}" (value "${warning.rawValue}") at record ${String(warning.record)}, line ${String(warning.line)}.`;
-    case "missingColumnTextHeader":
-      return `Missing column text header for value "${warning.textValue}" at record ${String(warning.record)}, line ${String(warning.line)}.`;
-    case "missingColumns":
-      return `Missing columns at record ${String(warning.record)}, line ${String(warning.line)}: found ${String(warning.found)}, expected ${String(warning.expected)}.`;
-    case "extraColumns":
-      return `Extra columns at record ${String(warning.record)}, line ${String(warning.line)}: found ${String(warning.found)}, expected ${String(warning.expected)}.`;
-    case "invalidDepth":
-      return `Invalid depth at record ${String(warning.record)}, line ${String(warning.line)}: top ${String(warning.depthTop)}, bottom ${String(warning.depthBottom)}.`;
-    case "invertedDepth":
-      return `Inverted depth at record ${String(warning.record)}, line ${String(warning.line)}: top ${String(warning.depthTop)}, bottom ${String(warning.depthBottom)}.`;
-    case "duplicateQuantity":
-      return `Duplicate quantity ${String(warning.quantityNumber)} ("${warning.quantityName}") in file '${warning.filename}'.`;
-    case "missingRequiredColumn":
-      return `Missing required column for quantity ${String(warning.quantityNumber)} ("${warning.quantityName}") in file '${warning.filename}'.`;
-    case "columnMinMaxExceeded":
-      return `Column "${warning.columnName}" in file '${warning.filename}' exceeds declared range [${String(warning.declaredMin)}, ${String(warning.declaredMax)}] with actual [${String(warning.actualMin)}, ${String(warning.actualMax)}].`;
-    default: {
-      warning satisfies never;
-      return "";
-    }
-  }
-}
 
 /**
  * Detects the failure mode where the browser cannot compile the gef-parser
@@ -383,10 +329,7 @@ export function App() {
         {selectedFile ? (
           <div className="space-y-6 max-w-full">
             {selectedFile.warnings.length > 0 && (
-              <WarningsPanel
-                file={selectedFile}
-                translateWarning={translateWarning}
-              />
+              <WarningsPanel file={selectedFile} />
             )}
 
             {selectedFile.fileType === "DISS" && (

@@ -29,18 +29,8 @@ const UNREADABLE_RECORD_RATIO = 0.5;
 type RecordWarning = Extract<GefWarning, { record: number }>;
 type RecordWarningType = RecordWarning["type"];
 
-const RECORD_WARNING_TYPES: ReadonlySet<GefWarning["type"]> =
-  new Set<RecordWarningType>([
-    "invalidNumber",
-    "missingColumnTextHeader",
-    "missingColumns",
-    "extraColumns",
-    "invalidDepth",
-    "invertedDepth",
-  ]);
-
 function isRecordWarning(warning: GefWarning): warning is RecordWarning {
-  return RECORD_WARNING_TYPES.has(warning.type);
+  return "record" in warning;
 }
 
 interface ValidationIssue {
@@ -62,21 +52,12 @@ function isValidationIssueList(
   );
 }
 
-// A raw zod error (thrown from inside a nested schema) has a JSON dump of
-// its issues as message.
+// Nested gef-parser schemas throw a raw zod error with an issues list.
 function getValidationIssues(
   reason: unknown,
 ): Array<ValidationIssue> | undefined {
   if (typeof reason === "object" && reason !== null && "issues" in reason) {
     return isValidationIssueList(reason.issues) ? reason.issues : undefined;
-  }
-  if (reason instanceof Error) {
-    try {
-      const parsed: unknown = JSON.parse(reason.message);
-      return isValidationIssueList(parsed) ? parsed : undefined;
-    } catch {
-      return undefined;
-    }
   }
   return undefined;
 }
@@ -267,6 +248,55 @@ export function FailedFilesPanel({
   );
 }
 
+function translateWarning(warning: GefWarning, t: TFunction): string {
+  switch (warning.type) {
+    case "missingHeader":
+      return warning.header === "ZID"
+        ? t("missingZidHeader", { filename: warning.filename })
+        : t("missingXyidHeader", { filename: warning.filename });
+    case "unknownHeightSystem":
+      return t("unknownHeightSystem", {
+        filename: warning.filename,
+        heightCode: warning.heightCode,
+      });
+    case "zidWithoutHeight":
+      return t("zidWithoutHeight", { filename: warning.filename });
+    case "missingColumnInfoQuantity": {
+      const entry = t("missingColumnInfoQuantity_entry", {
+        count: warning.count,
+      });
+
+      return t("missingColumnInfoQuantity", {
+        filename: warning.filename,
+        count: warning.count,
+        entry,
+      });
+    }
+    case "invalidNumber":
+      return `Invalid number for column "${warning.column}" (value "${warning.rawValue}") at record ${String(warning.record)}, line ${String(warning.line)}.`;
+    case "missingColumnTextHeader":
+      return `Missing column text header for value "${warning.textValue}" at record ${String(warning.record)}, line ${String(warning.line)}.`;
+    case "missingColumns":
+      return `Missing columns at record ${String(warning.record)}, line ${String(warning.line)}: found ${String(warning.found)}, expected ${String(warning.expected)}.`;
+    case "extraColumns":
+      return `Extra columns at record ${String(warning.record)}, line ${String(warning.line)}: found ${String(warning.found)}, expected ${String(warning.expected)}.`;
+    case "invalidDepth":
+      return `Invalid depth at record ${String(warning.record)}, line ${String(warning.line)}: top ${String(warning.depthTop)}, bottom ${String(warning.depthBottom)}.`;
+    case "invertedDepth":
+      return `Inverted depth at record ${String(warning.record)}, line ${String(warning.line)}: top ${String(warning.depthTop)}, bottom ${String(warning.depthBottom)}.`;
+    case "duplicateQuantity":
+      return `Duplicate quantity ${String(warning.quantityNumber)} ("${warning.quantityName}") in file '${warning.filename}'.`;
+    case "missingRequiredColumn":
+      return `Missing required column for quantity ${String(warning.quantityNumber)} ("${warning.quantityName}") in file '${warning.filename}'.`;
+    case "columnMinMaxExceeded":
+      return `Column "${warning.columnName}" in file '${warning.filename}' exceeds declared range [${String(warning.declaredMin)}, ${String(warning.declaredMax)}] with actual [${String(warning.actualMin)}, ${String(warning.actualMax)}].`;
+    default: {
+      warning satisfies never;
+      return "";
+    }
+  }
+}
+
 function translateRecordWarningGroup(
   warningType: RecordWarningType,
   warnings: Array<RecordWarning>,
@@ -319,42 +349,34 @@ function countRecords(file: GefData, badDepthRecords: number): number {
   }
 }
 
-export function WarningsPanel({
-  file,
-  translateWarning,
-}: {
-  file: GefData;
-  translateWarning: (warning: GefWarning, t: TFunction) => string;
-}) {
+export function WarningsPanel({ file }: { file: GefData }) {
   const { t } = useTranslation();
 
-  const fileWarnings = file.warnings.filter(
-    (warning) => !isRecordWarning(warning),
-  );
+  const fileWarnings: Array<GefWarning> = [];
   const recordWarningGroups = new Map<
     RecordWarningType,
     Array<RecordWarning>
   >();
+  const badRecords = new Set<number>();
+  const badDepthRecords = new Set<number>();
   for (const warning of file.warnings) {
-    if (isRecordWarning(warning)) {
-      const group = recordWarningGroups.get(warning.type) ?? [];
-      group.push(warning);
-      recordWarningGroups.set(warning.type, group);
+    if (!isRecordWarning(warning)) {
+      fileWarnings.push(warning);
+      continue;
+    }
+    const group = recordWarningGroups.get(warning.type) ?? [];
+    group.push(warning);
+    recordWarningGroups.set(warning.type, group);
+    badRecords.add(warning.record);
+    if (warning.type === "invalidDepth" || warning.type === "invertedDepth") {
+      badDepthRecords.add(warning.record);
     }
   }
 
-  const badRecords = new Set(
-    [...recordWarningGroups.values()].flat().map((warning) => warning.record),
-  ).size;
-  const badDepthRecords = new Set(
-    [
-      ...(recordWarningGroups.get("invalidDepth") ?? []),
-      ...(recordWarningGroups.get("invertedDepth") ?? []),
-    ].map((warning) => warning.record),
-  ).size;
-  const totalRecords = countRecords(file, badDepthRecords);
+  const totalRecords = countRecords(file, badDepthRecords.size);
   const isUnreadable =
-    totalRecords > 0 && badRecords / totalRecords > UNREADABLE_RECORD_RATIO;
+    totalRecords > 0 &&
+    badRecords.size / totalRecords > UNREADABLE_RECORD_RATIO;
 
   return (
     <>
@@ -366,7 +388,7 @@ export function WarningsPanel({
           <p className="font-semibold">{t("unreadableDataBlockTitle")}</p>
           <p className="text-sm mt-1">
             {t("unreadableDataBlockBody", {
-              bad: badRecords,
+              bad: badRecords.size,
               total: totalRecords,
             })}
           </p>
