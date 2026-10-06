@@ -9,7 +9,13 @@ import LanguageDetector from "i18next-browser-languagedetector";
 import { HydratedRouter } from "react-router/dom";
 import { registerSW } from "virtual:pwa-register";
 import resources from "~/locales";
+import { z } from "zod";
 import { getCookieConsent } from "~/components/cookie-banner";
+
+// Zod (used by gef-parser) probes eval support with `new Function("")`, which
+// our CSP blocks (script-src has no 'unsafe-eval') — harmless, but every page
+// load reported a violation to Sentry. Jitless mode skips the probe.
+z.config({ jitless: true });
 
 Sentry.init({
   dsn: import.meta.env.VITE_SENTRY_DSN,
