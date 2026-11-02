@@ -1,3 +1,5 @@
+// Side-effect import: configures Zod before any schema module evaluates.
+import "~/util/zod-config";
 import * as Sentry from "@sentry/react-router/cloudflare";
 import { useEffect, useRef, useState } from "react";
 import { I18nProvider } from "react-aria-components";

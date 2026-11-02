@@ -25,6 +25,13 @@ export default defineConfig({
               name: "react-aria",
               test: /node_modules\/(react-aria|react-stately|@react-aria|@react-stately|@internationalized)/,
             },
+            // Zod and the app's Zod configuration share a chunk so the
+            // config runs as soon as Zod loads, before gef-parser's schemas
+            // are constructed (see app/util/zod-config.ts).
+            {
+              name: "zod",
+              test: /node_modules\/zod\/|app\/util\/zod-config\.ts$/,
+            },
             {
               name: "gef-parser",
               test: /node_modules\/@bedrock-engineer\/gef-parser\//,

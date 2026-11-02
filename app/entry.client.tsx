@@ -2,20 +2,27 @@ import * as Sentry from "@sentry/react-router/cloudflare";
 import { PostHogProvider } from "@posthog/react";
 import i18next from "i18next";
 import posthog from "posthog-js";
-import { startTransition, StrictMode } from "react";
+import { type ComponentProps, startTransition, StrictMode } from "react";
 import { hydrateRoot } from "react-dom/client";
 import { I18nextProvider, initReactI18next } from "react-i18next";
 import LanguageDetector from "i18next-browser-languagedetector";
 import { HydratedRouter } from "react-router/dom";
+import { isRouteErrorResponse } from "react-router";
 import { registerSW } from "virtual:pwa-register";
 import resources from "~/locales";
-import { z } from "zod";
 import { getCookieConsent } from "~/components/cookie-banner";
 
-// Zod (used by gef-parser) probes eval support with `new Function("")`, which
-// our CSP blocks (script-src has no 'unsafe-eval') — harmless, but every page
-// load reported a violation to Sentry. Jitless mode skips the probe.
-z.config({ jitless: true });
+// Route error responses (404s from crawlers requesting paths like /undefined)
+// are expected traffic, not bugs; entry.server skips them too.
+const onError: NonNullable<ComponentProps<typeof HydratedRouter>["onError"]> = (
+  error,
+  info,
+) => {
+  if (isRouteErrorResponse(error)) {
+    return;
+  }
+  Sentry.sentryOnError(error, info);
+};
 
 Sentry.init({
   dsn: import.meta.env.VITE_SENTRY_DSN,
@@ -82,7 +89,7 @@ async function main() {
       <PostHogProvider client={posthog}>
         <I18nextProvider i18n={i18next}>
           <StrictMode>
-            <HydratedRouter onError={Sentry.sentryOnError} />
+            <HydratedRouter onError={onError} />
           </StrictMode>
         </I18nextProvider>
       </PostHogProvider>,
