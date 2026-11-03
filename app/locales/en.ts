@@ -20,10 +20,10 @@ export default {
     or: "or",
 
     // Errors and warnings
-    failedToParse: "Failed to parse {{count}} file:",
-    failedToParse_plural: "Failed to parse {{count}} files:",
-    warning: "{{count}} warning:",
-    warning_plural: "{{count}} warnings:",
+    failedToParse_one: "Failed to parse {{count}} file:",
+    failedToParse_other: "Failed to parse {{count}} files:",
+    warning_one: "{{count}} warning:",
+    warning_other: "{{count}} warnings:",
 
     // Header validation warnings
     missingZidHeader:
@@ -36,8 +36,8 @@ export default {
       "File '{{filename}}' missing XYID header (coordinate information). Location is unknown, cannot display on map or convert to WGS84.",
     missingColumnInfoQuantity:
       "File '{{filename}}' has {{count}} COLUMNINFO {{entry}} missing quantity number (4th element per GEF spec). Defaulting to quantity 0 (unknown). This may cause data columns to be misinterpreted or not displayed correctly.",
-    missingColumnInfoQuantity_entry: "entry",
-    missingColumnInfoQuantity_entry_plural: "entries",
+    missingColumnInfoQuantity_entry_one: "entry",
+    missingColumnInfoQuantity_entry_other: "entries",
     sieveTestNotSupported: "GEF-SIEVE files are not supported",
     name: "Name",
     unit: "Unit",
@@ -233,8 +233,8 @@ export default {
 
     childGefFiles: "Child GEF files",
     childGefFile: "Child GEF file",
-    childGefFilesCount: "{{count}} child file",
-    childGefFilesCount_plural: "{{count}} child files",
+    childGefFilesCount_one: "{{count}} child file",
+    childGefFilesCount_other: "{{count}} child files",
     dissTests: "Dissipation tests:",
     reference: "Reference",
     description: "Description",
@@ -269,6 +269,45 @@ export default {
       "Think this file should work? Help improve the GEF Viewer by",
     parseErrorReportIssue: "opening a GitHub issue",
     parseErrorReportEmail: "emailing us the file",
+
+    // Readable parse errors and grouped data block warnings
+    parseErrorInvalidValues:
+      "The file contains values that the viewer cannot read.",
+    parseErrorInvalidValuesIn:
+      "The file contains values that the viewer cannot read in: {{fields}}.",
+    parseErrorUnsupportedFileType: "This type of GEF file is not supported.",
+    parseErrorUnknown: "The viewer cannot read this file.",
+    showTechnicalDetails: "Technical details",
+    showAffectedRecords: "Show affected records",
+    moreRecordWarnings_one: "…and {{count}} more.",
+    moreRecordWarnings_other: "…and {{count}} more.",
+    warningGroupInvalidNumber_one:
+      "{{count}} value is not a valid number (columns: {{columns}}).",
+    warningGroupInvalidNumber_other:
+      "{{count}} values are not valid numbers (columns: {{columns}}).",
+    warningGroupMissingColumnTextHeader_one:
+      "{{count}} record contains text, but the file has no COLUMNTEXT header.",
+    warningGroupMissingColumnTextHeader_other:
+      "{{count}} records contain text, but the file has no COLUMNTEXT header.",
+    warningGroupMissingColumns_one:
+      "{{count}} record has fewer columns than the header declares.",
+    warningGroupMissingColumns_other:
+      "{{count}} records have fewer columns than the header declares.",
+    warningGroupExtraColumns_one:
+      "{{count}} record has more columns than the header declares.",
+    warningGroupExtraColumns_other:
+      "{{count}} records have more columns than the header declares.",
+    warningGroupInvalidDepth_one:
+      "{{count}} layer has an invalid depth. The viewer does not show it.",
+    warningGroupInvalidDepth_other:
+      "{{count}} layers have an invalid depth. The viewer does not show them.",
+    warningGroupInvertedDepth_one:
+      "{{count}} layer has a bottom depth above its top depth. The viewer does not show it.",
+    warningGroupInvertedDepth_other:
+      "{{count}} layers have a bottom depth above their top depth. The viewer does not show them.",
+    unreadableDataBlockTitle: "The viewer cannot read the data in this file",
+    unreadableDataBlockBody:
+      "{{bad}} of {{total}} records contain errors, so the plots can be empty or incorrect. The data block possibly uses a different column separator or column layout than the header declares.",
 
     // Unsupported browser (WASM blocked by CSP on old engines)
     wasmUnsupportedTitle: "Your browser can't run the GEF Viewer",
