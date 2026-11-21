@@ -228,7 +228,7 @@ export function FileTable({
                   onPress={() => {
                     onFileRemove(row.filename);
                   }}
-                  className="p-1 transition-colors hover:bg-red-200 rounded-sm text-gray-500 hover:text-red-700"
+                  className="hit-area p-1 transition-colors hover:bg-red-200 rounded-sm text-gray-500 hover:text-red-700"
                   aria-label={t("removeFile")}
                 >
                   <XIcon size={14} />

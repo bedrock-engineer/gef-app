@@ -602,21 +602,24 @@ function Header() {
     <header className="mb-6 border-b border-gray-300 py-4 px-2">
       <div
         style={{ maxWidth: "clamp(360px, 100%, 1800px)" }}
-        className=" mx-auto flex justify-between items-center"
+        className="mx-auto flex justify-between items-center gap-2"
       >
         <h1
-          className="text-3xl flex gap-2 items-center"
+          className="text-xl sm:text-3xl flex gap-2 items-center min-w-0"
           style={{ fontFamily: "var(--font-condensed)" }}
         >
-          <img src="bedrock.svg" width={30} />
-          <span style={{ color: "hsl(110 3% 53%)" }}>
+          <img src="bedrock.svg" width={30} alt="" className="shrink-0" />
+          <span
+            className="hidden sm:inline"
+            style={{ color: "hsl(110 3% 53%)" }}
+          >
             Bedrock.engineer
           </span>{" "}
           {t("appTitle")}
         </h1>
 
         <button
-          className="px-3 py-1 text-sm border border-gray-300 rounded hover:bg-gray-100 transition-colors"
+          className="shrink-0 px-3 py-1 text-sm border border-gray-300 rounded hover:bg-gray-100 transition-colors"
           onClick={() => {
             handleLanguageChange()
               .then((a) => {

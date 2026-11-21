@@ -20,6 +20,94 @@ body {
   height: 100%;
 }
 
+/* From the good-css reset, added one rule at a time for this existing app */
+:root {
+  /* Stop iOS from inflating text in landscape */
+  -webkit-text-size-adjust: 100%;
+  /* Break a word that cannot fit (URLs, procedure codes) instead of
+     letting it run out of its box */
+  overflow-wrap: break-word;
+}
+
+h1,
+h2,
+h3,
+h4 {
+  text-wrap: balance;
+}
+
+button,
+a,
+[role="button"] {
+  /* No double-tap zoom on controls, so taps register without delay */
+  touch-action: manipulation;
+}
+
+/* Inputs under 16px make iOS Safari zoom the page on focus, and it does not
+   zoom back out. Unlayered so it beats Tailwind's text-* utilities; limited
+   to touch screens so compact desktop controls keep their size. */
+@media (pointer: coarse) {
+  input,
+  textarea,
+  select {
+    font-size: max(16px, 1rem);
+  }
+}
+
+/* Tap target of at least 44px around a small icon button */
+.hit-area {
+  position: relative;
+
+  &::after {
+    content: "";
+    position: absolute;
+    inset: min(0px, (100% - 44px) / 2);
+  }
+}
+
+/* Fade a horizontal scroller's edges, only on the side that still has
+   content to scroll to. Without scroll timelines (Firefox) it just scrolls. */
+@property --fade-start {
+  syntax: "<length>";
+  inherits: false;
+  initial-value: 0px;
+}
+
+@property --fade-end {
+  syntax: "<length>";
+  inherits: false;
+  initial-value: 0px;
+}
+
+@keyframes scroll-fade-edges {
+  from {
+    --fade-start: 0px;
+    --fade-end: 2rem;
+  }
+  10%,
+  90% {
+    --fade-start: 2rem;
+    --fade-end: 2rem;
+  }
+  to {
+    --fade-start: 2rem;
+    --fade-end: 0px;
+  }
+}
+
+.scroll-fade-x {
+  overflow-x: auto;
+  animation: scroll-fade-edges linear;
+  animation-timeline: scroll(self inline);
+  mask-image: linear-gradient(
+    to right,
+    transparent,
+    #000 var(--fade-start),
+    #000 calc(100% - var(--fade-end)),
+    transparent
+  );
+}
+
 /* Blurry status bar for iOS PWA */
 @supports (padding: env(safe-area-inset-top)) {
   body::before {
@@ -59,7 +147,9 @@ body {
   max-width: clamp(360px, 100%, 1800px);
   margin-inline: auto;
   display: grid;
-  grid-template-columns: 1fr;
+  /* minmax(0, …) lets the column shrink below its content's width, so wide
+     tables and plots scroll inside their own box instead of widening the page */
+  grid-template-columns: minmax(0, 1fr);
   width: 100%;
   column-gap: 16px;
 
@@ -112,7 +202,7 @@ body {
   border-radius: var(--radius-sm);
   transition: all;
   max-height: 80svh;
-  overflow-block: auto;
+  overflow: auto;
 
   &[data-drop-target] {
     border-color: var(--color-blue-400);
@@ -144,8 +234,11 @@ body {
   cursor: pointer;
   transition: all;
 
-  &:hover {
-    background-color: var(--color-blue-50);
+  /* Only where hover exists, so a tap on a phone doesn't leave it stuck */
+  @media (hover: hover) and (pointer: fine) {
+    &:hover {
+      background-color: var(--color-blue-50);
+    }
   }
 
   &[data-selected] {
