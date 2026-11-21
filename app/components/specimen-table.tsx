@@ -33,7 +33,7 @@ export function SpecimenTable({ specimens }: SpecimenTableProps) {
         </div>
       )}
 
-      <div className="overflow-x-auto max-w-[98lvw] min-w-0">
+      <div className="scroll-fade-x max-w-full min-w-0">
         <table className="border-collapse text-sm">
           <thead>
             <tr className="bg-gray-100">
